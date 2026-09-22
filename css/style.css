@@ -1,0 +1,220 @@
+/* ============================================
+   AGIBANK - PROGRAMA DE ESTÁGIO LP
+   Design Tokens + Reset + Base
+============================================ */
+
+/* ---------- FONT FACES ---------- */
+/* Assim que tivermos os arquivos, ativamos os pesos necessários */
+
+@font-face {
+  font-family: 'Agibank Sans';
+  src: url('../assets/fonts/AgibankSans-Regular.woff2') format('woff2'),
+       url('../assets/fonts/AgibankSans-Regular.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Agibank Sans';
+  src: url('../assets/fonts/AgibankSans-Bold.woff2') format('woff2'),
+       url('../assets/fonts/AgibankSans-Bold.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Agibank Sans';
+  src: url('../assets/fonts/AgibankSans-Thin.woff2') format('woff2'),
+       url('../assets/fonts/AgibankSans-Thin.woff') format('woff');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ---------- DESIGN TOKENS ---------- */
+:root {
+  /* Cores institucionais */
+  --color-blue: #0064F9;
+  --color-green: #77DF40;
+  --color-navy: #000F44;
+  --color-blue-medium: #0033B0;
+  --color-yellow: #FFD600;
+
+  /* Neutros de apoio */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+  --color-gray-light: #F5F6F8;
+  --color-gray: #E5E7EB;
+  --color-text: #1A1A1A;
+
+  /* Tipografia */
+  --font-primary: 'Agibank Sans', Arial, Helvetica, sans-serif;
+
+  /* Tamanhos - Desktop (default) */
+  --fs-h1: 52px;
+  --fs-h2: 38px;
+  --fs-h3: 26px;
+  --fs-h4: 19px;
+  --fs-body: 16px;
+  --fs-small: 14px;
+  --fs-caption: 12px;
+  --fs-cta: 17px;
+
+  /* Line heights */
+  --lh-heading: 1.25;
+  --lh-body: 1.55;
+
+  /* Container / Grid */
+  --container-max: 1440px;
+  --container-padding-desktop: 60px;
+  --container-padding-tablet: 40px;
+  --container-padding-mobile: 20px;
+
+  /* Espaçamentos padrão */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+  --space-2xl: 96px;
+
+  /* Transições */
+  --transition-fast: 0.2s ease;
+  --transition-medium: 0.4s ease;
+  --transition-slow: 0.6s ease;
+
+  /* Border radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 999px;
+}
+
+/* ---------- RESET ---------- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-primary);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--color-text);
+  background-color: var(--color-white);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+img, video, svg {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: var(--lh-heading);
+}
+
+h1 { font-size: var(--fs-h1); }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+h4 { font-size: var(--fs-h4); }
+
+/* ---------- CONTAINER PADRÃO ---------- */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-padding-desktop);
+}
+
+/* ---------- UTILITÁRIOS ---------- */
+.text-center { text-align: center; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-cta);
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: var(--radius-full);
+  transition: var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-blue-medium);
+  transform: translateY(-2px);
+}
+
+/* ============================================
+   RESPONSIVIDADE - BREAKPOINTS
+============================================ */
+
+/* ---------- TABLET (768px - 1024px) ---------- */
+@media (max-width: 1024px) {
+  :root {
+    --fs-h1: 40px;
+    --fs-h2: 30px;
+    --fs-h3: 22px;
+    --fs-h4: 17px;
+  }
+
+  .container {
+    padding: 0 var(--container-padding-tablet);
+  }
+}
+
+/* ---------- MOBILE (até 767px) ---------- */
+@media (max-width: 767px) {
+  :root {
+    --fs-h1: 34px;
+    --fs-h2: 26px;
+    --fs-h3: 19px;
+    --fs-h4: 15px;
+    --fs-body: 14px;
+    --fs-small: 12px;
+    --fs-cta: 16px;
+  }
+
+  .container {
+    padding: 0 var(--container-padding-mobile);
+  }
+
+  .btn {
+    padding: 14px 24px;
+    width: 100%;
+  }
+}
