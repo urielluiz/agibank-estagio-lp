@@ -160,8 +160,6 @@ h4 { font-size: var(--fs-h4); }
 
 .text-center { text-align: center; }
 
-/* Espaçamento vertical padrão de seção - reutilizável
-   em todas as próximas dobras da página */
 .section-padding {
   padding-top: var(--space-2xl);
   padding-bottom: var(--space-2xl);
@@ -611,12 +609,17 @@ body.hero-editor-active [data-editable].is-selected {
   margin-bottom: var(--space-xl);
 }
 
+.why-apply__reveal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
 /* ---------- Timeline (linha + bolinhas) ---------- */
 
 .why-apply__timeline {
   position: relative;
   height: 36px;
-  margin-bottom: var(--space-md);
 }
 
 .why-apply__line-wrap {
@@ -660,31 +663,18 @@ body.hero-editor-active [data-editable].is-selected {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  color: var(--color-white);
   font-weight: 700;
   font-size: 15px;
   opacity: 0;
   transform: scale(0.3);
-  transition: opacity 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
-              transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.08s linear, opacity 0.08s linear;
+  will-change: transform, opacity;
 }
 
-.why-apply__dot.is-visible {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.why-apply__dot.is-blue   { background-color: var(--color-blue); }
-.why-apply__dot.is-green  { background-color: var(--color-green); }
-.why-apply__dot.is-yellow { background-color: var(--color-yellow); }
-
-/* Pequeno stagger para quando vários itens revelam de uma vez (scroll rápido) */
-.why-apply__dots .why-apply__dot-cell:nth-child(1) .why-apply__dot { transition-delay: 0s; }
-.why-apply__dots .why-apply__dot-cell:nth-child(2) .why-apply__dot { transition-delay: 0.05s; }
-.why-apply__dots .why-apply__dot-cell:nth-child(3) .why-apply__dot { transition-delay: 0.1s; }
-.why-apply__dots .why-apply__dot-cell:nth-child(4) .why-apply__dot { transition-delay: 0.15s; }
-.why-apply__dots .why-apply__dot-cell:nth-child(5) .why-apply__dot { transition-delay: 0.2s; }
-.why-apply__dots .why-apply__dot-cell:nth-child(6) .why-apply__dot { transition-delay: 0.25s; }
+/* Regra de brand: nunca branco em cima de verde/amarelo */
+.why-apply__dot.is-blue   { background-color: var(--color-blue);   color: var(--color-white); }
+.why-apply__dot.is-green  { background-color: var(--color-green);  color: var(--color-navy); }
+.why-apply__dot.is-yellow { background-color: var(--color-yellow); color: var(--color-navy); }
 
 /* ---------- Cards ---------- */
 
@@ -695,28 +685,18 @@ body.hero-editor-active [data-editable].is-selected {
 }
 
 .why-apply__card {
-  padding: var(--space-md);
+  padding: var(--space-lg) var(--space-md);
   border-radius: var(--radius-lg);
   min-height: 230px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   opacity: 0;
-  transform: translateY(20px) scale(0.96);
-  transition: opacity 0.6s ease-out,
-              transform 0.6s ease-out;
+  transform: translateY(40px) rotate(0deg) scale(0.9);
+  transition: transform 0.08s linear, opacity 0.08s linear;
+  will-change: transform, opacity;
 }
-
-.why-apply__card.is-visible {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-.why-apply__card:nth-child(1) { transition-delay: 0s; }
-.why-apply__card:nth-child(2) { transition-delay: 0.05s; }
-.why-apply__card:nth-child(3) { transition-delay: 0.1s; }
-.why-apply__card:nth-child(4) { transition-delay: 0.15s; }
-.why-apply__card:nth-child(5) { transition-delay: 0.2s; }
-.why-apply__card:nth-child(6) { transition-delay: 0.25s; }
 
 .why-apply__card.is-blue {
   background-color: var(--color-blue);
@@ -734,7 +714,7 @@ body.hero-editor-active [data-editable].is-selected {
 }
 
 .why-apply__card p {
-  font-size: var(--fs-body);
+  font-size: 17px;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -749,6 +729,10 @@ body.hero-editor-active [data-editable].is-selected {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .why-apply__line-fill {
+    width: 100% !important;
   }
 }
 
@@ -777,16 +761,13 @@ body.hero-editor-active [data-editable].is-selected {
     font-size: var(--fs-small);
   }
 
-  /* Why Apply - ajuste leve para tablet.
-     Layout de 6 colunas será revisto na fase de
-     responsividade dedicada (tablet/mobile). */
   .why-apply__title {
     font-size: 34px;
   }
 
   .why-apply__card {
     min-height: 200px;
-    padding: var(--space-sm);
+    padding: var(--space-md) var(--space-sm);
   }
 
   .why-apply__card p {
@@ -852,9 +833,6 @@ body.hero-editor-active [data-editable].is-selected {
     width: 100%;
   }
 
-  /* Why Apply - fallback temporário para mobile.
-     Layout definitivo (provavelmente carrossel ou lista
-     vertical enxuta) será feito com base no Figma mobile. */
   .why-apply__title {
     font-size: 26px;
   }
@@ -870,7 +848,7 @@ body.hero-editor-active [data-editable].is-selected {
 
   .why-apply__card {
     min-height: auto;
-    opacity: 1;
-    transform: none;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
