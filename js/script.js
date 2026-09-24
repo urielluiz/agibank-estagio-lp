@@ -18,9 +18,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-/* ============================================
-   HEADER: SOMBRA AO ROLAR
-============================================ */
 function initHeaderScroll() {
   const header = document.getElementById('header');
   if (!header) return;
@@ -37,9 +34,6 @@ function initHeaderScroll() {
   handleHeaderScroll();
 }
 
-/* ============================================
-   MENU MOBILE: TOGGLE
-============================================ */
 function initMobileMenu() {
   const navToggle = document.getElementById('navToggle');
   const navMenu = document.getElementById('navMenu');
@@ -65,9 +59,10 @@ function initMobileMenu() {
 
 /* ============================================
    HERO: PARALLAX
-   - "repel": cacos fogem suavemente do cursor por proximidade
-   - "tilt-x": pessoas se deslocam lateralmente conforme a
-               posição do mouse em toda a largura do hero
+   - "repel": cacos se afastam MUITO sutilmente do
+     cursor, só quando ele está bem próximo
+   - "tilt-x": pessoas se deslocam lateralmente
+     conforme a posição do mouse (mantido como estava)
 ============================================ */
 function initHeroParallax() {
   const heroBanner = document.getElementById('hero-banner');
@@ -78,12 +73,14 @@ function initHeroParallax() {
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!hasMouse) return;
 
-  const repelRadius = 260;
+  // Raio de ativação reduzido - o efeito só começa
+  // quando o mouse está bem próximo do elemento
+  const repelRadius = 170;
 
   const repelState = Array.from(repelEls).map(function (el) {
     return {
       el: el,
-      strength: parseFloat(el.dataset.strength) || 30,
+      strength: parseFloat(el.dataset.strength) || 12,
       currentX: 0,
       currentY: 0,
       targetX: 0,
@@ -105,7 +102,6 @@ function initHeroParallax() {
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    /* --- Repel (cacos) --- */
     repelState.forEach(function (item) {
       const elRect = item.el.getBoundingClientRect();
       const elCenterX = elRect.left - rect.left + elRect.width / 2;
@@ -117,7 +113,10 @@ function initHeroParallax() {
 
       if (distance < repelRadius) {
         const t = distance / repelRadius;
-        const force = Math.cos(t * (Math.PI / 2)); // falloff suave (cosseno)
+        // Curva quadrática: a força cresce bem devagar
+        // e só fica perceptível quando o mouse está
+        // realmente perto do elemento
+        const force = Math.pow(Math.cos(t * (Math.PI / 2)), 2);
         const angle = Math.atan2(dy, dx);
         item.targetX = Math.cos(angle) * force * item.strength;
         item.targetY = Math.sin(angle) * force * item.strength;
@@ -127,8 +126,7 @@ function initHeroParallax() {
       }
     });
 
-    /* --- Tilt lateral (pessoas) --- */
-    const ratio = (mouseX / rect.width) * 2 - 1; // -1 (esquerda) a 1 (direita)
+    const ratio = (mouseX / rect.width) * 2 - 1;
     tiltState.forEach(function (item) {
       item.targetX = ratio * item.strength;
     });
@@ -146,8 +144,10 @@ function initHeroParallax() {
 
   function animate() {
     repelState.forEach(function (item) {
-      item.currentX += (item.targetX - item.currentX) * 0.12;
-      item.currentY += (item.targetY - item.currentY) * 0.12;
+      // Lerp bem mais lento (0.05) - movimento suave,
+      // "viscoso", sem reagir de forma nervosa/rápida
+      item.currentX += (item.targetX - item.currentX) * 0.05;
+      item.currentY += (item.targetY - item.currentY) * 0.05;
       item.el.style.transform = 'translate(' + item.currentX.toFixed(2) + 'px, ' + item.currentY.toFixed(2) + 'px)';
     });
 
@@ -162,10 +162,6 @@ function initHeroParallax() {
   animate();
 }
 
-/* ============================================
-   EDITOR VISUAL DO HERO
-   Ativa com ?edit=1 na URL
-============================================ */
 function initHeroEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
   const heroStage = document.getElementById('heroStage');
@@ -201,7 +197,6 @@ function initHeroEditor() {
     '</div>';
   document.body.appendChild(panel);
 
-  /* --- Controle de altura do Hero --- */
   const ratioInput = panel.querySelector('#heroRatioInput');
   const ratioValue = panel.querySelector('#heroRatioValue');
 
@@ -210,7 +205,6 @@ function initHeroEditor() {
     ratioValue.textContent = ratioInput.value;
   });
 
-  /* --- Lista de elementos editáveis --- */
   const list = panel.querySelector('.hero-editor__list');
   let selected = null;
 
@@ -292,34 +286,4 @@ function initHeroEditor() {
     const step = e.shiftKey ? 1 : 0.2;
     let prop, dir;
 
-    if (e.key === 'ArrowUp')    { prop = 'top';  dir = -1; }
-    if (e.key === 'ArrowDown')  { prop = 'top';  dir = 1; }
-    if (e.key === 'ArrowLeft')  { prop = 'left'; dir = -1; }
-    if (e.key === 'ArrowRight') { prop = 'left'; dir = 1; }
-
-    const current = parseFloat(getPercent(selected, prop));
-    const next = (current + dir * step).toFixed(2);
-    selected.style[prop] = next + '%';
-    updateInputs();
-  });
-
-  panel.querySelector('.hero-editor__copy').addEventListener('click', function () {
-    let output = '/* ===== CONFIGURAÇÃO FINAL DO HERO ===== */\n\n';
-    output += '/* hero-stage (altura da seção) */\n';
-    output += 'aspect-ratio-height: ' + heroStage.style.getPropertyValue('--hero-ratio-h') + ';\n\n';
-
-    editableEls.forEach(function (el) {
-      const name = el.dataset.editable;
-      output += '/* ' + name + ' */\n';
-      output += 'top: ' + getPercent(el, 'top') + '%;\n';
-      output += 'left: ' + getPercent(el, 'left') + '%;\n';
-      output += 'width: ' + getPercent(el, 'width') + '%;\n\n';
-    });
-
-    navigator.clipboard.writeText(output).then(function () {
-      alert('Configuração copiada! Cole aqui no chat com o Claude.');
-    }).catch(function () {
-      prompt('Copie o texto abaixo manualmente:', output);
-    });
-  });
-}
+    if (e.key === 'Arrow
