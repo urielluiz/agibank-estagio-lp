@@ -42,23 +42,27 @@
   =================================== -->
   <section id="hero-banner" class="hero-banner">
 
+    <!-- Background full-bleed (independente da prancheta) -->
     <div class="hero-banner__bg">
       <img src="assets/img/Programa-Estagio-Hero-BG.jpg" alt="" class="hero-banner__bg-img">
     </div>
 
-    <img src="assets/img/Caco-02-Hero.png" alt="" class="hero-banner__caco caco--02" data-parallax data-editable="caco-02" data-strength="35">
-    <img src="assets/img/Caco-01-Hero.png" alt="" class="hero-banner__caco caco--01" data-parallax data-editable="caco-01" data-strength="25">
-    <img src="assets/img/Caco-03-Hero.png" alt="" class="hero-banner__caco caco--03" data-parallax data-editable="caco-03" data-strength="30">
-    <img src="assets/img/Caco-04-Hero.png" alt="" class="hero-banner__caco caco--04" data-parallax data-editable="caco-04" data-strength="25">
+    <!-- Prancheta única (mesma referência para TODOS os elementos) -->
+    <div class="hero-banner__stage" id="heroStage">
 
-    <div class="hero-banner__content container">
+      <img src="assets/img/Caco-02-Hero.png" alt="" class="hero-banner__caco caco--02" data-parallax="repel" data-editable="caco-02" data-strength="35">
+      <img src="assets/img/Caco-01-Hero.png" alt="" class="hero-banner__caco caco--01" data-parallax="repel" data-editable="caco-01" data-strength="25">
+      <img src="assets/img/Caco-03-Hero.png" alt="" class="hero-banner__caco caco--03" data-parallax="repel" data-editable="caco-03" data-strength="30">
+      <img src="assets/img/Caco-04-Hero.png" alt="" class="hero-banner__caco caco--04" data-parallax="repel" data-editable="caco-04" data-strength="25">
 
       <div class="hero-banner__logo-wrap hero-anim hero-anim--fade" data-editable="logo-programa">
         <img src="assets/img/Logo-Programa-Estagio-Agibank-2027.svg" alt="Programa de Estágio do Agibank - 1ª turma de 2027" class="hero-banner__program-logo">
       </div>
 
       <div class="hero-banner__people hero-anim hero-anim--rise" data-editable="pessoas">
-        <img src="assets/img/Pessoas-Hero.png" alt="Estagiários do Agibank" class="hero-banner__people-img">
+        <div class="hero-banner__people-parallax" data-parallax="tilt-x" data-strength="18">
+          <img src="assets/img/Pessoas-Hero.png" alt="Estagiários do Agibank" class="hero-banner__people-img">
+        </div>
       </div>
 
       <div class="hero-banner__text-wrap hero-anim hero-anim--fade" data-editable="texto-cta">
