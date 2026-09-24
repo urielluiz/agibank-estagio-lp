@@ -3,8 +3,6 @@
    Design Tokens + Reset + Base
 ============================================ */
 
-/* ---------- FONT FACES ---------- */
-
 @font-face {
   font-family: 'Agibank Sans';
   src: url('../assets/fonts/AgibankSans-Thin.woff2') format('woff2');
@@ -45,26 +43,21 @@
   font-display: swap;
 }
 
-/* ---------- DESIGN TOKENS ---------- */
 :root {
-  /* Cores institucionais */
   --color-blue: #0064F9;
   --color-green: #77DF40;
   --color-navy: #000F44;
   --color-blue-medium: #0033B0;
   --color-yellow: #FFD600;
 
-  /* Neutros de apoio */
   --color-white: #FFFFFF;
   --color-black: #000000;
   --color-gray-light: #F5F6F8;
   --color-gray: #E5E7EB;
   --color-text: #1A1A1A;
 
-  /* Tipografia */
   --font-primary: 'Agibank Sans', Arial, Helvetica, sans-serif;
 
-  /* Tamanhos - Desktop (default) */
   --fs-h1: 52px;
   --fs-h2: 38px;
   --fs-h3: 26px;
@@ -74,17 +67,14 @@
   --fs-caption: 12px;
   --fs-cta: 17px;
 
-  /* Line heights */
   --lh-heading: 1.25;
   --lh-body: 1.55;
 
-  /* Container / Grid */
   --container-max: 1440px;
   --container-padding-desktop: 60px;
   --container-padding-tablet: 40px;
   --container-padding-mobile: 20px;
 
-  /* Espaçamentos padrão */
   --space-xs: 8px;
   --space-sm: 16px;
   --space-md: 24px;
@@ -92,22 +82,18 @@
   --space-xl: 64px;
   --space-2xl: 96px;
 
-  /* Transições */
   --transition-fast: 0.2s ease;
   --transition-medium: 0.4s ease;
   --transition-slow: 0.6s ease;
 
-  /* Border radius */
   --radius-sm: 8px;
   --radius-md: 16px;
   --radius-lg: 24px;
   --radius-full: 999px;
 
-  /* Header */
   --header-height: 88px;
 }
 
-/* ---------- RESET ---------- */
 *,
 *::before,
 *::after {
@@ -163,7 +149,6 @@ h2 { font-size: var(--fs-h2); }
 h3 { font-size: var(--fs-h3); }
 h4 { font-size: var(--fs-h4); }
 
-/* ---------- CONTAINER PADRÃO ---------- */
 .container {
   width: 100%;
   max-width: var(--container-max);
@@ -171,7 +156,6 @@ h4 { font-size: var(--fs-h4); }
   padding: 0 var(--container-padding-desktop);
 }
 
-/* ---------- UTILITÁRIOS ---------- */
 .text-center { text-align: center; }
 
 .btn {
@@ -314,10 +298,9 @@ h4 { font-size: var(--fs-h4); }
   width: 100%;
   aspect-ratio: 1440 / 650;
   overflow: hidden;
-  background-color: var(--color-blue-medium); /* fallback enquanto a imagem carrega */
+  background-color: var(--color-blue-medium);
 }
 
-/* Background */
 .hero-banner__bg {
   position: absolute;
   inset: 0;
@@ -330,14 +313,12 @@ h4 { font-size: var(--fs-h4); }
   object-fit: cover;
 }
 
-/* Wrapper de conteúdo (usa o container padrão para respeitar as margens) */
 .hero-banner__content {
   position: relative;
   height: 100%;
   z-index: 3;
 }
 
-/* ---------- Cacos decorativos ---------- */
 .hero-banner__caco {
   position: absolute;
   z-index: 1;
@@ -346,12 +327,11 @@ h4 { font-size: var(--fs-h4); }
   will-change: transform;
 }
 
-.caco--02 { top: 0%;   left: 19%; width: 8%;   z-index: 1; }
-.caco--01 { top: 60%;  left: 7%;  width: 13%;  z-index: 1; }
-.caco--03 { top: 9%;   left: 85%; width: 4.5%; z-index: 1; }
-.caco--04 { top: 64%;  left: 78%; width: 8.5%; z-index: 1; }
+.caco--02 { top: 0%;   left: 19%; width: 8%;   }
+.caco--01 { top: 60%;  left: 7%;  width: 13%;  }
+.caco--03 { top: 9%;   left: 85%; width: 4.5%; }
+.caco--04 { top: 64%;  left: 78%; width: 8.5%; }
 
-/* ---------- Logo do programa ---------- */
 .hero-banner__logo-wrap {
   position: absolute;
   top: 24%;
@@ -365,7 +345,6 @@ h4 { font-size: var(--fs-h4); }
   height: auto;
 }
 
-/* ---------- Pessoas ---------- */
 .hero-banner__people {
   position: absolute;
   bottom: 0;
@@ -380,12 +359,11 @@ h4 { font-size: var(--fs-h4); }
   display: block;
 }
 
-/* ---------- Texto + CTA ---------- */
 .hero-banner__text-wrap {
   position: absolute;
-  top: 25%;
-  left: 64%;
-  width: 30%;
+  top: 24%;
+  left: 63%;
+  width: 34%;
   z-index: 3;
 }
 
@@ -417,7 +395,6 @@ h4 { font-size: var(--fs-h4); }
   transform: translateY(-2px);
 }
 
-/* ---------- Animações de entrada ---------- */
 @keyframes heroFadeUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -451,10 +428,132 @@ h4 { font-size: var(--fs-h4); }
 }
 
 /* ============================================
+   EDITOR VISUAL DO HERO (só aparece com ?edit=1)
+============================================ */
+
+body.hero-editor-active .hero-banner__caco {
+  pointer-events: auto;
+  cursor: move;
+}
+
+body.hero-editor-active [data-editable] {
+  cursor: move;
+  outline: 1px dashed rgba(255, 255, 255, 0.4);
+}
+
+body.hero-editor-active [data-editable].is-selected {
+  outline: 2px solid #FF2D78;
+  outline-offset: 2px;
+}
+
+.hero-editor {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  background-color: #14172B;
+  color: #fff;
+  z-index: 99999;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+}
+
+.hero-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: sticky;
+  top: 0;
+  background-color: #14172B;
+  z-index: 2;
+}
+
+.hero-editor__copy {
+  background-color: #77DF40;
+  color: #000F44;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.hero-editor__list {
+  padding: 8px 16px;
+}
+
+.hero-editor__item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.hero-editor__select {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background-color: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.hero-editor__item.is-active .hero-editor__select {
+  background-color: #FF2D78;
+}
+
+.hero-editor__item label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.hero-editor__item input {
+  width: 70px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background-color: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 12px;
+}
+
+.hero-editor__hint {
+  padding: 16px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.6);
+}
+
+.hero-editor__badge {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  background-color: #FF2D78;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  z-index: 99999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* ============================================
    RESPONSIVIDADE - BREAKPOINTS
 ============================================ */
 
-/* ---------- TABLET (768px - 1024px) ---------- */
 @media (max-width: 1024px) {
   :root {
     --fs-h1: 40px;
@@ -477,7 +576,6 @@ h4 { font-size: var(--fs-h4); }
   }
 }
 
-/* ---------- MOBILE (até 767px) ---------- */
 @media (max-width: 767px) {
   :root {
     --fs-h1: 34px;
@@ -532,13 +630,12 @@ h4 { font-size: var(--fs-h4); }
     display: none;
   }
 
-  /* Hero banner - AVISO:
-     O layout mobile deste bloco provavelmente será totalmente
-     reestruturado (elementos empilhados). Estilos abaixo são
-     apenas um comportamento mínimo temporário até recebermos
-     o design mobile no Figma. */
   .hero-banner {
     aspect-ratio: auto;
     min-height: 560px;
+  }
+
+  .hero-editor {
+    width: 100%;
   }
 }
