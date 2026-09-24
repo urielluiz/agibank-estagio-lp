@@ -327,31 +327,43 @@ function initHeroEditor() {
 }
 
 /* ============================================
-   SEÇÃO 01 - WHY APPLY: SCROLL SCRUBBING
-   Cada elemento (linha, bolinhas, cards) tem seu
-   progresso calculado diretamente a partir da
-   posição de scroll — 100% reversível: rolar para
-   cima desfaz a animação exatamente pelo caminho
-   inverso, sem "trava" de estado.
+   SEÇÃO 01 - WHY APPLY: PIN + SCROLL SCRUBBING
+   O wrapper (#whyApplyPinWrapper) tem altura extra
+   (300vh). Enquanto o usuário rola por essa altura,
+   o progresso é calculado com base em QUANTO desse
+   corredor já foi percorrido - não mais na posição
+   visual da seção. Isso garante que a seção fique
+   "grudada" na tela até revelar (ou esconder, se
+   rolar pra cima) todos os cards.
 ============================================ */
 function initWhyApplyTimeline() {
-  const wrapper = document.getElementById('whyApplyReveal');
+  const pinWrapper = document.getElementById('whyApplyPinWrapper');
   const lineFill = document.getElementById('whyApplyLineFill');
   const dots = document.querySelectorAll('.why-apply__dot');
   const cards = document.querySelectorAll('.why-apply__card');
 
-  if (!wrapper || !lineFill || !dots.length || !cards.length) return;
+  if (!pinWrapper || !lineFill || !dots.length || !cards.length) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion) {
-    console.log('Timeline "Why Apply": prefers-reduced-motion ativo, animação desabilitada.');
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  if (reduceMotion || isMobile) {
+    console.log('Timeline "Why Apply": pin/scrub desabilitado (mobile ou reduced motion).');
+    lineFill.style.width = '100%';
+    dots.forEach(function (dot) {
+      dot.style.opacity = '1';
+      dot.style.transform = 'scale(1)';
+    });
+    cards.forEach(function (card) {
+      card.style.opacity = '1';
+      card.style.transform = 'none';
+    });
     return;
   }
 
   const total = dots.length;
-  const ITEM_SPAN = 0.4; // cada item "ocupa" 40% do progresso total (com sobreposição/stagger)
+  const ITEM_SPAN = 0.4; // cada item "ocupa" 40% do progresso total (com sobreposição)
 
-  /* ---------- Funções de easing ---------- */
   function easeOutCubic(x) {
     return 1 - Math.pow(1 - x, 3);
   }
@@ -366,24 +378,21 @@ function initWhyApplyTimeline() {
     return Math.min(Math.max(value, min), max);
   }
 
-  /* ---------- Progresso geral (0 a 1) do bloco inteiro ----------
-     Baseado na altura TOTAL do bloco (linha + cards), não mais
-     apenas na linha isolada — isso dá um percurso de scroll bem
-     maior, corrigindo a velocidade excessiva de antes. */
+  /* ---------- Progresso baseado no corredor de scroll ----------
+     0 = wrapper acabou de chegar no topo da tela (pin começando)
+     1 = wrapper terminou de passar (pin terminando) */
   function getGlobalProgress() {
-    const rect = wrapper.getBoundingClientRect();
-    const vh = window.innerHeight;
+    const rect = pinWrapper.getBoundingClientRect();
+    const wrapperTop = rect.top + window.scrollY;
+    const wrapperHeight = pinWrapper.offsetHeight;
+    const scrollable = wrapperHeight - window.innerHeight;
 
-    const start = vh * 0.82;                 // início: bloco ainda baixo na tela
-    const end = vh * 0.18 - rect.height;      // fim: bloco já quase saindo por cima
+    if (scrollable <= 0) return 1;
 
-    const total = start - end;
-    const raw = (start - rect.top) / total;
-
+    const raw = (window.scrollY - wrapperTop) / scrollable;
     return clamp(raw, 0, 1);
   }
 
-  /* ---------- Progresso individual de cada item, com stagger ---------- */
   function getItemProgress(globalProgress, index) {
     const spacing = (1 - ITEM_SPAN) / (total - 1);
     const itemStart = index * spacing;
@@ -396,7 +405,6 @@ function initWhyApplyTimeline() {
   function update() {
     const globalProgress = getGlobalProgress();
 
-    // Linha pontilhada - acompanha o progresso geral, 1:1
     lineFill.style.width = (globalProgress * 100).toFixed(2) + '%';
 
     dots.forEach(function (dot, i) {
@@ -419,7 +427,6 @@ function initWhyApplyTimeline() {
       const translateY = 40 * (1 - eased);
       const scale = 0.9 + 0.1 * easedBack;
 
-      // Rotação alternada por card (par entra da esquerda, ímpar da direita)
       const rotationStart = (i % 2 === 0) ? -7 : 7;
       const rotation = rotationStart * (1 - eased);
 
@@ -446,7 +453,7 @@ function initWhyApplyTimeline() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  update(); // estado inicial correto, sem esperar o primeiro scroll
+  update();
 
-  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens | scroll-scrubbing ativo');
+  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens | pin + scrub ativo');
 }
