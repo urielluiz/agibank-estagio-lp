@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initMobileMenu();
 
   if (editMode) {
+    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
     initHeroEditor();
   } else {
     initHeroParallax();
@@ -59,28 +60,43 @@ function initMobileMenu() {
 
 /* ============================================
    HERO: PARALLAX
-   - "repel": cacos se afastam MUITO sutilmente do
-     cursor, só quando ele está bem próximo
+   - "repel": cacos se afastam sutilmente do cursor
    - "tilt-x": pessoas se deslocam lateralmente
-     conforme a posição do mouse (mantido como estava)
+     conforme a posição do mouse no hero
 ============================================ */
 function initHeroParallax() {
   const heroBanner = document.getElementById('hero-banner');
   const repelEls = document.querySelectorAll('[data-parallax="repel"]');
   const tiltEls = document.querySelectorAll('[data-parallax="tilt-x"]');
-  if (!heroBanner || (!repelEls.length && !tiltEls.length)) return;
+
+  if (!heroBanner) {
+    console.warn('⚠️ Parallax: #hero-banner não encontrado.');
+    return;
+  }
+
+  if (!repelEls.length && !tiltEls.length) {
+    console.warn('⚠️ Parallax: nenhum elemento [data-parallax] encontrado.');
+    return;
+  }
 
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!hasMouse) return;
+  if (!hasMouse) {
+    console.warn('⚠️ Parallax: dispositivo sem mouse detectado (touch), efeito desabilitado.');
+    return;
+  }
 
-  // Raio de ativação reduzido - o efeito só começa
-  // quando o mouse está bem próximo do elemento
-  const repelRadius = 170;
+  console.log(
+    'Parallax Hero inicializado ✅ | ' +
+    repelEls.length + ' elemento(s) repel | ' +
+    tiltEls.length + ' elemento(s) tilt'
+  );
+
+  const repelRadius = 210;
 
   const repelState = Array.from(repelEls).map(function (el) {
     return {
       el: el,
-      strength: parseFloat(el.dataset.strength) || 12,
+      strength: parseFloat(el.dataset.strength) || 18,
       currentX: 0,
       currentY: 0,
       targetX: 0,
@@ -91,7 +107,7 @@ function initHeroParallax() {
   const tiltState = Array.from(tiltEls).map(function (el) {
     return {
       el: el,
-      strength: parseFloat(el.dataset.strength) || 15,
+      strength: parseFloat(el.dataset.strength) || 18,
       currentX: 0,
       targetX: 0
     };
@@ -113,10 +129,7 @@ function initHeroParallax() {
 
       if (distance < repelRadius) {
         const t = distance / repelRadius;
-        // Curva quadrática: a força cresce bem devagar
-        // e só fica perceptível quando o mouse está
-        // realmente perto do elemento
-        const force = Math.pow(Math.cos(t * (Math.PI / 2)), 2);
+        const force = Math.cos(t * (Math.PI / 2)); // falloff suave
         const angle = Math.atan2(dy, dx);
         item.targetX = Math.cos(angle) * force * item.strength;
         item.targetY = Math.sin(angle) * force * item.strength;
@@ -144,10 +157,8 @@ function initHeroParallax() {
 
   function animate() {
     repelState.forEach(function (item) {
-      // Lerp bem mais lento (0.05) - movimento suave,
-      // "viscoso", sem reagir de forma nervosa/rápida
-      item.currentX += (item.targetX - item.currentX) * 0.05;
-      item.currentY += (item.targetY - item.currentY) * 0.05;
+      item.currentX += (item.targetX - item.currentX) * 0.08;
+      item.currentY += (item.targetY - item.currentY) * 0.08;
       item.el.style.transform = 'translate(' + item.currentX.toFixed(2) + 'px, ' + item.currentY.toFixed(2) + 'px)';
     });
 
@@ -286,4 +297,34 @@ function initHeroEditor() {
     const step = e.shiftKey ? 1 : 0.2;
     let prop, dir;
 
-    if (e.key === 'Arrow
+    if (e.key === 'ArrowUp')    { prop = 'top';  dir = -1; }
+    if (e.key === 'ArrowDown')  { prop = 'top';  dir = 1; }
+    if (e.key === 'ArrowLeft')  { prop = 'left'; dir = -1; }
+    if (e.key === 'ArrowRight') { prop = 'left'; dir = 1; }
+
+    const current = parseFloat(getPercent(selected, prop));
+    const next = (current + dir * step).toFixed(2);
+    selected.style[prop] = next + '%';
+    updateInputs();
+  });
+
+  panel.querySelector('.hero-editor__copy').addEventListener('click', function () {
+    let output = '/* ===== CONFIGURAÇÃO FINAL DO HERO ===== */\n\n';
+    output += '/* hero-stage (altura da seção) */\n';
+    output += 'aspect-ratio-height: ' + heroStage.style.getPropertyValue('--hero-ratio-h') + ';\n\n';
+
+    editableEls.forEach(function (el) {
+      const name = el.dataset.editable;
+      output += '/* ' + name + ' */\n';
+      output += 'top: ' + getPercent(el, 'top') + '%;\n';
+      output += 'left: ' + getPercent(el, 'left') + '%;\n';
+      output += 'width: ' + getPercent(el, 'width') + '%;\n\n';
+    });
+
+    navigator.clipboard.writeText(output).then(function () {
+      alert('Configuração copiada! Cole aqui no chat com o Claude.');
+    }).catch(function () {
+      prompt('Copie o texto abaixo manualmente:', output);
+    });
+  });
+}
