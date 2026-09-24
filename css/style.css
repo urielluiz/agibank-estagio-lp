@@ -404,12 +404,7 @@ h4 { font-size: var(--fs-h4); }
   transform: translateY(-2px);
 }
 
-/* ---------- Animações de entrada ----------
-   Sequência: Pessoas sobem primeiro (0.1s) →
-   Logo aparece em seguida (0.3s) →
-   Texto/CTA aparece por último (0.9s).
-   Duração maior (1.6s) para uma entrada mais
-   perceptível e elegante. */
+/* ---------- Animações de entrada ---------- */
 
 @keyframes heroFadeUp {
   from { opacity: 0; transform: translateY(24px); }
