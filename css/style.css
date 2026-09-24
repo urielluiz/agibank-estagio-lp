@@ -599,6 +599,7 @@ body.hero-editor-active [data-editable].is-selected {
 
 .why-apply {
   background-color: var(--color-white);
+  padding-top: var(--space-2xl);
 }
 
 .why-apply__title {
@@ -609,17 +610,38 @@ body.hero-editor-active [data-editable].is-selected {
   margin-bottom: var(--space-xl);
 }
 
-.why-apply__reveal {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
+/* ---------- Pin / corredor de scroll ----------
+   O wrapper tem altura extra proposital (300vh).
+   Enquanto o usuário rola por essa altura, o
+   conteúdo real (.why-apply__pin-inner) fica
+   "grudado" logo abaixo do header - só quando o
+   corredor termina é que a seção solta e a página
+   segue para a próxima. Isso garante tempo de sobra
+   para revelar e LER todos os 6 cards. */
+
+.why-apply__pin-wrapper {
+  position: relative;
+  height: 300vh;
 }
 
-/* ---------- Timeline (linha + bolinhas) ---------- */
+.why-apply__pin-inner {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  padding-bottom: var(--space-2xl);
+}
+
+/* ---------- Timeline full-bleed (linha + bolinhas) ----------
+   Fica FORA do .container, por isso ocupa 100% da
+   largura da tela. Só as bolinhas ficam dentro de um
+   .container interno, para alinhar certinho com os
+   cards logo abaixo. */
 
 .why-apply__timeline {
   position: relative;
+  width: 100%;
   height: 36px;
+  margin-bottom: var(--space-lg);
 }
 
 .why-apply__line-wrap {
@@ -647,7 +669,7 @@ body.hero-editor-active [data-editable].is-selected {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: var(--space-sm);
-  height: 100%;
+  height: 36px;
 }
 
 .why-apply__dot-cell {
@@ -671,6 +693,7 @@ body.hero-editor-active [data-editable].is-selected {
   will-change: transform, opacity;
 }
 
+/* Regra de brand: nunca branco em cima de verde/amarelo */
 .why-apply__dot.is-blue   { background-color: var(--color-blue);   color: var(--color-white); }
 .why-apply__dot.is-green  { background-color: var(--color-green);  color: var(--color-navy); }
 .why-apply__dot.is-yellow { background-color: var(--color-yellow); color: var(--color-navy); }
@@ -723,6 +746,14 @@ body.hero-editor-active [data-editable].is-selected {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .why-apply__pin-wrapper {
+    height: auto;
+  }
+
+  .why-apply__pin-inner {
+    position: static;
+  }
+
   .why-apply__dot,
   .why-apply__card {
     transition: none !important;
@@ -737,11 +768,6 @@ body.hero-editor-active [data-editable].is-selected {
 
 /* ============================================
    PLACEHOLDERS TEMPORÁRIOS DE DESENVOLVIMENTO
-   Dão altura às seções ainda não codadas, só para
-   permitir testar o scroll das seções já prontas.
-   Serão automaticamente "substituídos" assim que
-   cada seção ganhar conteúdo real (é só remover a
-   classe .dev-placeholder do HTML na hora de codar).
 ============================================ */
 
 .dev-placeholder {
@@ -862,6 +888,14 @@ body.hero-editor-active [data-editable].is-selected {
 
   .why-apply__title {
     font-size: 26px;
+  }
+
+  .why-apply__pin-wrapper {
+    height: auto;
+  }
+
+  .why-apply__pin-inner {
+    position: static;
   }
 
   .why-apply__timeline {
