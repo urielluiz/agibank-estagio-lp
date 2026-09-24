@@ -327,72 +327,126 @@ function initHeroEditor() {
 }
 
 /* ============================================
-   SEÇÃO 01 - WHY APPLY: TIMELINE COM SCROLL
-   A linha pontilhada "desenha" conforme o scroll,
-   e as bolinhas/cards aparecem (pop + fade) no
-   momento em que a linha alcança sua posição.
+   SEÇÃO 01 - WHY APPLY: SCROLL SCRUBBING
+   Cada elemento (linha, bolinhas, cards) tem seu
+   progresso calculado diretamente a partir da
+   posição de scroll — 100% reversível: rolar para
+   cima desfaz a animação exatamente pelo caminho
+   inverso, sem "trava" de estado.
 ============================================ */
 function initWhyApplyTimeline() {
-  const timeline = document.getElementById('whyApplyTimeline');
+  const wrapper = document.getElementById('whyApplyReveal');
   const lineFill = document.getElementById('whyApplyLineFill');
-  if (!timeline || !lineFill) return;
-
   const dots = document.querySelectorAll('.why-apply__dot');
   const cards = document.querySelectorAll('.why-apply__card');
-  const total = dots.length || 1;
 
-  let currentWidth = 0;
-  let targetWidth = 0;
-  let ticking = false;
+  if (!wrapper || !lineFill || !dots.length || !cards.length) return;
 
-  function calcProgress() {
-    const rect = timeline.getBoundingClientRect();
-    const triggerY = window.innerHeight * 0.75;
-    const progress = (triggerY - rect.top) / rect.height;
-    return Math.min(Math.max(progress, 0), 1);
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    console.log('Timeline "Why Apply": prefers-reduced-motion ativo, animação desabilitada.');
+    return;
   }
 
-  function revealItems(progress) {
-    dots.forEach(function (dot, i) {
-      const threshold = (i + 0.5) / total;
-      if (progress >= threshold) {
-        dot.classList.add('is-visible');
-      }
-    });
+  const total = dots.length;
+  const ITEM_SPAN = 0.4; // cada item "ocupa" 40% do progresso total (com sobreposição/stagger)
 
-    cards.forEach(function (card, i) {
-      const threshold = (i + 0.5) / total;
-      if (progress >= threshold) {
-        card.classList.add('is-visible');
-      }
-    });
+  /* ---------- Funções de easing ---------- */
+  function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
+  }
+
+  function easeOutBack(x) {
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2);
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  /* ---------- Progresso geral (0 a 1) do bloco inteiro ----------
+     Baseado na altura TOTAL do bloco (linha + cards), não mais
+     apenas na linha isolada — isso dá um percurso de scroll bem
+     maior, corrigindo a velocidade excessiva de antes. */
+  function getGlobalProgress() {
+    const rect = wrapper.getBoundingClientRect();
+    const vh = window.innerHeight;
+
+    const start = vh * 0.82;                 // início: bloco ainda baixo na tela
+    const end = vh * 0.18 - rect.height;      // fim: bloco já quase saindo por cima
+
+    const total = start - end;
+    const raw = (start - rect.top) / total;
+
+    return clamp(raw, 0, 1);
+  }
+
+  /* ---------- Progresso individual de cada item, com stagger ---------- */
+  function getItemProgress(globalProgress, index) {
+    const spacing = (1 - ITEM_SPAN) / (total - 1);
+    const itemStart = index * spacing;
+    const itemEnd = itemStart + ITEM_SPAN;
+
+    const raw = (globalProgress - itemStart) / (itemEnd - itemStart);
+    return clamp(raw, 0, 1);
   }
 
   function update() {
-    const progress = calcProgress();
-    targetWidth = progress * 100;
-    revealItems(progress);
-    ticking = false;
+    const globalProgress = getGlobalProgress();
+
+    // Linha pontilhada - acompanha o progresso geral, 1:1
+    lineFill.style.width = (globalProgress * 100).toFixed(2) + '%';
+
+    dots.forEach(function (dot, i) {
+      const p = getItemProgress(globalProgress, i);
+      const eased = easeOutBack(p);
+
+      const opacity = clamp(p * 1.6, 0, 1);
+      const scale = 0.3 + 0.7 * eased;
+
+      dot.style.opacity = opacity;
+      dot.style.transform = 'scale(' + scale.toFixed(3) + ')';
+    });
+
+    cards.forEach(function (card, i) {
+      const p = getItemProgress(globalProgress, i);
+      const eased = easeOutCubic(p);
+      const easedBack = easeOutBack(p);
+
+      const opacity = clamp(p * 1.4, 0, 1);
+      const translateY = 40 * (1 - eased);
+      const scale = 0.9 + 0.1 * easedBack;
+
+      // Rotação alternada por card (par entra da esquerda, ímpar da direita)
+      const rotationStart = (i % 2 === 0) ? -7 : 7;
+      const rotation = rotationStart * (1 - eased);
+
+      card.style.opacity = opacity;
+      card.style.transform =
+        'translateY(' + translateY.toFixed(2) + 'px) ' +
+        'rotate(' + rotation.toFixed(2) + 'deg) ' +
+        'scale(' + scale.toFixed(3) + ')';
+    });
   }
+
+  let ticking = false;
 
   function onScroll() {
     if (!ticking) {
-      requestAnimationFrame(update);
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
       ticking = true;
     }
-  }
-
-  function animateLine() {
-    currentWidth += (targetWidth - currentWidth) * 0.15;
-    lineFill.style.width = currentWidth.toFixed(2) + '%';
-    requestAnimationFrame(animateLine);
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  update();
-  animateLine();
+  update(); // estado inicial correto, sem esperar o primeiro scroll
 
-  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens');
+  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens | scroll-scrubbing ativo');
 }
