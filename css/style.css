@@ -93,7 +93,6 @@
 
   --header-height: 88px;
 
-  /* Hero - proporção largura/altura da prancheta (ajustável no editor) */
   --hero-ratio-h: 650;
 }
 
@@ -303,7 +302,6 @@ h4 { font-size: var(--fs-h4); }
   background-color: var(--color-blue-medium);
 }
 
-/* Fundo full-bleed - ocupa 100% da seção, independente da prancheta */
 .hero-banner__bg {
   position: absolute;
   inset: 0;
@@ -316,9 +314,6 @@ h4 { font-size: var(--fs-h4); }
   object-fit: cover;
 }
 
-/* Prancheta única - referência de TODO o conteúdo posicionado.
-   Trava em 1440px de largura máxima e mantém proporção fixa,
-   garantindo consistência visual em qualquer tamanho de tela. */
 .hero-banner__stage {
   position: relative;
   width: 100%;
@@ -336,15 +331,15 @@ h4 { font-size: var(--fs-h4); }
   will-change: transform;
 }
 
-.caco--02 { top: -3.00%;  left: 20.00%; width: 5.20%; }
-.caco--01 { top: 50.80%;  left: 20.00%; width: 3.70%; }
-.caco--03 { top: 11.00%;  left: 77.60%; width: 2.00%; }
-.caco--04 { top: 56.00%;  left: 73.60%; width: 3.30%; }
+.caco--02 { top: -2.40%;  left: 14.20%; width: 6.30%; }
+.caco--01 { top: 64.80%;  left: 12.00%; width: 3.70%; }
+.caco--03 { top: 11.60%;  left: 84.60%; width: 2.50%; }
+.caco--04 { top: 65.80%;  left: 79.40%; width: 3.30%; }
 
 .hero-banner__logo-wrap {
   position: absolute;
-  top: 22.40%;
-  left: 2.20%;
+  top: 28.20%;
+  left: 3.40%;
   width: 25.10%;
   z-index: 3;
 }
@@ -357,7 +352,7 @@ h4 { font-size: var(--fs-h4); }
 .hero-banner__people {
   position: absolute;
   top: 2.35%;
-  left: 18.20%;
+  left: 19.20%;
   width: 46.00%;
   z-index: 2;
 }
@@ -375,7 +370,7 @@ h4 { font-size: var(--fs-h4); }
 
 .hero-banner__text-wrap {
   position: absolute;
-  top: 21.80%;
+  top: 25.60%;
   left: 59.80%;
   width: 30.30%;
   z-index: 3;
@@ -668,8 +663,4 @@ body.hero-editor-active [data-editable].is-selected {
   .hero-editor {
     width: 100%;
   }
-
-  /* AVISO: layout mobile do hero provavelmente será
-     totalmente reestruturado (elementos empilhados)
-     quando recebermos o design mobile do Figma. */
 }
