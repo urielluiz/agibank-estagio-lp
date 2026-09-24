@@ -46,7 +46,7 @@
       <img src="assets/img/Programa-Estagio-Hero-BG.jpg" alt="" class="hero-banner__bg-img">
     </div>
 
-    <div class="hero-banner__stage" id="heroStage">
+    <div class="hero-banner__stage" id="heroStage" data-ratio-var="--hero-ratio-h" data-ratio-min="450" data-ratio-max="850" data-ratio-label="Hero">
 
       <img src="assets/img/Caco-02-Hero.png" alt="" class="hero-banner__caco caco--02" data-parallax="repel" data-editable="caco-02" data-strength="22">
       <img src="assets/img/Caco-01-Hero.png" alt="" class="hero-banner__caco caco--01" data-parallax="repel" data-editable="caco-01" data-strength="16">
@@ -80,10 +80,6 @@
   =================================== -->
   <section id="why-apply" class="why-apply">
 
-    <!-- Corredor de scroll: dá espaço extra para o
-         bloco inteiro (título + timeline + cards)
-         ficar "grudado" e centralizado na tela
-         enquanto revela os cards -->
     <div class="why-apply__pin-wrapper" id="whyApplyPinWrapper">
       <div class="why-apply__pin-inner" id="whyApplyPinInner">
 
@@ -95,7 +91,6 @@
           </h2>
         </div>
 
-        <!-- Linha full-bleed (fora do container = ocupa 100% da largura da tela) -->
         <div class="why-apply__timeline">
           <div class="why-apply__line-wrap">
             <div class="why-apply__line-fill" id="whyApplyLineFill"></div>
@@ -142,13 +137,39 @@
   </section>
 
   <!-- ===================================
+       SEÇÃO 02 - CTA INTRO
+       (Segunda dobra – CTA)
+  =================================== -->
+  <section id="cta-intro" class="cta-intro">
+    <div class="cta-intro__stage" id="ctaIntroStage" data-ratio-var="--cta-ratio-h" data-ratio-min="350" data-ratio-max="650" data-ratio-label="CTA Intro">
+
+      <!-- Zona de nascimento das folhinhas (posicionada sobre a copa da árvore) -->
+      <div class="cta-intro__leaf-zone" id="ctaIntroLeafZone" data-editable="leaf-zone"></div>
+
+      <!-- Ilustração (prédio + árvore + personagem + bike) -->
+      <div class="cta-intro__illustration" data-editable="cta-illustration">
+        <img src="assets/img/Ilustra-Loja-Agibank.png" alt="Loja do Agibank com estagiária caminhando" class="cta-intro__illustration-img">
+      </div>
+
+      <!-- Bloco de texto + CTA -->
+      <div class="cta-intro__content reveal-fade" data-editable="cta-content">
+        <span class="cta-intro__percent reveal-fade-item">100%</span>
+        <p class="cta-intro__text reveal-fade-item">
+          dos estagiários da última turma de 2026 entraram <strong>dominando IA</strong>.
+        </p>
+        <p class="cta-intro__subtext reveal-fade-item">
+          Agora, queremos que <strong>você</strong> faça parte desse número!
+        </p>
+        <a href="#" class="cta-intro__button reveal-fade-item">Onde posso crescer?</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================================
        SEÇÕES AINDA NÃO DESENVOLVIDAS
        (placeholders temporários de desenvolvimento)
   =================================== -->
-  <section id="cta-intro" class="dev-placeholder">
-    <span class="dev-placeholder__label">02 · CTA Intro</span>
-  </section>
-
   <section id="awards" class="dev-placeholder">
     <span class="dev-placeholder__label">03 · Awards</span>
   </section>
