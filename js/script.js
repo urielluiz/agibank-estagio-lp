@@ -10,15 +10,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initHeaderScroll();
   initMobileMenu();
+  initWhyApplyTimeline();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax do Hero desabilitado propositalmente.');
     initHeroEditor();
   } else {
     initHeroParallax();
   }
 });
 
+/* ============================================
+   HEADER: SOMBRA AO ROLAR
+============================================ */
 function initHeaderScroll() {
   const header = document.getElementById('header');
   if (!header) return;
@@ -35,6 +39,9 @@ function initHeaderScroll() {
   handleHeaderScroll();
 }
 
+/* ============================================
+   MENU MOBILE: TOGGLE
+============================================ */
 function initMobileMenu() {
   const navToggle = document.getElementById('navToggle');
   const navMenu = document.getElementById('navMenu');
@@ -60,30 +67,17 @@ function initMobileMenu() {
 
 /* ============================================
    HERO: PARALLAX
-   - "repel": cacos se afastam sutilmente do cursor
-   - "tilt-x": pessoas se deslocam lateralmente
-     conforme a posição do mouse no hero
 ============================================ */
 function initHeroParallax() {
   const heroBanner = document.getElementById('hero-banner');
   const repelEls = document.querySelectorAll('[data-parallax="repel"]');
   const tiltEls = document.querySelectorAll('[data-parallax="tilt-x"]');
 
-  if (!heroBanner) {
-    console.warn('⚠️ Parallax: #hero-banner não encontrado.');
-    return;
-  }
-
-  if (!repelEls.length && !tiltEls.length) {
-    console.warn('⚠️ Parallax: nenhum elemento [data-parallax] encontrado.');
-    return;
-  }
+  if (!heroBanner) return;
+  if (!repelEls.length && !tiltEls.length) return;
 
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!hasMouse) {
-    console.warn('⚠️ Parallax: dispositivo sem mouse detectado (touch), efeito desabilitado.');
-    return;
-  }
+  if (!hasMouse) return;
 
   console.log(
     'Parallax Hero inicializado ✅ | ' +
@@ -129,7 +123,7 @@ function initHeroParallax() {
 
       if (distance < repelRadius) {
         const t = distance / repelRadius;
-        const force = Math.cos(t * (Math.PI / 2)); // falloff suave
+        const force = Math.cos(t * (Math.PI / 2));
         const angle = Math.atan2(dy, dx);
         item.targetX = Math.cos(angle) * force * item.strength;
         item.targetY = Math.sin(angle) * force * item.strength;
@@ -173,6 +167,9 @@ function initHeroParallax() {
   animate();
 }
 
+/* ============================================
+   HERO: EDITOR VISUAL (ativa com ?edit=1)
+============================================ */
 function initHeroEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
   const heroStage = document.getElementById('heroStage');
@@ -327,4 +324,75 @@ function initHeroEditor() {
       prompt('Copie o texto abaixo manualmente:', output);
     });
   });
+}
+
+/* ============================================
+   SEÇÃO 01 - WHY APPLY: TIMELINE COM SCROLL
+   A linha pontilhada "desenha" conforme o scroll,
+   e as bolinhas/cards aparecem (pop + fade) no
+   momento em que a linha alcança sua posição.
+============================================ */
+function initWhyApplyTimeline() {
+  const timeline = document.getElementById('whyApplyTimeline');
+  const lineFill = document.getElementById('whyApplyLineFill');
+  if (!timeline || !lineFill) return;
+
+  const dots = document.querySelectorAll('.why-apply__dot');
+  const cards = document.querySelectorAll('.why-apply__card');
+  const total = dots.length || 1;
+
+  let currentWidth = 0;
+  let targetWidth = 0;
+  let ticking = false;
+
+  function calcProgress() {
+    const rect = timeline.getBoundingClientRect();
+    const triggerY = window.innerHeight * 0.75;
+    const progress = (triggerY - rect.top) / rect.height;
+    return Math.min(Math.max(progress, 0), 1);
+  }
+
+  function revealItems(progress) {
+    dots.forEach(function (dot, i) {
+      const threshold = (i + 0.5) / total;
+      if (progress >= threshold) {
+        dot.classList.add('is-visible');
+      }
+    });
+
+    cards.forEach(function (card, i) {
+      const threshold = (i + 0.5) / total;
+      if (progress >= threshold) {
+        card.classList.add('is-visible');
+      }
+    });
+  }
+
+  function update() {
+    const progress = calcProgress();
+    targetWidth = progress * 100;
+    revealItems(progress);
+    ticking = false;
+  }
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  function animateLine() {
+    currentWidth += (targetWidth - currentWidth) * 0.15;
+    lineFill.style.width = currentWidth.toFixed(2) + '%';
+    requestAnimationFrame(animateLine);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  update();
+  animateLine();
+
+  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens');
 }
