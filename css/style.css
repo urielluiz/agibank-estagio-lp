@@ -599,25 +599,22 @@ body.hero-editor-active [data-editable].is-selected {
 
 .why-apply {
   background-color: var(--color-white);
-  padding-top: var(--space-2xl);
 }
 
 .why-apply__title {
   color: var(--color-blue);
-  font-size: 44px;
+  font-size: 38px;
   font-weight: 700;
   line-height: 1.2;
-  margin-bottom: var(--space-xl);
 }
 
 /* ---------- Pin / corredor de scroll ----------
    O wrapper tem altura extra proposital (300vh).
    Enquanto o usuário rola por essa altura, o
-   conteúdo real (.why-apply__pin-inner) fica
-   "grudado" logo abaixo do header - só quando o
-   corredor termina é que a seção solta e a página
-   segue para a próxima. Isso garante tempo de sobra
-   para revelar e LER todos os 6 cards. */
+   conteúdo inteiro (título + timeline + cards)
+   fica "grudado" e CENTRALIZADO na tela, sempre
+   visível como um bloco único - só quando o
+   corredor termina é que a seção solta. */
 
 .why-apply__pin-wrapper {
   position: relative;
@@ -628,7 +625,11 @@ body.hero-editor-active [data-editable].is-selected {
   position: sticky;
   top: var(--header-height);
   z-index: 5;
-  padding-bottom: var(--space-2xl);
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-md);
 }
 
 /* ---------- Timeline full-bleed (linha + bolinhas) ----------
@@ -641,7 +642,6 @@ body.hero-editor-active [data-editable].is-selected {
   position: relative;
   width: 100%;
   height: 36px;
-  margin-bottom: var(--space-lg);
 }
 
 .why-apply__line-wrap {
@@ -707,9 +707,9 @@ body.hero-editor-active [data-editable].is-selected {
 }
 
 .why-apply__card {
-  padding: var(--space-lg) var(--space-md);
+  padding: var(--space-md);
   border-radius: var(--radius-lg);
-  min-height: 230px;
+  min-height: 210px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -736,7 +736,7 @@ body.hero-editor-active [data-editable].is-selected {
 }
 
 .why-apply__card p {
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -752,6 +752,7 @@ body.hero-editor-active [data-editable].is-selected {
 
   .why-apply__pin-inner {
     position: static;
+    height: auto;
   }
 
   .why-apply__dot,
@@ -815,12 +816,12 @@ body.hero-editor-active [data-editable].is-selected {
   }
 
   .why-apply__title {
-    font-size: 34px;
+    font-size: 30px;
   }
 
   .why-apply__card {
-    min-height: 200px;
-    padding: var(--space-md) var(--space-sm);
+    min-height: 190px;
+    padding: var(--space-sm);
   }
 
   .why-apply__card p {
@@ -896,6 +897,8 @@ body.hero-editor-active [data-editable].is-selected {
 
   .why-apply__pin-inner {
     position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
   }
 
   .why-apply__timeline {
