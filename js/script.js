@@ -64,34 +64,49 @@ function initMobileMenu() {
 }
 
 /* ============================================
-   HERO: PARALLAX "FOGE DO MOUSE"
-   (só roda fora do modo de edição)
+   HERO: PARALLAX
+   - "repel": cacos fogem suavemente do cursor por proximidade
+   - "tilt-x": pessoas se deslocam lateralmente conforme a
+               posição do mouse em toda a largura do hero
 ============================================ */
 function initHeroParallax() {
   const heroBanner = document.getElementById('hero-banner');
-  const cacos = document.querySelectorAll('[data-parallax]');
-  if (!heroBanner || !cacos.length) return;
+  const repelEls = document.querySelectorAll('[data-parallax="repel"]');
+  const tiltEls = document.querySelectorAll('[data-parallax="tilt-x"]');
+  if (!heroBanner || (!repelEls.length && !tiltEls.length)) return;
 
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!hasMouse) return;
 
-  const repelRadius = 220;
+  const repelRadius = 260;
 
-  const state = Array.from(cacos).map((el) => ({
-    el: el,
-    strength: parseFloat(el.dataset.strength) || 30,
-    currentX: 0,
-    currentY: 0,
-    targetX: 0,
-    targetY: 0
-  }));
+  const repelState = Array.from(repelEls).map(function (el) {
+    return {
+      el: el,
+      strength: parseFloat(el.dataset.strength) || 30,
+      currentX: 0,
+      currentY: 0,
+      targetX: 0,
+      targetY: 0
+    };
+  });
+
+  const tiltState = Array.from(tiltEls).map(function (el) {
+    return {
+      el: el,
+      strength: parseFloat(el.dataset.strength) || 15,
+      currentX: 0,
+      targetX: 0
+    };
+  });
 
   heroBanner.addEventListener('mousemove', function (e) {
     const rect = heroBanner.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    state.forEach(function (item) {
+    /* --- Repel (cacos) --- */
+    repelState.forEach(function (item) {
       const elRect = item.el.getBoundingClientRect();
       const elCenterX = elRect.left - rect.left + elRect.width / 2;
       const elCenterY = elRect.top - rect.top + elRect.height / 2;
@@ -101,7 +116,8 @@ function initHeroParallax() {
       const distance = Math.sqrt(dx * dx + dy * dy);
 
       if (distance < repelRadius) {
-        const force = (repelRadius - distance) / repelRadius;
+        const t = distance / repelRadius;
+        const force = Math.cos(t * (Math.PI / 2)); // falloff suave (cosseno)
         const angle = Math.atan2(dy, dx);
         item.targetX = Math.cos(angle) * force * item.strength;
         item.targetY = Math.sin(angle) * force * item.strength;
@@ -110,21 +126,36 @@ function initHeroParallax() {
         item.targetY = 0;
       }
     });
+
+    /* --- Tilt lateral (pessoas) --- */
+    const ratio = (mouseX / rect.width) * 2 - 1; // -1 (esquerda) a 1 (direita)
+    tiltState.forEach(function (item) {
+      item.targetX = ratio * item.strength;
+    });
   });
 
   heroBanner.addEventListener('mouseleave', function () {
-    state.forEach(function (item) {
+    repelState.forEach(function (item) {
       item.targetX = 0;
       item.targetY = 0;
+    });
+    tiltState.forEach(function (item) {
+      item.targetX = 0;
     });
   });
 
   function animate() {
-    state.forEach(function (item) {
-      item.currentX += (item.targetX - item.currentX) * 0.1;
-      item.currentY += (item.targetY - item.currentY) * 0.1;
+    repelState.forEach(function (item) {
+      item.currentX += (item.targetX - item.currentX) * 0.12;
+      item.currentY += (item.targetY - item.currentY) * 0.12;
       item.el.style.transform = 'translate(' + item.currentX.toFixed(2) + 'px, ' + item.currentY.toFixed(2) + 'px)';
     });
+
+    tiltState.forEach(function (item) {
+      item.currentX += (item.targetX - item.currentX) * 0.08;
+      item.el.style.transform = 'translateX(' + item.currentX.toFixed(2) + 'px)';
+    });
+
     requestAnimationFrame(animate);
   }
 
@@ -137,17 +168,18 @@ function initHeroParallax() {
 ============================================ */
 function initHeroEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
-  if (!editableEls.length) return;
+  const heroStage = document.getElementById('heroStage');
+  if (!editableEls.length || !heroStage) return;
 
   document.body.classList.add('hero-editor-active');
 
-  // Badge indicando modo edição
   const badge = document.createElement('div');
   badge.className = 'hero-editor__badge';
   badge.textContent = '🛠 MODO EDIÇÃO ATIVO';
   document.body.appendChild(badge);
 
-  // Painel lateral
+  const currentRatio = getComputedStyle(heroStage).getPropertyValue('--hero-ratio-h').trim() || '650';
+
   const panel = document.createElement('div');
   panel.className = 'hero-editor';
   panel.innerHTML =
@@ -155,15 +187,30 @@ function initHeroEditor() {
       '<strong>Editor do Hero</strong>' +
       '<button type="button" class="hero-editor__copy">Copiar configuração</button>' +
     '</div>' +
+    '<div class="hero-editor__ratio">' +
+      '<label>Altura do Hero (proporção 1440 / <span id="heroRatioValue">' + currentRatio + '</span>)</label>' +
+      '<input type="range" id="heroRatioInput" min="450" max="850" step="5" value="' + currentRatio + '">' +
+    '</div>' +
     '<div class="hero-editor__list"></div>' +
     '<div class="hero-editor__hint">' +
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
-      '4. Quando terminar tudo, clique em "Copiar configuração" e cole no chat.' +
+      '4. Ajuste a altura geral do Hero na barrinha rosa no topo.<br><br>' +
+      '5. Quando terminar tudo, clique em "Copiar configuração" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
+  /* --- Controle de altura do Hero --- */
+  const ratioInput = panel.querySelector('#heroRatioInput');
+  const ratioValue = panel.querySelector('#heroRatioValue');
+
+  ratioInput.addEventListener('input', function () {
+    heroStage.style.setProperty('--hero-ratio-h', ratioInput.value);
+    ratioValue.textContent = ratioInput.value;
+  });
+
+  /* --- Lista de elementos editáveis --- */
   const list = panel.querySelector('.hero-editor__list');
   let selected = null;
 
@@ -258,6 +305,9 @@ function initHeroEditor() {
 
   panel.querySelector('.hero-editor__copy').addEventListener('click', function () {
     let output = '/* ===== CONFIGURAÇÃO FINAL DO HERO ===== */\n\n';
+    output += '/* hero-stage (altura da seção) */\n';
+    output += 'aspect-ratio-height: ' + heroStage.style.getPropertyValue('--hero-ratio-h') + ';\n\n';
+
     editableEls.forEach(function (el) {
       const name = el.dataset.editable;
       output += '/* ' + name + ' */\n';
@@ -269,7 +319,6 @@ function initHeroEditor() {
     navigator.clipboard.writeText(output).then(function () {
       alert('Configuração copiada! Cole aqui no chat com o Claude.');
     }).catch(function () {
-      // fallback caso o clipboard falhe (ex: navegador corporativo bloqueando)
       prompt('Copie o texto abaixo manualmente:', output);
     });
   });
