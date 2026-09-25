@@ -767,8 +767,31 @@ body.position-editor-active [data-editable].is-selected {
   max-width: 1440px;
   margin: 0 auto;
   aspect-ratio: 1440 / var(--cta-ratio-h);
-  background-color: var(--color-blue);
   overflow: visible;
+  /* fundo removido daqui - agora fica na camada
+     full-bleed abaixo, que "vaza" até a borda real
+     da tela, independente do tamanho do monitor */
+}
+
+/* ---------- Fundo azul full-bleed ----------
+   Técnica clássica de "quebrar para fora do
+   container": a partir de um elemento centralizado
+   e limitado a 1440px, este filho absoluto se
+   estica até as bordas reais do viewport (100vw),
+   preenchendo toda a largura da tela sem depender
+   do tamanho do monitor. */
+
+.cta-intro__bg-bleed {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background-color: var(--color-blue);
+  z-index: 0;
+  pointer-events: none;
 }
 
 /* ---------- Ilustração ----------
@@ -871,9 +894,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   transform: translateY(-2px);
 }
 
-/* ---------- Reveal fade (texto + CTA) ----------
-   Ativado via IntersectionObserver quando a seção
-   entra na tela - reutilizável em outras seções. */
+/* ---------- Reveal fade (texto + CTA) ---------- */
 
 .reveal-fade-item {
   opacity: 0;
@@ -1085,6 +1106,17 @@ body.position-editor-active .cta-intro__leaf-zone {
     flex-direction: column;
     padding: var(--space-xl) var(--container-padding-mobile);
     gap: var(--space-lg);
+  }
+
+  .cta-intro__bg-bleed {
+    /* No mobile empilhado, o próprio .cta-intro__stage
+       já ocupa a largura toda, então a camada bleed
+       cobre normalmente inset:0 sem necessidade do
+       cálculo de 50vw */
+    left: 0;
+    right: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
 
   .cta-intro__illustration {
