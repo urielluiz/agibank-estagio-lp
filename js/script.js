@@ -13,6 +13,8 @@ document.addEventListener('DOMContentLoaded', function () {
   initWhyApplyTimeline();
   initScrollReveal();
   initLeafEffect();
+  initCharacterWalk();
+  initPercentCounter();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax do Hero desabilitado propositalmente.');
@@ -214,7 +216,8 @@ function initPositionEditor() {
       '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
       '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
+      '5. Para "cta-character", a posição definida aqui é onde ela FICA PARADA no final da caminhada (ela entra vindo da direita).<br><br>' +
+      '6. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -595,4 +598,91 @@ function initLeafEffect() {
   observer.observe(zone);
 
   console.log('Efeito de folhinhas inicializado ✅');
+}
+
+/* ============================================
+   CTA INTRO: PERSONAGEM CAMINHANDO
+   Dispara uma única vez, quando a seção entra na
+   tela - ela "anda" DA DIREITA até a posição final
+   definida no CSS, com leve bob de passo.
+============================================ */
+function initCharacterWalk() {
+  const character = document.getElementById('ctaIntroCharacter');
+  if (!character) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    console.log('Caminhada da personagem desabilitada (prefers-reduced-motion).');
+    return;
+  }
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        character.classList.add('is-walking');
+        observer.unobserve(character);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  observer.observe(character);
+
+  console.log('Caminhada da personagem inicializada ✅');
+}
+
+/* ============================================
+   CTA INTRO: COUNTDOWN 0% → 100%
+   Dispara junto com o restante do fade (mesmo
+   gatilho de scroll). Usa easing "ease-out" para
+   começar rápido e desacelerar perto do final,
+   dando peso ao número final.
+============================================ */
+function initPercentCounter() {
+  const counter = document.getElementById('ctaIntroCounter');
+  if (!counter) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    counter.textContent = '100%';
+    return;
+  }
+
+  const TARGET = 100;
+  const DURATION = 1800; // ms
+
+  function easeOutQuart(x) {
+    return 1 - Math.pow(1 - x, 4);
+  }
+
+  function runCounter() {
+    const startTime = performance.now();
+
+    function frame(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / DURATION, 1);
+      const eased = easeOutQuart(progress);
+      const value = Math.round(eased * TARGET);
+
+      counter.textContent = value + '%';
+
+      if (progress < 1) {
+        requestAnimationFrame(frame);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        runCounter();
+        observer.unobserve(counter);
+      }
+    });
+  }, { threshold: 0.35 });
+
+  observer.observe(counter);
+
+  console.log('Countdown "100%" inicializado ✅');
 }
