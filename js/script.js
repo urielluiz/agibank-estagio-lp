@@ -233,12 +233,20 @@ function initAwardsParallax() {
 
 /* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
-   Agora suporta campos configuráveis por elemento
-   via data-editable-fields="top,left,width,rotation"
-   (padrão, se omitido: "top,left,width").
-   Suporta também "height" (% relativo ao pai).
-   Rotação é mantida em um estado JS próprio
-   (rotationState), aplicada via transform:rotate().
+
+   CORREÇÃO DE BUG: antes, a posição atual (top/left)
+   era lida via getBoundingClientRect() a cada movimento
+   de seta - isso quebrava quando o elemento tinha uma
+   rotação aplicada, porque a "caixa" rotacionada não
+   corresponde mais ao top/left real, fazendo o cálculo
+   de próxima posição ficar incorreto (parecia "só andar
+   pra um lado").
+
+   AGORA: guardamos TOP, LEFT, WIDTH, HEIGHT e ROTATION
+   como estado interno em JS (state[name]), sempre lidos
+   e escritos a partir desse estado - nunca mais via
+   getBoundingClientRect(). Isso desacopla totalmente o
+   posicionamento da rotação aplicada.
 ============================================ */
 function initPositionEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
@@ -247,20 +255,72 @@ function initPositionEditor() {
 
   document.body.classList.add('position-editor-active');
 
-  const rotationState = {};
+  // Estado interno: fonte única de verdade para cada elemento editável
+  const state = {};
 
-  // Reseta qualquer transform "de repouso" pré-definido em CSS
-  // (ex: o Fusca tem um transform inicial via CSS para evitar
-  // flash antes do JS assumir) - em modo edição, queremos ver
-  // o estado neutro/final, então zeramos aqui.
+  function getFields(el) {
+    return (el.dataset.editableFields || 'top,left,width').split(',');
+  }
+
+  function readInitialValue(el, prop) {
+    const parent = el.offsetParent || el.parentElement;
+    const parentRect = parent.getBoundingClientRect();
+
+    // Para ler o valor INICIAL, usamos o computed style diretamente
+    // (top/left/width/height em px, convertido pra %) - isso ainda
+    // é seguro aqui porque é a ÚNICA vez que lemos do DOM, antes de
+    // qualquer rotação ser aplicada.
+    const computed = getComputedStyle(el);
+
+    if (prop === 'top') {
+      const px = parseFloat(computed.top) || 0;
+      return (px / parentRect.height * 100);
+    }
+    if (prop === 'left') {
+      const px = parseFloat(computed.left) || 0;
+      return (px / parentRect.width * 100);
+    }
+    if (prop === 'width') {
+      const rect = el.getBoundingClientRect();
+      return (rect.width / parentRect.width * 100);
+    }
+    if (prop === 'height') {
+      const rect = el.getBoundingClientRect();
+      return (rect.height / parentRect.height * 100);
+    }
+    if (prop === 'rotation') {
+      return 0;
+    }
+    return 0;
+  }
+
+  // Inicializa o estado de cada elemento a partir da posição atual no CSS
   editableEls.forEach(function (el) {
-    const fields = (el.dataset.editableFields || 'top,left,width').split(',');
+    const name = el.dataset.editable;
+    const fields = getFields(el);
+
+    state[name] = {};
+    fields.forEach(function (f) {
+      state[name][f] = readInitialValue(el, f);
+    });
+
+    // Zera qualquer transform pré-definido em CSS (ex: o Fusca tem
+    // um transform de "repouso" via CSS pra evitar flash antes do
+    // JS de scroll assumir) - em modo edição queremos ver o estado
+    // neutro, controlado 100% pelo editor.
     if (fields.indexOf('rotation') !== -1) {
-      const name = el.dataset.editable;
-      rotationState[name] = 0;
-      el.style.transform = 'none';
+      el.style.transform = 'rotate(0deg)';
     }
   });
+
+  function applyState(el, name) {
+    const s = state[name];
+    if (s.top !== undefined) el.style.top = s.top.toFixed(2) + '%';
+    if (s.left !== undefined) el.style.left = s.left.toFixed(2) + '%';
+    if (s.width !== undefined) el.style.width = s.width.toFixed(2) + '%';
+    if (s.height !== undefined) el.style.height = s.height.toFixed(2) + '%';
+    if (s.rotation !== undefined) el.style.transform = 'rotate(' + s.rotation + 'deg)';
+  }
 
   const badge = document.createElement('div');
   badge.className = 'position-editor__badge';
@@ -294,7 +354,7 @@ function initPositionEditor() {
     '<div class="position-editor__list"></div>' +
     '<div class="position-editor__hint">' +
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
-      '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
+      '2. Use as setas do teclado para mover Top/Left (Shift = passo maior) - funciona independente da rotação.<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
       '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
       '5. Elementos com "Rot°" ou "Height %" têm campos extras.<br><br>' +
@@ -313,10 +373,7 @@ function initPositionEditor() {
 
   const list = panel.querySelector('.position-editor__list');
   let selected = null;
-
-  function getFields(el) {
-    return (el.dataset.editableFields || 'top,left,width').split(',');
-  }
+  let selectedName = null;
 
   editableEls.forEach(function (el) {
     const name = el.dataset.editable;
@@ -349,31 +406,20 @@ function initPositionEditor() {
 
     el.addEventListener('click', function (e) {
       e.stopPropagation();
-      selectElement(el);
+      selectElement(el, name);
     });
   });
 
-  function getPercent(el, prop) {
-    const parent = el.offsetParent || el.parentElement;
-    const parentRect = parent.getBoundingClientRect();
-    const rect = el.getBoundingClientRect();
-
-    if (prop === 'top') return ((rect.top - parentRect.top) / parentRect.height * 100).toFixed(2);
-    if (prop === 'left') return ((rect.left - parentRect.left) / parentRect.width * 100).toFixed(2);
-    if (prop === 'width') return (rect.width / parentRect.width * 100).toFixed(2);
-    if (prop === 'height') return (rect.height / parentRect.height * 100).toFixed(2);
-  }
-
-  function selectElement(el) {
+  function selectElement(el, name) {
     if (selected) selected.classList.remove('is-selected');
     document.querySelectorAll('.position-editor__item').forEach(function (i) {
       i.classList.remove('is-active');
     });
 
     selected = el;
+    selectedName = name;
     el.classList.add('is-selected');
 
-    const name = el.dataset.editable;
     const activeItem = panel.querySelector('[data-item-for="' + name + '"]');
     if (activeItem) activeItem.classList.add('is-active');
 
@@ -381,16 +427,13 @@ function initPositionEditor() {
   }
 
   function updateInputs() {
-    if (!selected) return;
-    const name = selected.dataset.editable;
+    if (!selected || !selectedName) return;
+    const s = state[selectedName];
 
-    panel.querySelectorAll('input[data-prop][data-target="' + name + '"]').forEach(function (input) {
+    panel.querySelectorAll('input[data-prop][data-target="' + selectedName + '"]').forEach(function (input) {
       const prop = input.dataset.prop;
-      if (prop === 'rotation') {
-        input.value = rotationState[name] || 0;
-      } else {
-        input.value = getPercent(selected, prop);
-      }
+      const value = s[prop];
+      input.value = (value !== undefined) ? value.toFixed ? value.toFixed(2) : value : 0;
     });
   }
 
@@ -398,7 +441,7 @@ function initPositionEditor() {
     if (e.target.matches('.position-editor__select')) {
       const name = e.target.dataset.target;
       const el = document.querySelector('[data-editable="' + name + '"]');
-      selectElement(el);
+      selectElement(el, name);
     }
   });
 
@@ -408,20 +451,14 @@ function initPositionEditor() {
     const name = e.target.dataset.target;
     const prop = e.target.dataset.prop;
     const el = document.querySelector('[data-editable="' + name + '"]');
-    const value = e.target.value;
+    const value = parseFloat(e.target.value) || 0;
 
-    if (prop === 'rotation') {
-      rotationState[name] = parseFloat(value) || 0;
-      el.style.transform = 'rotate(' + value + 'deg)';
-    } else if (prop === 'height') {
-      el.style.height = value + '%';
-    } else {
-      el.style[prop] = value + '%';
-    }
+    state[name][prop] = value;
+    applyState(el, name);
   });
 
   document.addEventListener('keydown', function (e) {
-    if (!selected) return;
+    if (!selected || !selectedName) return;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) return;
 
     const fields = getFields(selected);
@@ -436,9 +473,8 @@ function initPositionEditor() {
 
     if (fields.indexOf(prop) === -1) return;
 
-    const current = parseFloat(getPercent(selected, prop));
-    const next = (current + dir * step).toFixed(2);
-    selected.style[prop] = next + '%';
+    state[selectedName][prop] += dir * step;
+    applyState(selected, selectedName);
     updateInputs();
   });
 
@@ -451,18 +487,15 @@ function initPositionEditor() {
       output += varName + ': ' + el.style.getPropertyValue(varName) + ';\n\n';
     });
 
-    editableEls.forEach(function (el) {
-      const name = el.dataset.editable;
-      const fields = getFields(el);
+    Object.keys(state).forEach(function (name) {
+      const s = state[name];
       output += '/* ' + name + ' */\n';
 
-      fields.forEach(function (f) {
-        if (f === 'rotation') {
-          output += 'rotation: ' + (rotationState[name] || 0) + 'deg;\n';
-        } else if (f === 'height') {
-          output += 'height: ' + getPercent(el, 'height') + '%;\n';
+      Object.keys(s).forEach(function (prop) {
+        if (prop === 'rotation') {
+          output += 'rotation: ' + s[prop] + 'deg;\n';
         } else {
-          output += f + ': ' + getPercent(el, f) + '%;\n';
+          output += prop + ': ' + s[prop].toFixed(2) + '%;\n';
         }
       });
 
@@ -475,6 +508,8 @@ function initPositionEditor() {
       prompt('Copie o texto abaixo manualmente:', output);
     });
   });
+
+  console.log('Editor de Posição inicializado ✅ (bug de rotação corrigido)');
 }
 
 /* ============================================
@@ -812,13 +847,6 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
-   Usa a mesma técnica de "pin" do Why Apply: o
-   progresso é calculado a partir de QUANTO do
-   corredor de scroll (#ctaPurposePinWrapper) já
-   foi percorrido - não da posição visual da seção.
-   Isso garante que o bloco fique "grudado" na tela
-   até o Fusca terminar de chegar. Reversível: rolar
-   para cima refaz o movimento ao contrário.
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -834,9 +862,9 @@ function initCarDriveIn() {
     return;
   }
 
-  const CAR_SPAN = 0.65; // carro termina de chegar em 65% do corredor de scroll
-  const START_TRANSLATE_X = 45; // % da própria largura do carro
-  const START_ROTATE = -7; // graus
+  const CAR_SPAN = 0.65;
+  const START_TRANSLATE_X = 45;
+  const START_ROTATE = -7;
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
