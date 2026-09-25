@@ -1127,10 +1127,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* Corredor de scroll reduzido para soltar a página mais rápido */
 .cta-purpose__pin-wrapper {
   position: relative;
-  height: 160vh; 
+  height: 160vh; /* Reduzido de 240vh para liberar o scroll mais rápido */
 }
 
 .cta-purpose__pin-inner {
@@ -1284,8 +1283,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ---------- Pin / corredor de scroll ----------
-   Trava a seção na tela enquanto a foto
-   encolhe e revela o conteúdo. */
+   O bloco inteiro agora é "pinado" (travado) na tela
+   com altura EXATA de 100vh - header. Isso garante
+   que o conteúdo não deslize pra cima enquanto a foto
+   encolhe, evitando o problema do "título sumindo". */
 
 .kickstart__pin-wrapper {
   position: relative;
@@ -1296,20 +1297,45 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: sticky;
   top: var(--header-height);
   z-index: 5;
-  min-height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--header-height));
   display: flex;
   flex-direction: column;
-  justify-content: flex-start; /* Mantém o título sempre no topo */
-  padding: var(--space-2xl) 0;
-  overflow: hidden;
+  justify-content: center; /* Centraliza tudo perfeitamente na tela */
+  overflow: hidden; /* Garante que nada escape da área visível */
 }
 
-/* ---------- Conteúdo real ----------
-   Fica com opacity 0 no início e revela suavemente
-   conforme a foto full-screen encolhe. */
+/* ---------- Clone flutuante (efeito de morph) ----------
+   Agora ele é ABSOLUTE dentro do pin-inner. Isso significa
+   que ele "nasce" junto com a seção (sem clarão branco) e
+   sobe com o scroll naturalmente. Quando a seção trava, ele
+   trava junto e começa a encolher. */
+
+.kickstart__morph-clone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+  display: none; /* Controlado via JS */
+  will-change: top, left, width, height, border-radius, opacity;
+  /* Máscara webkit força o Safari a cortar os cantos da imagem
+     durante a transição de border-radius */
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
+}
+
+.kickstart__morph-clone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- Conteúdo real ---------- */
 
 .kickstart__content {
-  opacity: 0;
+  opacity: 0; /* Começa invisível, revela junto com o scroll */
   will-change: opacity;
 }
 
@@ -1317,11 +1343,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   color: var(--color-blue);
   font-size: 40px;
   font-weight: 700;
-  margin-bottom: var(--space-xl);
+  margin-bottom: var(--space-lg); /* Reduzido de xl para caber melhor */
 }
 
 .kickstart__block {
-  margin-bottom: var(--space-2xl);
+  margin-bottom: var(--space-lg); /* Reduzido de 2xl para caber melhor */
 }
 
 .kickstart__subtitle {
@@ -1331,8 +1357,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin-bottom: var(--space-md);
 }
 
-/* ---------- Cards do Pacote Financeiro ----------
-   Ajustados para centralização perfeita e fontes maiores. */
+/* ---------- Cards do Pacote Financeiro ---------- */
 
 .kickstart__cards {
   display: grid;
@@ -1344,15 +1369,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   background-color: var(--color-blue);
   color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: var(--space-xl) var(--space-md);
-  
-  /* Flexbox para centralizar tudo */
+  padding: var(--space-md) var(--space-sm); /* Padding ajustado */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  
   cursor: default;
   transform: scale(1);
   transition: transform 0.25s ease, background-color 0.25s ease;
@@ -1364,17 +1386,18 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .kickstart__card p {
-  font-size: 20px;
-  line-height: 1.5;
+  font-size: 18px; /* Aumentado */
+  line-height: 1.4;
   font-weight: 400;
 }
 
 .kickstart__card strong {
   color: var(--color-green);
   font-weight: 700;
-  font-size: 32px;
+  font-size: 36px; /* Aumentado para mais destaque */
   display: block;
-  margin-top: 4px;
+  margin-top: 8px;
+  line-height: 1.1;
 }
 
 .kickstart__card-small {
@@ -1384,8 +1407,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   opacity: 0.9;
 }
 
-/* ---------- Pílulas de Benefícios ----------
-   Ajustadas para altura menor e fontes melhores. */
+/* ---------- Pílulas de Benefícios ---------- */
 
 .kickstart__pills {
   display: grid;
@@ -1396,20 +1418,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .kickstart__pill {
   border: 1.5px solid var(--color-blue);
   border-radius: var(--radius-full);
-  
-  padding: 16px 24px; /* Padding reduzido pra não parecer solto */
-  
+  padding: 12px 24px; /* Reduzido o espaço em branco exagerado */
+  min-height: 80px; /* Reduzido */
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  
   color: var(--color-blue);
   font-weight: 500;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.35;
   cursor: default;
-  
   transform: scale(1);
   transition: transform 0.25s ease, background-color 0.25s ease,
               color 0.25s ease, border-color 0.25s ease;
@@ -1429,8 +1448,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: relative;
 }
 
-/* A pílula alvo (onde a foto vai pousar) começa invisível
-   para não dar "flicker" quando a cópia flutuante sumir */
+/* A pílula alvo (onde a foto vai pousar) começa invisível */
 #kickstartTargetPill {
   opacity: 0;
 }
@@ -1453,27 +1471,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   color: var(--color-gray-text);
   font-size: var(--fs-caption);
   line-height: 1.5;
-  margin-top: var(--space-lg);
-}
-
-/* ---------- Clone flutuante (efeito de morph) ---------- */
-
-.kickstart__morph-clone {
-  position: absolute; /* Agora é absolute dentro do pin-inner */
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(100vh - var(--header-height));
-  z-index: 900;
-  pointer-events: none;
-  will-change: top, left, width, height, border-radius, opacity;
-}
-
-.kickstart__morph-clone img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  margin-top: var(--space-md);
 }
 
 /* ============================================
