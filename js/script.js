@@ -15,14 +15,14 @@ document.addEventListener('DOMContentLoaded', function () {
   initLeafEffect();
   initCharacterWalk();
   initPercentCounter();
-  initCarDriveIn();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax/scroll-scrub desabilitados propositalmente.');
     initPositionEditor();
   } else {
     initHeroParallax();
     initAwardsParallax();
+    initCarDriveIn();
   }
 });
 
@@ -233,6 +233,12 @@ function initAwardsParallax() {
 
 /* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
+   Agora suporta campos configuráveis por elemento
+   via data-editable-fields="top,left,width,rotation"
+   (padrão, se omitido: "top,left,width").
+   Suporta também "height" (% relativo ao pai).
+   Rotação é mantida em um estado JS próprio
+   (rotationState), aplicada via transform:rotate().
 ============================================ */
 function initPositionEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
@@ -240,6 +246,21 @@ function initPositionEditor() {
   if (!editableEls.length) return;
 
   document.body.classList.add('position-editor-active');
+
+  const rotationState = {};
+
+  // Reseta qualquer transform "de repouso" pré-definido em CSS
+  // (ex: o Fusca tem um transform inicial via CSS para evitar
+  // flash antes do JS assumir) - em modo edição, queremos ver
+  // o estado neutro/final, então zeramos aqui.
+  editableEls.forEach(function (el) {
+    const fields = (el.dataset.editableFields || 'top,left,width').split(',');
+    if (fields.indexOf('rotation') !== -1) {
+      const name = el.dataset.editable;
+      rotationState[name] = 0;
+      el.style.transform = 'none';
+    }
+  });
 
   const badge = document.createElement('div');
   badge.className = 'position-editor__badge';
@@ -273,10 +294,10 @@ function initPositionEditor() {
     '<div class="position-editor__list"></div>' +
     '<div class="position-editor__hint">' +
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
-      '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
-      '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
+      '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
+      '3. Ou digite valores exatos nos campos.<br><br>' +
       '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Para "purpose-car", a posição aqui é onde ele FICA PARADO (ele entra vindo da direita, rotacionado).<br><br>' +
+      '5. Elementos com "Rot°" ou "Height %" têm campos extras.<br><br>' +
       '6. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
@@ -293,17 +314,37 @@ function initPositionEditor() {
   const list = panel.querySelector('.position-editor__list');
   let selected = null;
 
+  function getFields(el) {
+    return (el.dataset.editableFields || 'top,left,width').split(',');
+  }
+
   editableEls.forEach(function (el) {
     const name = el.dataset.editable;
+    const fields = getFields(el);
+
+    let fieldsHtml = '';
+    if (fields.indexOf('top') !== -1) {
+      fieldsHtml += '<label>Top % <input type="number" step="0.1" data-prop="top" data-target="' + name + '"></label>';
+    }
+    if (fields.indexOf('left') !== -1) {
+      fieldsHtml += '<label>Left % <input type="number" step="0.1" data-prop="left" data-target="' + name + '"></label>';
+    }
+    if (fields.indexOf('width') !== -1) {
+      fieldsHtml += '<label>Width % <input type="number" step="0.1" data-prop="width" data-target="' + name + '"></label>';
+    }
+    if (fields.indexOf('height') !== -1) {
+      fieldsHtml += '<label>Height % <input type="number" step="0.1" data-prop="height" data-target="' + name + '"></label>';
+    }
+    if (fields.indexOf('rotation') !== -1) {
+      fieldsHtml += '<label>Rot° <input type="number" step="1" data-prop="rotation" data-target="' + name + '"></label>';
+    }
 
     const item = document.createElement('div');
     item.className = 'position-editor__item';
     item.dataset.itemFor = name;
     item.innerHTML =
       '<button type="button" class="position-editor__select" data-target="' + name + '">' + name + '</button>' +
-      '<label>Top % <input type="number" step="0.1" data-prop="top" data-target="' + name + '"></label>' +
-      '<label>Left % <input type="number" step="0.1" data-prop="left" data-target="' + name + '"></label>' +
-      '<label>Width % <input type="number" step="0.1" data-prop="width" data-target="' + name + '"></label>';
+      fieldsHtml;
     list.appendChild(item);
 
     el.addEventListener('click', function (e) {
@@ -320,6 +361,7 @@ function initPositionEditor() {
     if (prop === 'top') return ((rect.top - parentRect.top) / parentRect.height * 100).toFixed(2);
     if (prop === 'left') return ((rect.left - parentRect.left) / parentRect.width * 100).toFixed(2);
     if (prop === 'width') return (rect.width / parentRect.width * 100).toFixed(2);
+    if (prop === 'height') return (rect.height / parentRect.height * 100).toFixed(2);
   }
 
   function selectElement(el) {
@@ -341,8 +383,14 @@ function initPositionEditor() {
   function updateInputs() {
     if (!selected) return;
     const name = selected.dataset.editable;
+
     panel.querySelectorAll('input[data-prop][data-target="' + name + '"]').forEach(function (input) {
-      input.value = getPercent(selected, input.dataset.prop);
+      const prop = input.dataset.prop;
+      if (prop === 'rotation') {
+        input.value = rotationState[name] || 0;
+      } else {
+        input.value = getPercent(selected, prop);
+      }
     });
   }
 
@@ -355,11 +403,20 @@ function initPositionEditor() {
   });
 
   panel.addEventListener('input', function (e) {
-    if (e.target.matches('input[data-prop]')) {
-      const name = e.target.dataset.target;
-      const prop = e.target.dataset.prop;
-      const el = document.querySelector('[data-editable="' + name + '"]');
-      el.style[prop] = e.target.value + '%';
+    if (!e.target.matches('input[data-prop]')) return;
+
+    const name = e.target.dataset.target;
+    const prop = e.target.dataset.prop;
+    const el = document.querySelector('[data-editable="' + name + '"]');
+    const value = e.target.value;
+
+    if (prop === 'rotation') {
+      rotationState[name] = parseFloat(value) || 0;
+      el.style.transform = 'rotate(' + value + 'deg)';
+    } else if (prop === 'height') {
+      el.style.height = value + '%';
+    } else {
+      el.style[prop] = value + '%';
     }
   });
 
@@ -367,6 +424,7 @@ function initPositionEditor() {
     if (!selected) return;
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(e.key) === -1) return;
 
+    const fields = getFields(selected);
     e.preventDefault();
     const step = e.shiftKey ? 1 : 0.2;
     let prop, dir;
@@ -375,6 +433,8 @@ function initPositionEditor() {
     if (e.key === 'ArrowDown')  { prop = 'top';  dir = 1; }
     if (e.key === 'ArrowLeft')  { prop = 'left'; dir = -1; }
     if (e.key === 'ArrowRight') { prop = 'left'; dir = 1; }
+
+    if (fields.indexOf(prop) === -1) return;
 
     const current = parseFloat(getPercent(selected, prop));
     const next = (current + dir * step).toFixed(2);
@@ -393,10 +453,20 @@ function initPositionEditor() {
 
     editableEls.forEach(function (el) {
       const name = el.dataset.editable;
+      const fields = getFields(el);
       output += '/* ' + name + ' */\n';
-      output += 'top: ' + getPercent(el, 'top') + '%;\n';
-      output += 'left: ' + getPercent(el, 'left') + '%;\n';
-      output += 'width: ' + getPercent(el, 'width') + '%;\n\n';
+
+      fields.forEach(function (f) {
+        if (f === 'rotation') {
+          output += 'rotation: ' + (rotationState[name] || 0) + 'deg;\n';
+        } else if (f === 'height') {
+          output += 'height: ' + getPercent(el, 'height') + '%;\n';
+        } else {
+          output += f + ': ' + getPercent(el, f) + '%;\n';
+        }
+      });
+
+      output += '\n';
     });
 
     navigator.clipboard.writeText(output).then(function () {
@@ -741,28 +811,32 @@ function initPercentCounter() {
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA CHEGANDO COM O SCROLL
-   Sem "pin" - o carro reage 100% à posição de
-   scroll da seção. Progresso 0 = seção ainda
-   entrando por baixo da tela (carro "de lado",
-   deslocado à direita). Progresso 1 = seção já
-   ocupando boa parte da tela (carro parado, reto,
-   na posição final). Totalmente reversível: rolar
+   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
+   Usa a mesma técnica de "pin" do Why Apply: o
+   progresso é calculado a partir de QUANTO do
+   corredor de scroll (#ctaPurposePinWrapper) já
+   foi percorrido - não da posição visual da seção.
+   Isso garante que o bloco fique "grudado" na tela
+   até o Fusca terminar de chegar. Reversível: rolar
    para cima refaz o movimento ao contrário.
 ============================================ */
 function initCarDriveIn() {
-  const stage = document.getElementById('ctaPurposeStage');
+  const pinWrapper = document.getElementById('ctaPurposePinWrapper');
   const car = document.getElementById('ctaPurposeCar');
-  if (!stage || !car) return;
+  if (!pinWrapper || !car) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
-    console.log('Fusca: animação de scroll desabilitada (mobile ou reduced motion).');
+    console.log('Fusca: pin/scrub desabilitado (mobile ou reduced motion).');
     car.style.transform = 'none';
     return;
   }
+
+  const CAR_SPAN = 0.65; // carro termina de chegar em 65% do corredor de scroll
+  const START_TRANSLATE_X = 45; // % da própria largura do carro
+  const START_ROTATE = -7; // graus
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
@@ -772,26 +846,22 @@ function initCarDriveIn() {
     return 1 - Math.pow(1 - x, 3);
   }
 
-  // Distâncias/ângulos do estado inicial (carro "chegando")
-  const START_TRANSLATE_X = 45; // % da própria largura do carro
-  const START_ROTATE = -7;      // graus
+  function getGlobalProgress() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const wrapperTop = rect.top + window.scrollY;
+    const wrapperHeight = pinWrapper.offsetHeight;
+    const scrollable = wrapperHeight - window.innerHeight;
 
-  function getProgress() {
-    const rect = stage.getBoundingClientRect();
-    const vh = window.innerHeight;
+    if (scrollable <= 0) return 1;
 
-    // progress 0: topo da seção ainda no fundo da tela
-    // progress 1: topo da seção já subiu para ~25% da tela
-    const start = vh;
-    const end = vh * 0.25;
-
-    const raw = (start - rect.top) / (start - end);
+    const raw = (window.scrollY - wrapperTop) / scrollable;
     return clamp(raw, 0, 1);
   }
 
   function update() {
-    const progress = getProgress();
-    const eased = easeOutCubic(progress);
+    const globalProgress = getGlobalProgress();
+    const carProgress = clamp(globalProgress / CAR_SPAN, 0, 1);
+    const eased = easeOutCubic(carProgress);
 
     const translateX = START_TRANSLATE_X * (1 - eased);
     const rotate = START_ROTATE * (1 - eased);
@@ -818,5 +888,5 @@ function initCarDriveIn() {
 
   update();
 
-  console.log('Fusca: animação de scroll inicializada ✅');
+  console.log('Fusca: pin + scrub inicializado ✅');
 }
