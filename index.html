@@ -228,10 +228,14 @@
 
           <div class="cta-purpose__bg-bleed" data-editable="purpose-bg" data-editable-fields="top,height"></div>
 
-          <div class="cta-purpose__caco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation">
-            <img src="assets/img/Caco-01-Proposito.png" alt="">
+          <!-- Caco verde: agora animado (fade + scroll) e com parallax de mouse -->
+          <div class="cta-purpose__caco" id="ctaPurposeCaco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation">
+            <div class="cta-purpose__caco-parallax" data-parallax="depth" data-depth="14">
+              <img src="assets/img/Caco-01-Proposito.png" alt="">
+            </div>
           </div>
 
+          <!-- Fusca: fade + movimento + rotação sincronizados -->
           <div class="cta-purpose__car" id="ctaPurposeCar" data-editable="purpose-car" data-editable-fields="top,left,width,rotation">
             <img src="assets/img/Fusca-Ilustracao.png" alt="Ilustração de um Fusca chegando" class="cta-purpose__car-img">
           </div>
