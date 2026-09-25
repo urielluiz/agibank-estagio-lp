@@ -1122,9 +1122,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    SEÇÃO 04 - CTA PURPOSE
 ============================================ */
 
-/* CORREÇÃO: Removido o padding-bottom para que a seção
-   fique "colada" na próxima (Kickstart), eliminando o
-   espaço em branco entre o fundo azul e a foto gigante. */
+/* CORREÇÃO: Fundo da seção em si e margin/padding
+   zerados embaixo, para que o fundo azul do corredor
+   encoste perfeitamente na próxima seção (Kickstart). */
 .cta-purpose {
   background-color: var(--color-white);
   overflow: visible;
@@ -1134,6 +1134,23 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .cta-purpose__pin-wrapper {
   position: relative;
   height: 160vh; 
+  /* Fundo azul transferido para o wrapper inteiro,
+     garantindo que não haja espaço branco no final
+     do scroll. O pseudo-elemento abaixo simula o
+     "recorte" branco no topo. */
+  background-color: var(--color-blue-medium);
+}
+
+.cta-purpose__pin-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 25.4%; /* 100% - 75.4% (altura calibrada do bg) */
+  background-color: var(--color-white);
+  z-index: 1;
+  pointer-events: none;
 }
 
 .cta-purpose__pin-inner {
@@ -1153,19 +1170,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
   aspect-ratio: 1440 / var(--cta-purpose-ratio-h);
   overflow: visible;
+  z-index: 2; /* Fica por cima do pseudo-elemento branco */
 }
 
+/* bg-bleed original removido, pois a cor de fundo
+   agora é gerenciada pelo pin-wrapper. Mantive a
+   classe vazia só pro editor visual não quebrar caso
+   você clique nela sem querer. */
 .cta-purpose__bg-bleed {
-  position: absolute;
-  top: 0.00%;
-  height: 75.40%;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;
-  margin-right: -50vw;
-  background-color: var(--color-blue-medium);
-  z-index: 0;
-  pointer-events: none;
+  display: none;
 }
 
 .cta-purpose__caco {
@@ -1294,10 +1307,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: sticky;
   top: var(--header-height);
   z-index: 5;
-  height: calc(100vh - var(--header-height));
+  min-height: calc(100vh - var(--header-height));
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
+  padding: var(--space-2xl) 0;
   overflow: hidden;
 }
 
@@ -1323,8 +1337,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   font-weight: 700;
   margin-bottom: var(--space-md);
 }
-
-/* ---------- Cards do Pacote Financeiro ---------- */
 
 .kickstart__cards {
   display: grid;
@@ -1352,9 +1364,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   background-color: var(--color-navy);
 }
 
-/* CORREÇÃO: "de" na mesma linha do texto superior,
-   com mesmo peso e cor branca. O valor (R$) fica sozinho
-   na linha de baixo, grande e verde. */
 .kickstart__card p {
   font-size: 18px;
   line-height: 1.4;
@@ -1378,8 +1387,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   opacity: 0.9;
 }
 
-/* ---------- Pílulas de Benefícios ---------- */
-
 .kickstart__pills {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1389,7 +1396,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .kickstart__pill {
   border: 1.5px solid var(--color-blue);
   border-radius: var(--radius-full);
-  padding: 16px 24px;
+  padding: 12px 24px;
   min-height: 80px;
   display: flex;
   align-items: center;
@@ -1435,9 +1442,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transform: scale(1.08);
 }
 
-/* ---------- Texto legal ----------
-   CORREÇÃO: alinhado ao centro. */
-
 .kickstart__legal {
   color: var(--color-gray-text);
   font-size: var(--fs-caption);
@@ -1445,8 +1449,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin-top: var(--space-md);
   text-align: center;
 }
-
-/* ---------- Clone flutuante (efeito de morph) ---------- */
 
 .kickstart__morph-clone {
   position: absolute;
