@@ -1142,7 +1142,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .cta-purpose__pin-wrapper {
   position: relative;
-  height: 220vh;
+  height: 240vh;
 }
 
 .cta-purpose__pin-inner {
@@ -1164,8 +1164,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* ---------- Fundo azul médio ---------- */
-
 .cta-purpose__bg-bleed {
   position: absolute;
   top: 0.00%;
@@ -1179,7 +1177,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
-/* ---------- Caco verde ---------- */
+/* ---------- Caco verde ----------
+   Posição/rotação = estado FINAL (parado). Assim como
+   o Fusca, agora o caco tem fade + movimento + rotação
+   sincronizados via scroll (JS). O parallax de mouse
+   é aplicado em um wrapper interno separado, para não
+   conflitar com o transform de scroll do elemento pai. */
 
 .cta-purpose__caco {
   position: absolute;
@@ -1189,7 +1192,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 1;
   pointer-events: none;
   user-select: none;
+  opacity: 0;
   transform: rotate(43deg);
+  will-change: transform, opacity;
+}
+
+.cta-purpose__caco-parallax {
+  width: 100%;
+  will-change: transform;
 }
 
 .cta-purpose__caco img {
@@ -1199,12 +1209,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ---------- Fusca ----------
-   Posição/rotação = estado FINAL (parado). O JS
-   aplica translateX extra com base no progresso do
-   pin, MULTIPLICANDO a rotação final por (1 - eased)
-   somada à rotação inicial de "chegada" - dessa forma
-   respeitamos a rotação final calibrada (0deg) mas
-   ainda mantemos o efeito de "freiar/endireitar". */
+   Posição/rotação = estado FINAL (parado). Fade +
+   movimento + rotação de "chegada" sincronizados via
+   scroll (JS), com curva de easing suave para uma
+   sensação premium (sem "solavancos"). */
 
 .cta-purpose__car {
   position: absolute;
@@ -1214,8 +1222,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 2;
   pointer-events: none;
   user-select: none;
+  opacity: 0;
   transform: translateX(45%) rotate(-7deg);
-  will-change: transform;
+  will-change: transform, opacity;
 }
 
 .cta-purpose__car-img {
@@ -1284,7 +1293,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     padding: var(--space-xl) 0;
   }
 
-  .cta-purpose__car {
+  .cta-purpose__car,
+  .cta-purpose__caco {
+    opacity: 1 !important;
     transform: none !important;
   }
 }
@@ -1566,6 +1577,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     position: static;
     width: 100%;
     order: 2;
+    opacity: 1 !important;
     transform: none !important;
   }
 
