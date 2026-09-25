@@ -532,8 +532,9 @@ function initWhyApplyTimeline() {
   const lineFill = document.getElementById('whyApplyLineFill');
   const dots = document.querySelectorAll('.why-apply__dot');
   const cards = document.querySelectorAll('.why-apply__card');
+  const header = document.getElementById('header');
 
-  if (!pinWrapper || !lineFill || !dots.length || !cards.length) return;
+  if (!pinWrapper || !lineFill || !dots.length || !cards.length || !header) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -570,13 +571,13 @@ function initWhyApplyTimeline() {
 
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
-    const wrapperTop = rect.top + window.scrollY;
-    const wrapperHeight = pinWrapper.offsetHeight;
-    const scrollable = wrapperHeight - window.innerHeight;
+    const headerHeight = header.offsetHeight;
+    const startScroll = headerHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
     if (scrollable <= 0) return 1;
 
-    const raw = (window.scrollY - wrapperTop) / scrollable;
+    const raw = (startScroll - rect.top) / scrollable;
     return clamp(raw, 0, 1);
   }
 
@@ -847,7 +848,9 @@ function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
   const car = document.getElementById('ctaPurposeCar');
   const caco = document.getElementById('ctaPurposeCaco');
-  if (!pinWrapper || !car) return;
+  const header = document.getElementById('header');
+  
+  if (!pinWrapper || !car || !header) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -884,13 +887,13 @@ function initCarDriveIn() {
 
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
-    const wrapperTop = rect.top + window.scrollY;
-    const wrapperHeight = pinWrapper.offsetHeight;
-    const scrollable = wrapperHeight - window.innerHeight;
+    const headerHeight = header.offsetHeight;
+    const startScroll = headerHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
     if (scrollable <= 0) return 1;
 
-    const raw = (window.scrollY - wrapperTop) / scrollable;
+    const raw = (startScroll - rect.top) / scrollable;
     return clamp(raw, 0, 1);
   }
 
@@ -941,15 +944,20 @@ function initCarDriveIn() {
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
+   CORREÇÃO: O clone (foto full-screen) agora é
+   position:absolute DENTRO da seção, nascendo
+   junto com ela no scroll natural. Ele só vira
+   pílula quando a seção "trava" (pin) no topo.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
+  const pinInner = document.getElementById('kickstartPinInner');
   const clone = document.getElementById('kickstartMorphClone');
   const targetPill = document.getElementById('kickstartTargetPill');
   const header = document.getElementById('header');
   const contentToReveal = document.getElementById('kickstartContent');
   
-  if (!pinWrapper || !clone || !targetPill || !header || !contentToReveal) return;
+  if (!pinWrapper || !pinInner || !clone || !targetPill || !header || !contentToReveal) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -971,47 +979,48 @@ function initKickstartMorph() {
 
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
-    const wrapperTop = rect.top + window.scrollY;
-    const wrapperHeight = pinWrapper.offsetHeight;
-    const scrollable = wrapperHeight - window.innerHeight;
+    const headerHeight = header.offsetHeight;
+    
+    // O pin começa exatamente quando o topo do wrapper
+    // encosta no fundo do header
+    const startScroll = headerHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
     if (scrollable <= 0) return 1;
 
-    const raw = (window.scrollY - wrapperTop) / scrollable;
+    const raw = (startScroll - rect.top) / scrollable;
     return clamp(raw, 0, 1);
   }
 
   function update() {
-    const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    if (progress <= 0 || progress >= 1) {
-       if (progress >= 1) {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '1';
-           targetPill.style.opacity = '1';
-       } else {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '0';
-           targetPill.style.opacity = '0';
-       }
+    // Se a animação já terminou, escondemos o clone e mostramos o real
+    if (progress >= 1) {
+       clone.style.display = 'none';
+       contentToReveal.style.opacity = '1';
+       targetPill.style.opacity = '1';
        return;
     } 
     
+    // Animação em andamento (ou antes de começar, onde progress = 0)
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
     const eased = easeOutCubic(progress);
 
-    const startTop = headerHeight;
+    // Posição inicial: preenche todo o pin-inner
+    const innerRect = pinInner.getBoundingClientRect();
+    const startTop = 0;
     const startLeft = 0;
-    const startWidth = window.innerWidth;
-    const startHeight = window.innerHeight - headerHeight;
+    const startWidth = innerRect.width;
+    const startHeight = innerRect.height;
     const startRadius = 0;
 
+    // Posição final: as coordenadas reais da pílula DENTRO do pin-inner
     const targetRect = targetPill.getBoundingClientRect();
-    const endTop = targetRect.top;
-    const endLeft = targetRect.left;
+    const endTop = targetRect.top - innerRect.top;
+    const endLeft = targetRect.left - innerRect.left;
     const endWidth = targetRect.width;
     const endHeight = targetRect.height;
     const endRadius = endHeight / 2;
@@ -1028,6 +1037,7 @@ function initKickstartMorph() {
     clone.style.height = currentHeight + 'px';
     clone.style.borderRadius = currentRadius + 'px';
 
+    // O conteúdo de fundo revela suavemente junto com a foto encolhendo
     contentToReveal.style.opacity = eased;
   }
 
