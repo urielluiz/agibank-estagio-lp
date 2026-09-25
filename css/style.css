@@ -54,6 +54,7 @@
   --color-black: #000000;
   --color-gray-light: #F5F6F8;
   --color-gray: #E5E7EB;
+  --color-gray-text: #ACAAAA;
   --color-text: #1A1A1A;
 
   --font-primary: 'Agibank Sans', Arial, Helvetica, sans-serif;
@@ -1177,13 +1178,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
-/* ---------- Caco verde ----------
-   Posição/rotação = estado FINAL (parado). Assim como
-   o Fusca, agora o caco tem fade + movimento + rotação
-   sincronizados via scroll (JS). O parallax de mouse
-   é aplicado em um wrapper interno separado, para não
-   conflitar com o transform de scroll do elemento pai. */
-
 .cta-purpose__caco {
   position: absolute;
   top: -55.20%;
@@ -1208,12 +1202,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: block;
 }
 
-/* ---------- Fusca ----------
-   Posição/rotação = estado FINAL (parado). Fade +
-   movimento + rotação de "chegada" sincronizados via
-   scroll (JS), com curva de easing suave para uma
-   sensação premium (sem "solavancos"). */
-
 .cta-purpose__car {
   position: absolute;
   top: -9.00%;
@@ -1232,8 +1220,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: auto;
   display: block;
 }
-
-/* ---------- Conteúdo (texto + CTA) ---------- */
 
 .cta-purpose__content {
   position: absolute;
@@ -1298,6 +1284,160 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* ============================================
+   SEÇÃO 05 - KICKSTART
+   (Quinta dobra – Pra começar com tudo)
+============================================ */
+
+.kickstart {
+  background-color: var(--color-white);
+  position: relative;
+}
+
+.kickstart__title {
+  color: var(--color-blue);
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: var(--space-xl);
+}
+
+.kickstart__block {
+  margin-bottom: var(--space-2xl);
+}
+
+.kickstart__subtitle {
+  color: var(--color-navy);
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: var(--space-md);
+}
+
+/* ---------- Cards do Pacote Financeiro ---------- */
+
+.kickstart__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+}
+
+.kickstart__card {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-md);
+  text-align: center;
+  cursor: default;
+  transform: scale(1);
+  transition: transform 0.25s ease, background-color 0.25s ease;
+}
+
+.kickstart__card:hover {
+  transform: scale(1.03);
+  background-color: var(--color-navy);
+}
+
+.kickstart__card p {
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.kickstart__card strong {
+  color: var(--color-green);
+  font-weight: 700;
+}
+
+.kickstart__card-small {
+  display: block;
+  font-size: var(--fs-small);
+  margin-top: var(--space-xs);
+  opacity: 0.9;
+}
+
+/* ---------- Pílulas de Benefícios ---------- */
+
+.kickstart__pills {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-sm);
+}
+
+.kickstart__pill {
+  border: 1.5px solid var(--color-blue);
+  border-radius: var(--radius-full);
+  min-height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: var(--space-sm) var(--space-md);
+  color: var(--color-blue);
+  font-weight: 500;
+  font-size: var(--fs-small);
+  line-height: 1.35;
+  cursor: default;
+  transform: scale(1);
+  transition: transform 0.25s ease, background-color 0.25s ease,
+              color 0.25s ease, border-color 0.25s ease;
+}
+
+.kickstart__pill:not(.kickstart__pill--photo):hover {
+  transform: scale(1.04);
+  background-color: var(--color-navy);
+  border-color: var(--color-navy);
+  color: var(--color-white);
+}
+
+.kickstart__pill--photo {
+  padding: 0;
+  border: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.kickstart__pill--photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.kickstart__pill--photo:hover img {
+  transform: scale(1.08);
+}
+
+/* ---------- Texto legal ---------- */
+
+.kickstart__legal {
+  color: var(--color-gray-text);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  margin-top: var(--space-lg);
+}
+
+/* ---------- Clone flutuante (efeito de morph) ----------
+   Fica invisível até o JS ativar (display:block) quando a
+   seção se aproxima da área visível. Posição/tamanho são
+   controlados 100% via JS a cada scroll, interpolando entre
+   "tela cheia" e a posição real da pílula de destino. */
+
+.kickstart__morph-clone {
+  position: fixed;
+  z-index: 900;
+  overflow: hidden;
+  pointer-events: none;
+  display: none;
+  will-change: top, left, width, height, border-radius, opacity;
+}
+
+.kickstart__morph-clone img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 /* ============================================
@@ -1383,6 +1523,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .cta-purpose__subtext {
     font-size: 18px;
+  }
+
+  .kickstart__title {
+    font-size: 32px;
+  }
+
+  .kickstart__pills {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -1593,5 +1741,29 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .cta-purpose__subtext {
     font-size: 16px;
+  }
+
+  .kickstart__title {
+    font-size: 26px;
+  }
+
+  .kickstart__subtitle {
+    font-size: 20px;
+  }
+
+  .kickstart__cards {
+    grid-template-columns: 1fr;
+  }
+
+  .kickstart__pills {
+    grid-template-columns: 1fr;
+  }
+
+  .kickstart__pill {
+    min-height: 90px;
+  }
+
+  .kickstart__morph-clone {
+    display: none !important;
   }
 }
