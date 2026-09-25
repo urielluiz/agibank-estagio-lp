@@ -1137,9 +1137,28 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .cta-purpose {
   background-color: var(--color-white);
-  padding-top: var(--space-2xl);
-  padding-bottom: var(--space-2xl);
   overflow: visible;
+}
+
+/* ---------- Pin / corredor de scroll ----------
+   Mesma técnica do Why Apply: o corredor de scroll
+   (220vh) segura o bloco inteiro na tela enquanto o
+   Fusca termina de "chegar" - só solta a seção depois
+   que a animação já foi totalmente vista. */
+
+.cta-purpose__pin-wrapper {
+  position: relative;
+  height: 220vh;
+}
+
+.cta-purpose__pin-inner {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .cta-purpose__stage {
@@ -1151,11 +1170,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* Fundo azul médio, full-bleed (vaza até a borda real da tela) */
+/* ---------- Fundo azul médio ----------
+   Top e Height agora são independentes (editáveis),
+   permitindo que o Fusca "vaze" para fora do retângulo
+   azul, como no design original. */
+
 .cta-purpose__bg-bleed {
   position: absolute;
   top: 0;
-  bottom: 0;
+  height: 100%;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
@@ -1165,10 +1188,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
-/* ---------- Caco verde ----------
-   "Vaza" para cima do painel azul, entrando na
-   seção Awards logo acima (mesma técnica usada
-   no prédio da seção CTA Intro). */
+/* ---------- Caco verde (rotação ajustável) ---------- */
 
 .cta-purpose__caco {
   position: absolute;
@@ -1187,13 +1207,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ---------- Fusca ----------
-   Posição definida aqui é a POSIÇÃO FINAL (onde ele
-   fica "estacionado"). O JS aplica translateX + rotate
-   com base no progresso de scroll da seção - conforme
-   você rola a página, o carro se aproxima e endireita,
-   como se estivesse freando. Os valores abaixo (antes
-   do JS assumir o controle) definem o estado inicial
-   "fora de cena", evitando qualquer flash visual. */
+   Posição/rotação aqui = estado FINAL (parado).
+   O JS aplica translateX + rotate extras com base no
+   progresso do pin - conforme o scroll avança dentro
+   do corredor, o carro se aproxima e endireita. */
 
 .cta-purpose__car {
   position: absolute;
@@ -1263,6 +1280,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cta-purpose__pin-wrapper {
+    height: auto;
+  }
+
+  .cta-purpose__pin-inner {
+    position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
+  }
+
   .cta-purpose__car {
     transform: none !important;
   }
@@ -1511,15 +1538,23 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* CTA Purpose - fallback temporário para mobile:
-     texto empilhado + carro estático (sem scroll-scrub),
-     caco escondido, até recebermos o design mobile. */
+  /* CTA Purpose - fallback temporário para mobile */
+  .cta-purpose__pin-wrapper {
+    height: auto;
+  }
+
+  .cta-purpose__pin-inner {
+    position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
+  }
+
   .cta-purpose__stage {
     aspect-ratio: auto;
     min-height: auto;
     display: flex;
     flex-direction: column;
-    padding: var(--space-xl) var(--container-padding-mobile);
+    padding: 0 var(--container-padding-mobile);
     gap: var(--space-lg);
   }
 
