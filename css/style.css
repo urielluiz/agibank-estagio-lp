@@ -799,6 +799,74 @@ body.position-editor-active [data-editable].is-selected {
   display: block;
 }
 
+/* ---------- Personagem (caminha ao entrar na tela) ----------
+   O "top/left/width" definidos aqui representam a POSIÇÃO
+   FINAL dela na cena (idêntica à ilustração original).
+   Ela entra vindo da DIREITA (fora da posição final) e anda
+   até 0,0 - ajustar estes valores no editor sempre representa
+   "onde ela para", não o ponto de partida. */
+
+.cta-intro__character {
+  position: absolute;
+  top: 38%;
+  left: 53%;
+  width: 12%;
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cta-intro__character-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.cta-intro__character.is-walking {
+  animation: characterWalk 1.8s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+.cta-intro__character.is-walking .cta-intro__character-img {
+  animation: characterBob 0.32s ease-in-out infinite;
+  animation-duration: inherit;
+}
+
+/* A personagem entra vindo da DIREITA (fora da posição
+   final) e balança sutilmente (bob) enquanto anda,
+   assentando suavemente na posição definitiva. */
+@keyframes characterWalk {
+  0% {
+    transform: translateX(140%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(0%);
+    opacity: 1;
+  }
+}
+
+@keyframes characterBob {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-3%) rotate(1.5deg); }
+  50%      { transform: translateY(0) rotate(0deg); }
+  75%      { transform: translateY(-2%) rotate(-1.5deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta-intro__character.is-walking {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .cta-intro__character.is-walking .cta-intro__character-img {
+    animation: none !important;
+  }
+}
+
 /* ---------- Zona de nascimento das folhinhas ---------- */
 
 .cta-intro__leaf-zone {
@@ -807,7 +875,7 @@ body.position-editor-active [data-editable].is-selected {
   left: 77.60%;
   width: 19.70%;
   height: 30%;
-  z-index: 3;
+  z-index: 4;
   pointer-events: none;
 }
 
@@ -821,7 +889,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   top: 22.00%;
   left: 9.60%;
   width: 32.00%;
-  z-index: 4;
+  z-index: 5;
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
@@ -832,6 +900,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   font-size: 76px;
   font-weight: 700;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .cta-intro__text {
@@ -1101,6 +1170,10 @@ body.position-editor-active .cta-intro__leaf-zone {
     position: static;
     width: 100%;
     order: 2;
+  }
+
+  .cta-intro__character {
+    display: none;
   }
 
   .cta-intro__content {
