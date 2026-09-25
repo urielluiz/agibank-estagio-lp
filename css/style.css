@@ -95,6 +95,7 @@
 
   --hero-ratio-h: 650;
   --cta-ratio-h: 480;
+  --awards-ratio-h: 620;
 }
 
 *,
@@ -799,10 +800,6 @@ body.position-editor-active [data-editable].is-selected {
   display: block;
 }
 
-/* ---------- Personagem (caminha ao entrar na tela) ----------
-   Posição FINAL (onde ela fica parada). Ela entra
-   vindo da DIREITA e anda até chegar aqui. */
-
 .cta-intro__character {
   position: absolute;
   top: 46.00%;
@@ -860,8 +857,6 @@ body.position-editor-active [data-editable].is-selected {
     animation: none !important;
   }
 }
-
-/* ---------- Zona de nascimento das folhinhas ---------- */
 
 .cta-intro__leaf-zone {
   position: absolute;
@@ -939,7 +934,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   transform: translateY(-2px);
 }
 
-/* ---------- Reveal fade (texto + CTA) ---------- */
+/* ---------- Reveal fade genérico (de baixo para cima) ---------- */
 
 .reveal-fade-item {
   opacity: 0;
@@ -951,14 +946,35 @@ body.position-editor-active .cta-intro__leaf-zone {
 .reveal-fade.is-visible .reveal-fade-item:nth-child(2) { transition-delay: 0.3s; }
 .reveal-fade.is-visible .reveal-fade-item:nth-child(3) { transition-delay: 0.5s; }
 .reveal-fade.is-visible .reveal-fade-item:nth-child(4) { transition-delay: 0.7s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(5) { transition-delay: 0.9s; }
 
 .reveal-fade.is-visible .reveal-fade-item {
   opacity: 1;
   transform: translateY(0);
 }
 
+/* ---------- Reveal fade da esquerda para a direita ---------- */
+
+.reveal-fade-left-item {
+  opacity: 0;
+  transform: translateX(-28px);
+  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+}
+
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(1) { transition-delay: 0.1s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(2) { transition-delay: 0.3s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(3) { transition-delay: 0.5s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(4) { transition-delay: 0.7s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(5) { transition-delay: 0.9s; }
+
+.reveal-fade-left.is-visible .reveal-fade-left-item {
+  opacity: 1;
+  transform: translateX(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal-fade-item {
+  .reveal-fade-item,
+  .reveal-fade-left-item {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
@@ -989,6 +1005,126 @@ body.position-editor-active .cta-intro__leaf-zone {
     transform: translate(var(--leaf-drift), var(--leaf-fall)) rotate(var(--leaf-spin));
     opacity: 0;
   }
+}
+
+/* ============================================
+   SEÇÃO 03 - AWARDS
+   (Terceira dobra – Reconhecimentos Agi)
+============================================ */
+
+.awards {
+  background-color: var(--color-white);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-2xl);
+  overflow: visible;
+}
+
+.awards__stage {
+  position: relative;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  aspect-ratio: 1440 / var(--awards-ratio-h);
+  overflow: visible;
+}
+
+/* ---------- Bloco de texto ---------- */
+
+.awards__content {
+  position: absolute;
+  top: 7.00%;
+  left: 8.00%;
+  width: 44.00%;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.awards__title {
+  color: var(--color-navy);
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.awards__text {
+  color: var(--color-blue);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+.awards__text strong {
+  font-weight: 700;
+}
+
+.awards__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  background-color: var(--color-navy);
+  color: var(--color-white);
+  font-weight: 700;
+  font-size: var(--fs-cta);
+  padding: 16px 32px;
+  border-radius: var(--radius-full);
+  margin-top: var(--space-xs);
+  transition: background-color var(--transition-medium),
+              box-shadow var(--transition-medium),
+              transform var(--transition-fast);
+}
+
+.awards__cta:hover {
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  box-shadow: 0 0 28px 8px rgba(0, 100, 249, 0.5);
+  transform: translateY(-2px);
+}
+
+/* ---------- Imagens em camadas ---------- */
+
+.awards__image {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  will-change: transform;
+}
+
+.awards__image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.awards__image--main {
+  top: 19.00%;
+  left: 55.00%;
+  width: 37.00%;
+  z-index: 1;
+}
+
+.awards__image--badge {
+  top: 7.00%;
+  left: 75.00%;
+  width: 13.00%;
+  z-index: 2;
+}
+
+.awards__image--marciano {
+  top: 70.00%;
+  left: 50.00%;
+  width: 16.00%;
+  z-index: 3;
+}
+
+.awards__image--coin {
+  top: 77.00%;
+  left: 81.00%;
+  width: 12.00%;
+  z-index: 2;
 }
 
 /* ============================================
@@ -1058,6 +1194,14 @@ body.position-editor-active .cta-intro__leaf-zone {
 
   .cta-intro__text {
     font-size: 17px;
+  }
+
+  .awards__title {
+    font-size: 30px;
+  }
+
+  .awards__text {
+    font-size: 14px;
   }
 }
 
@@ -1186,5 +1330,38 @@ body.position-editor-active .cta-intro__leaf-zone {
 
   .position-editor {
     width: 100%;
+  }
+
+  /* Awards - fallback temporário para mobile:
+     texto empilhado + só a imagem principal,
+     até recebermos o design mobile do Figma. */
+  .awards__stage {
+    aspect-ratio: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .awards__content {
+    position: static;
+    width: 100%;
+    order: 1;
+  }
+
+  .awards__title {
+    font-size: 24px;
+  }
+
+  .awards__image--main {
+    position: static;
+    width: 100%;
+    order: 2;
+  }
+
+  .awards__image--badge,
+  .awards__image--marciano,
+  .awards__image--coin {
+    display: none;
   }
 }
