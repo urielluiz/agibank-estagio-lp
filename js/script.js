@@ -87,12 +87,6 @@ function initHeroParallax() {
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!hasMouse) return;
 
-  console.log(
-    'Parallax Hero inicializado ✅ | ' +
-    repelEls.length + ' elemento(s) repel | ' +
-    tiltEls.length + ' elemento(s) tilt'
-  );
-
   const repelRadius = 210;
 
   const repelState = Array.from(repelEls).map(function (el) {
@@ -186,8 +180,6 @@ function initAwardsParallax() {
   const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
   if (!hasMouse) return;
 
-  console.log('Parallax Awards inicializado ✅ | ' + depthEls.length + ' camada(s)');
-
   const state = Array.from(depthEls).map(function (el) {
     return {
       el: el,
@@ -275,8 +267,6 @@ function initCacoMouseParallax() {
   }
 
   animate();
-
-  console.log('Parallax de mouse no caco (CTA Purpose) inicializado ✅');
 }
 
 /* ============================================
@@ -381,8 +371,8 @@ function initPositionEditor() {
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
-      '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
-      '5. Quando terminar, clique em "Copiar tudo".' +
+      '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
+      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -532,8 +522,6 @@ function initPositionEditor() {
       prompt('Copie o texto abaixo manualmente:', output);
     });
   });
-
-  console.log('Editor de Posição inicializado ✅');
 }
 
 /* ============================================
@@ -551,7 +539,6 @@ function initWhyApplyTimeline() {
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
-    console.log('Timeline "Why Apply": pin/scrub desabilitado (mobile ou reduced motion).');
     lineFill.style.width = '100%';
     dots.forEach(function (dot) {
       dot.style.opacity = '1';
@@ -654,8 +641,6 @@ function initWhyApplyTimeline() {
   window.addEventListener('resize', onScroll);
 
   update();
-
-  console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens | pin + scrub ativo');
 }
 
 /* ============================================
@@ -685,8 +670,6 @@ function initScrollReveal() {
   revealEls.forEach(function (el) {
     observer.observe(el);
   });
-
-  console.log('Scroll reveal inicializado ✅ | ' + revealEls.length + ' bloco(s)');
 }
 
 /* ============================================
@@ -697,10 +680,7 @@ function initLeafEffect() {
   if (!zone) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion) {
-    console.log('Efeito de folhinhas desabilitado (prefers-reduced-motion).');
-    return;
-  }
+  if (reduceMotion) return;
 
   const LEAF_COLORS = ['#77DF40', '#FFD600', '#5BC72E'];
   let isVisible = false;
@@ -785,8 +765,6 @@ function initLeafEffect() {
   }, { threshold: 0.1 });
 
   observer.observe(zone);
-
-  console.log('Efeito de folhinhas inicializado ✅');
 }
 
 /* ============================================
@@ -797,10 +775,7 @@ function initCharacterWalk() {
   if (!character) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (reduceMotion) {
-    console.log('Caminhada da personagem desabilitada (prefers-reduced-motion).');
-    return;
-  }
+  if (reduceMotion) return;
 
   const observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
@@ -812,8 +787,6 @@ function initCharacterWalk() {
   }, { threshold: 0.3 });
 
   observer.observe(character);
-
-  console.log('Caminhada da personagem inicializada ✅');
 }
 
 /* ============================================
@@ -865,12 +838,10 @@ function initPercentCounter() {
   }, { threshold: 0.35 });
 
   observer.observe(counter);
-
-  console.log('Countdown "100%" inicializado ✅');
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
+   CTA PURPOSE: FUSCA + CACO CHEGANDO (COM PIN)
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -882,7 +853,6 @@ function initCarDriveIn() {
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
-    console.log('Fusca/Caco: pin/scrub desabilitado (mobile ou reduced motion).');
     car.style.opacity = '1';
     car.style.transform = 'none';
     if (caco) {
@@ -966,18 +936,15 @@ function initCarDriveIn() {
   window.addEventListener('resize', onScroll);
 
   update();
-
-  console.log('Fusca + Caco: pin + scrub + fade inicializado ✅');
 }
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
-
-   CORREÇÃO DE BUG (Espaço em branco):
-   O bloco inteiro agora está "pinado" (travado na tela)
-   enquanto a foto encolhe, usando a mesma técnica do
-   Fusca e do Why Apply. Isso impede que a página role
-   para longe antes da animação terminar.
+   CORREÇÃO: O clone (foto full-screen) agora fica
+   oculto (display: none) enquanto o scroll está
+   fora da área de ativação. Ele só se torna visível
+   quando a seção Kickstart entra no viewport,
+   evitando bloquear o clique nas seções anteriores.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -995,7 +962,6 @@ function initKickstartMorph() {
     clone.style.display = 'none';
     contentToReveal.style.opacity = '1';
     targetPill.style.opacity = '1';
-    console.log('Kickstart morph desabilitado (mobile ou reduced motion).');
     return;
   }
 
@@ -1022,36 +988,38 @@ function initKickstartMorph() {
   function update() {
     const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
-    const eased = easeOutCubic(progress);
-
-    // Se o progresso é menor que zero (seção ainda não chegou),
-    // ou maior que 1 (já passou), escondemos o clone para não
-    // atrapalhar outras partes da página.
+    
+    // CORREÇÃO AQUI: Se o progresso é <= 0 (seção ainda não
+    // chegou) ou >= 1 (seção já passou inteira), escondemos o
+    // clone para não bloquear a página.
     if (progress <= 0 || progress >= 1) {
        if (progress >= 1) {
+           // Animação terminou, o usuário continua rolando pra baixo
            clone.style.display = 'none';
            contentToReveal.style.opacity = '1';
            targetPill.style.opacity = '1';
        } else {
-           clone.style.display = 'block';
+           // Animação nem começou, o usuário está nas seções de cima
+           clone.style.display = 'none';
            contentToReveal.style.opacity = '0';
            targetPill.style.opacity = '0';
        }
-    } else {
-        clone.style.display = 'block';
-        targetPill.style.opacity = '0';
-    }
+       return; // Sai da função, não precisa calcular posições
+    } 
+    
+    // Se o progresso está entre 0 e 1, a animação está rodando:
+    // mostramos o clone e escondemos a pílula de destino.
+    clone.style.display = 'block';
+    targetPill.style.opacity = '0';
 
-    // Ponto de partida: tela cheia (abaixo do header)
+    const eased = easeOutCubic(progress);
+
     const startTop = headerHeight;
     const startLeft = 0;
     const startWidth = window.innerWidth;
     const startHeight = window.innerHeight - headerHeight;
     const startRadius = 0;
 
-    // Ponto de chegada: a pílula real.
-    // Como a seção está "pinada" (parada na tela), a posição
-    // do targetPill via getBoundingClientRect() é estável!
     const targetRect = targetPill.getBoundingClientRect();
     const endTop = targetRect.top;
     const endLeft = targetRect.left;
@@ -1071,7 +1039,6 @@ function initKickstartMorph() {
     clone.style.height = currentHeight + 'px';
     clone.style.borderRadius = currentRadius + 'px';
 
-    // O conteúdo de fundo revela suavemente junto com a foto encolhendo
     contentToReveal.style.opacity = eased;
   }
 
@@ -1090,7 +1057,7 @@ function initKickstartMorph() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
+  // Roda uma vez no início para garantir que o clone nasça escondido
+  // caso a página carregue no topo
   update();
-
-  console.log('Kickstart morph inicializado ✅ (com pin wrapper)');
 }
