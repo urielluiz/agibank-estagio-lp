@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initAwardsParallax();
     initCarDriveIn();
     initCacoMouseParallax();
+    initKickstartMorph();
   }
 });
 
@@ -234,11 +235,6 @@ function initAwardsParallax() {
 
 /* ============================================
    CTA PURPOSE: PARALLAX DE MOUSE NO CACO
-   Aplicado num wrapper INTERNO (.cta-purpose__caco-
-   -parallax), separado do elemento pai que recebe o
-   transform de scroll (fade + rotação de chegada) -
-   assim os dois efeitos (scroll e mouse) não competem
-   pelo mesmo "transform" e se somam visualmente.
 ============================================ */
 function initCacoMouseParallax() {
   const stage = document.getElementById('ctaPurposeStage');
@@ -339,9 +335,6 @@ function initPositionEditor() {
       el.style.transform = 'rotate(0deg)';
     }
 
-    // Em modo edição, sempre mostramos o elemento com opacidade
-    // total (independente de estados de fade controlados via JS
-    // de scroll fora do modo edição).
     el.style.opacity = '1';
   });
 
@@ -879,17 +872,6 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA + CACO CHEGANDO (COM PIN)
-
-   REFINAMENTO PREMIUM:
-   - Fade in: ambos os elementos começam com opacity 0
-     e vão surgindo suavemente enquanto já se movem -
-     evita o efeito de "aparecer torto de repente".
-   - Curva de easing mais suave (easeOutQuint) no início,
-     dando uma sensação mais "flutuante" e refinada.
-   - CAR_SPAN maior: a animação se estende por mais
-     tempo de scroll, ficando mais gradual/cinematográfica.
-   - Caco e Fusca são sincronizados no mesmo progresso,
-     reforçando a coesão da composição.
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -911,22 +893,21 @@ function initCarDriveIn() {
     return;
   }
 
-  const ANIM_SPAN = 0.8; // animação completa ocupa 80% do corredor de scroll (mais gradual)
-  const FADE_SPAN = 0.35; // fade termina em 35% do progresso da animação (surge cedo, já em movimento)
+  const ANIM_SPAN = 0.8;
+  const FADE_SPAN = 0.35;
 
   const CAR_START_TRANSLATE_X = 45;
   const CAR_START_ROTATE_OFFSET = -7;
   const CAR_FINAL_ROTATE = 0;
 
   const CACO_FINAL_ROTATE = 43;
-  const CACO_START_ROTATE_OFFSET = -25; // graus extras na chegada, somados à rotação final
-  const CACO_START_TRANSLATE_X = 20; // leve deslocamento extra do caco, sincronizado ao carro
+  const CACO_START_ROTATE_OFFSET = -25;
+  const CACO_START_TRANSLATE_X = 20;
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
 
-  // Curva suave, com início mais "flutuante" que o easeOutCubic
   function easeOutQuint(x) {
     return 1 - Math.pow(1 - x, 5);
   }
@@ -948,12 +929,9 @@ function initCarDriveIn() {
     const animProgress = clamp(globalProgress / ANIM_SPAN, 0, 1);
     const eased = easeOutQuint(animProgress);
 
-    // Fade: sobe rápido no início do progresso da animação,
-    // ficando 100% opaco bem antes do movimento terminar.
     const fadeProgress = clamp(animProgress / FADE_SPAN, 0, 1);
-    const opacity = fadeProgress; // linear é suficiente aqui, o fade é rápido
+    const opacity = fadeProgress;
 
-    // Fusca
     const carTranslateX = CAR_START_TRANSLATE_X * (1 - eased);
     const carRotate = CAR_FINAL_ROTATE + CAR_START_ROTATE_OFFSET * (1 - eased);
 
@@ -962,7 +940,6 @@ function initCarDriveIn() {
       'translateX(' + carTranslateX.toFixed(2) + '%) ' +
       'rotate(' + carRotate.toFixed(2) + 'deg)';
 
-    // Caco (sincronizado com o mesmo progresso do carro)
     if (caco) {
       const cacoTranslateX = CACO_START_TRANSLATE_X * (1 - eased);
       const cacoRotate = CACO_FINAL_ROTATE + CACO_START_ROTATE_OFFSET * (1 - eased);
@@ -992,4 +969,124 @@ function initCarDriveIn() {
   update();
 
   console.log('Fusca + Caco: pin + scrub + fade inicializado ✅');
+}
+
+/* ============================================
+   KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
+
+   Técnica de "clone flutuante": a foto grande é um
+   elemento position:fixed independente, sobreposto a
+   tudo. Sua posição/tamanho são recalculados a CADA
+   scroll, interpolando entre o estado "tela cheia" e
+   a posição REAL (ao vivo) da pílula de destino - que
+   já existe normalmente no layout, no fluxo do documento.
+
+   Isso dispensa a necessidade de "pin" tradicional:
+   o próprio clone, ao encolher, vai "revelando" o
+   conteúdo real que está por baixo dele (que sempre
+   esteve lá, só coberto visualmente). Totalmente
+   reversível, pois tudo é recalculado a cada frame com
+   base na posição atual do scroll.
+============================================ */
+function initKickstartMorph() {
+  const section = document.getElementById('kickstart');
+  const clone = document.getElementById('kickstartMorphClone');
+  const targetPill = document.getElementById('kickstartTargetPill');
+  const header = document.getElementById('header');
+  if (!section || !clone || !targetPill || !header) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  if (reduceMotion || isMobile) {
+    clone.style.display = 'none';
+    console.log('Kickstart morph desabilitado (mobile ou reduced motion).');
+    return;
+  }
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
+  }
+
+  let ANIM_DISTANCE = Math.max(600, window.innerHeight * 1.1);
+
+  function update() {
+    const headerHeight = header.offsetHeight;
+    const sectionRect = section.getBoundingClientRect();
+    const rawProgress = (headerHeight - sectionRect.top) / ANIM_DISTANCE;
+
+    const activeBuffer = 0.05;
+
+    if (rawProgress < -activeBuffer || rawProgress > 1 + activeBuffer) {
+      clone.style.display = 'none';
+      return;
+    }
+
+    clone.style.display = 'block';
+
+    const progress = clamp(rawProgress, 0, 1);
+    const eased = easeOutCubic(progress);
+
+    const startRect = {
+      top: headerHeight,
+      left: 0,
+      width: window.innerWidth,
+      height: window.innerHeight - headerHeight
+    };
+
+    const targetRect = targetPill.getBoundingClientRect();
+
+    const top = startRect.top + (targetRect.top - startRect.top) * eased;
+    const left = startRect.left + (targetRect.left - startRect.left) * eased;
+    const width = startRect.width + (targetRect.width - startRect.width) * eased;
+    const height = startRect.height + (targetRect.height - startRect.height) * eased;
+
+    const startRadius = 0;
+    const endRadius = targetRect.height / 2;
+    const radius = startRadius + (endRadius - startRadius) * eased;
+
+    clone.style.top = top + 'px';
+    clone.style.left = left + 'px';
+    clone.style.width = width + 'px';
+    clone.style.height = height + 'px';
+    clone.style.borderRadius = radius + 'px';
+
+    // Crossfade sutil no finalzinho, pra esconder qualquer
+    // diferença de enquadramento entre a foto full-screen
+    // e a foto real da pílula.
+    const fadeStart = 0.92;
+    let opacity = 1;
+    if (progress > fadeStart) {
+      opacity = 1 - (progress - fadeStart) / (1 - fadeStart);
+    }
+    clone.style.opacity = clamp(opacity, 0, 1);
+  }
+
+  let ticking = false;
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  function onResize() {
+    ANIM_DISTANCE = Math.max(600, window.innerHeight * 1.1);
+    onScroll();
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onResize);
+
+  update();
+
+  console.log('Kickstart morph inicializado ✅');
 }
