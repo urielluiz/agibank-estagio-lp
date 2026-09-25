@@ -413,8 +413,6 @@ h4 { font-size: var(--fs-h4); }
   transform: translateY(-2px);
 }
 
-/* ---------- Animações de entrada ---------- */
-
 @keyframes heroFadeUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -596,7 +594,6 @@ body.position-editor-active [data-editable].is-selected {
 
 /* ============================================
    SEÇÃO 01 - WHY APPLY
-   (Primeira dobra – Por que se inscrever)
 ============================================ */
 
 .why-apply {
@@ -754,7 +751,6 @@ body.position-editor-active [data-editable].is-selected {
 
 /* ============================================
    SEÇÃO 02 - CTA INTRO
-   (Segunda dobra – CTA)
 ============================================ */
 
 .cta-intro {
@@ -936,7 +932,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   transform: translateY(-2px);
 }
 
-/* ---------- Reveal fade genérico (de baixo para cima) ---------- */
+/* ---------- Reveal fade genérico ---------- */
 
 .reveal-fade-item {
   opacity: 0;
@@ -954,8 +950,6 @@ body.position-editor-active .cta-intro__leaf-zone {
 .reveal-fade.is-visible .reveal-fade-item:nth-child(3) { transition-delay: 0.2s; }
 .reveal-fade.is-visible .reveal-fade-item:nth-child(4) { transition-delay: 0.3s; }
 .reveal-fade.is-visible .reveal-fade-item:nth-child(5) { transition-delay: 0.4s; }
-
-/* ---------- Reveal fade da esquerda para a direita ---------- */
 
 .reveal-fade-left-item {
   opacity: 0;
@@ -1011,7 +1005,6 @@ body.position-editor-active .cta-intro__leaf-zone {
 
 /* ============================================
    SEÇÃO 03 - AWARDS
-   (Terceira dobra – Reconhecimentos Agi)
 ============================================ */
 
 .awards {
@@ -1029,8 +1022,6 @@ body.position-editor-active .cta-intro__leaf-zone {
   aspect-ratio: 1440 / var(--awards-ratio-h);
   overflow: visible;
 }
-
-/* ---------- Bloco de texto ---------- */
 
 .awards__content {
   position: absolute;
@@ -1062,8 +1053,6 @@ body.position-editor-active .cta-intro__leaf-zone {
   font-weight: 700;
 }
 
-/* ---------- CTA (botão) ---------- */
-
 a.awards__cta.reveal-fade-left-item {
   display: inline-flex;
   align-items: center;
@@ -1086,8 +1075,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   color: var(--color-white) !important;
   transform: scale(1.08) !important;
 }
-
-/* ---------- Imagens em camadas ---------- */
 
 .awards__image {
   position: absolute;
@@ -1133,7 +1120,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 04 - CTA PURPOSE
-   (Quarta dobra – CTA com o propósito)
 ============================================ */
 
 .cta-purpose {
@@ -1296,6 +1282,34 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: relative;
 }
 
+/* ---------- Pin / corredor de scroll ----------
+   Trava a seção na tela enquanto a foto
+   encolhe e revela o conteúdo. */
+
+.kickstart__pin-wrapper {
+  position: relative;
+  height: 250vh;
+}
+
+.kickstart__pin-inner {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* ---------- Conteúdo real ----------
+   Fica com opacity 0 no início e revela suavemente
+   conforme a foto full-screen encolhe. */
+
+.kickstart__content {
+  opacity: 0;
+  will-change: opacity;
+}
+
 .kickstart__title {
   color: var(--color-blue);
   font-size: 40px;
@@ -1314,7 +1328,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin-bottom: var(--space-md);
 }
 
-/* ---------- Cards do Pacote Financeiro ---------- */
+/* ---------- Cards do Pacote Financeiro ----------
+   Ajustados para centralização perfeita e fontes maiores. */
 
 .kickstart__cards {
   display: grid;
@@ -1327,7 +1342,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   color: var(--color-white);
   border-radius: var(--radius-lg);
   padding: var(--space-lg) var(--space-md);
+  
+  /* Flexbox para centralizar tudo */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
   text-align: center;
+  
   cursor: default;
   transform: scale(1);
   transition: transform 0.25s ease, background-color 0.25s ease;
@@ -1339,7 +1361,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .kickstart__card p {
-  font-size: var(--fs-body);
+  font-size: 18px;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -1347,16 +1369,20 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .kickstart__card strong {
   color: var(--color-green);
   font-weight: 700;
+  font-size: 28px;
+  display: block; /* quebra a linha automaticamente antes do valor */
+  margin-top: 4px;
 }
 
 .kickstart__card-small {
   display: block;
   font-size: var(--fs-small);
-  margin-top: var(--space-xs);
+  margin-top: var(--space-sm);
   opacity: 0.9;
 }
 
-/* ---------- Pílulas de Benefícios ---------- */
+/* ---------- Pílulas de Benefícios ----------
+   Ajustadas para altura menor e fontes melhores. */
 
 .kickstart__pills {
   display: grid;
@@ -1367,17 +1393,21 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .kickstart__pill {
   border: 1.5px solid var(--color-blue);
   border-radius: var(--radius-full);
-  min-height: 110px;
+  
+  /* Usando padding em vez de min-height gigante */
+  padding: 24px 32px;
+  
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: var(--space-sm) var(--space-md);
+  
   color: var(--color-blue);
   font-weight: 500;
-  font-size: var(--fs-small);
+  font-size: 16px;
   line-height: 1.35;
   cursor: default;
+  
   transform: scale(1);
   transition: transform 0.25s ease, background-color 0.25s ease,
               color 0.25s ease, border-color 0.25s ease;
@@ -1395,6 +1425,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   border: none;
   overflow: hidden;
   position: relative;
+}
+
+/* A pílula alvo (onde a foto vai pousar) começa invisível
+   para não dar "flicker" quando a cópia flutuante sumir */
+#kickstartTargetPill {
+  opacity: 0;
 }
 
 .kickstart__pill--photo img {
@@ -1418,18 +1454,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin-top: var(--space-lg);
 }
 
-/* ---------- Clone flutuante (efeito de morph) ----------
-   Fica invisível até o JS ativar (display:block) quando a
-   seção se aproxima da área visível. Posição/tamanho são
-   controlados 100% via JS a cada scroll, interpolando entre
-   "tela cheia" e a posição real da pílula de destino. */
+/* ---------- Clone flutuante (efeito de morph) ---------- */
 
 .kickstart__morph-clone {
   position: fixed;
   z-index: 900;
   overflow: hidden;
   pointer-events: none;
-  display: none;
+  display: none; /* ativado via JS */
   will-change: top, left, width, height, border-radius, opacity;
 }
 
@@ -1527,6 +1559,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .kickstart__title {
     font-size: 32px;
+  }
+
+  .kickstart__card p {
+    font-size: 16px;
+  }
+
+  .kickstart__card strong {
+    font-size: 24px;
   }
 
   .kickstart__pills {
@@ -1725,7 +1765,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     position: static;
     width: 100%;
     order: 2;
-    opacity: 1 !important;
     transform: none !important;
   }
 
@@ -1741,6 +1780,21 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .cta-purpose__subtext {
     font-size: 16px;
+  }
+
+  /* Kickstart - fallback mobile */
+  .kickstart__pin-wrapper {
+    height: auto;
+  }
+
+  .kickstart__pin-inner {
+    position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
+  }
+
+  .kickstart__content {
+    opacity: 1 !important;
   }
 
   .kickstart__title {
@@ -1760,7 +1814,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   .kickstart__pill {
-    min-height: 90px;
+    padding: 16px;
   }
 
   .kickstart__morph-clone {
