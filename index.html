@@ -143,20 +143,23 @@
   <section id="cta-intro" class="cta-intro">
     <div class="cta-intro__stage" id="ctaIntroStage" data-ratio-var="--cta-ratio-h" data-ratio-min="350" data-ratio-max="650" data-ratio-label="CTA Intro">
 
-      <!-- Camada de fundo azul full-bleed (vaza até as bordas reais da tela) -->
       <div class="cta-intro__bg-bleed"></div>
 
-      <!-- Zona de nascimento das folhinhas (posicionada sobre a copa da árvore) -->
       <div class="cta-intro__leaf-zone" id="ctaIntroLeafZone" data-editable="leaf-zone"></div>
 
-      <!-- Ilustração (prédio + árvore + personagem + bike) -->
+      <!-- Fundo (prédio + árvore + bike, sem a personagem) -->
       <div class="cta-intro__illustration" data-editable="cta-illustration">
-        <img src="assets/img/Ilustra-Loja-Agibank.png" alt="Loja do Agibank com estagiária caminhando" class="cta-intro__illustration-img">
+        <img src="assets/img/Ilustra-Loja-Agibank.png" alt="Loja do Agibank" class="cta-intro__illustration-img">
+      </div>
+
+      <!-- Personagem (caminha da direita para a posição final) -->
+      <div class="cta-intro__character" id="ctaIntroCharacter" data-editable="cta-character">
+        <img src="assets/img/Personagem-LojaAgi.png" alt="Estagiária caminhando" class="cta-intro__character-img">
       </div>
 
       <!-- Bloco de texto + CTA -->
       <div class="cta-intro__content reveal-fade" data-editable="cta-content">
-        <span class="cta-intro__percent reveal-fade-item">100%</span>
+        <span class="cta-intro__percent reveal-fade-item" id="ctaIntroCounter">0%</span>
         <p class="cta-intro__text reveal-fade-item">
           dos estagiários da última turma de 2026 entraram <strong>dominando IA</strong>.
         </p>
