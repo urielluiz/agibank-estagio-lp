@@ -1127,9 +1127,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
+/* Corredor de scroll reduzido para soltar a página mais rápido */
 .cta-purpose__pin-wrapper {
   position: relative;
-  height: 240vh;
+  height: 160vh; 
 }
 
 .cta-purpose__pin-inner {
@@ -1295,10 +1296,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: sticky;
   top: var(--header-height);
   z-index: 5;
-  height: calc(100vh - var(--header-height));
+  min-height: calc(100vh - var(--header-height));
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start; /* Mantém o título sempre no topo */
+  padding: var(--space-2xl) 0;
+  overflow: hidden;
 }
 
 /* ---------- Conteúdo real ----------
@@ -1341,7 +1344,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   background-color: var(--color-blue);
   color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: var(--space-lg) var(--space-md);
+  padding: var(--space-xl) var(--space-md);
   
   /* Flexbox para centralizar tudo */
   display: flex;
@@ -1361,7 +1364,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .kickstart__card p {
-  font-size: 18px;
+  font-size: 20px;
   line-height: 1.5;
   font-weight: 400;
 }
@@ -1369,8 +1372,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .kickstart__card strong {
   color: var(--color-green);
   font-weight: 700;
-  font-size: 28px;
-  display: block; /* quebra a linha automaticamente antes do valor */
+  font-size: 32px;
+  display: block;
   margin-top: 4px;
 }
 
@@ -1394,8 +1397,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   border: 1.5px solid var(--color-blue);
   border-radius: var(--radius-full);
   
-  /* Usando padding em vez de min-height gigante */
-  padding: 24px 32px;
+  padding: 16px 24px; /* Padding reduzido pra não parecer solto */
   
   display: flex;
   align-items: center;
@@ -1404,7 +1406,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   
   color: var(--color-blue);
   font-weight: 500;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.35;
   cursor: default;
   
@@ -1457,11 +1459,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 /* ---------- Clone flutuante (efeito de morph) ---------- */
 
 .kickstart__morph-clone {
-  position: fixed;
+  position: absolute; /* Agora é absolute dentro do pin-inner */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100vh - var(--header-height));
   z-index: 900;
-  overflow: hidden;
   pointer-events: none;
-  display: none; /* ativado via JS */
   will-change: top, left, width, height, border-radius, opacity;
 }
 
