@@ -1060,13 +1060,20 @@ body.position-editor-active .cta-intro__leaf-zone {
   font-weight: 700;
 }
 
-.awards__cta {
+/* ---------- CTA (botão) ----------
+   Estado normal: fundo Azul Marinho, texto branco.
+   Hover: fundo Azul Agibank + glow na mesma cor,
+   texto PERMANECE branco (reforçado explicitamente
+   com !important para evitar qualquer sobreposição
+   de regras de link/anchor). */
+
+a.awards__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   align-self: flex-start;
   background-color: var(--color-navy);
-  color: var(--color-white);
+  color: var(--color-white) !important;
   font-weight: 700;
   font-size: var(--fs-cta);
   padding: 16px 32px;
@@ -1077,10 +1084,11 @@ body.position-editor-active .cta-intro__leaf-zone {
               transform var(--transition-fast);
 }
 
-.awards__cta:hover {
+a.awards__cta:hover,
+a.awards__cta:focus-visible {
   background-color: var(--color-blue);
-  color: var(--color-white);
-  box-shadow: 0 0 28px 8px rgba(0, 100, 249, 0.5);
+  color: var(--color-white) !important;
+  box-shadow: 0 0 28px 8px rgba(0, 100, 249, 0.55);
   transform: translateY(-2px);
 }
 
