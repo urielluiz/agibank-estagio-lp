@@ -934,11 +934,7 @@ body.position-editor-active .cta-intro__leaf-zone {
   transform: translateY(-2px);
 }
 
-/* ---------- Reveal fade genérico (de baixo para cima) ----------
-   IMPORTANTE: a transição SÓ é aplicada quando o item já
-   tem a classe .is-visible. Isso evita "sacudidas" causadas
-   por recálculos de layout (parallax, imagens carregando, etc)
-   enquanto o elemento ainda está no estado inicial (invisível). */
+/* ---------- Reveal fade genérico (de baixo para cima) ---------- */
 
 .reveal-fade-item {
   opacity: 0;
@@ -946,18 +942,21 @@ body.position-editor-active .cta-intro__leaf-zone {
 }
 
 .reveal-fade.is-visible .reveal-fade-item {
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   opacity: 1;
   transform: translateY(0);
 }
 
-.reveal-fade.is-visible .reveal-fade-item:nth-child(1) { transition-delay: 0.1s; }
-.reveal-fade.is-visible .reveal-fade-item:nth-child(2) { transition-delay: 0.3s; }
-.reveal-fade.is-visible .reveal-fade-item:nth-child(3) { transition-delay: 0.5s; }
-.reveal-fade.is-visible .reveal-fade-item:nth-child(4) { transition-delay: 0.7s; }
-.reveal-fade.is-visible .reveal-fade-item:nth-child(5) { transition-delay: 0.9s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(1) { transition-delay: 0s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(2) { transition-delay: 0.1s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(3) { transition-delay: 0.2s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(4) { transition-delay: 0.3s; }
+.reveal-fade.is-visible .reveal-fade-item:nth-child(5) { transition-delay: 0.4s; }
 
-/* ---------- Reveal fade da esquerda para a direita ---------- */
+/* ---------- Reveal fade da esquerda para a direita ----------
+   Delays compactados (0.1s entre itens ao invés de 0.2s) para
+   que a sequência inteira feche em ~1s, evitando que o último
+   item (o CTA) pareça "esquecido" e desconectado do restante. */
 
 .reveal-fade-left-item {
   opacity: 0;
@@ -965,16 +964,16 @@ body.position-editor-active .cta-intro__leaf-zone {
 }
 
 .reveal-fade-left.is-visible .reveal-fade-left-item {
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
   opacity: 1;
   transform: translateX(0);
 }
 
-.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(1) { transition-delay: 0.1s; }
-.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(2) { transition-delay: 0.3s; }
-.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(3) { transition-delay: 0.5s; }
-.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(4) { transition-delay: 0.7s; }
-.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(5) { transition-delay: 0.9s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(1) { transition-delay: 0s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(2) { transition-delay: 0.1s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(3) { transition-delay: 0.2s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(4) { transition-delay: 0.3s; }
+.reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(5) { transition-delay: 0.4s; }
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-fade-item,
@@ -1066,9 +1065,11 @@ body.position-editor-active .cta-intro__leaf-zone {
 
 /* ---------- CTA (botão) ----------
    Estado normal: fundo Azul Marinho, texto branco.
-   Hover: fundo Azul Agibank + glow, texto permanece
-   branco. Transição rápida (0.25s) e simplificada
-   para uma resposta imediata ao passar/tirar o mouse. */
+   Hover: fundo Azul Agibank + o botão AUMENTA de
+   tamanho (scale), sem glow/box-shadow - usa só
+   "transform" e "background-color", propriedades
+   leves que a GPU processa instantaneamente, sem
+   nenhum delay perceptível. */
 
 a.awards__cta {
   display: inline-flex;
@@ -1082,17 +1083,15 @@ a.awards__cta {
   padding: 16px 32px;
   border-radius: var(--radius-full);
   margin-top: var(--space-xs);
-  transition: background-color 0.25s ease,
-              box-shadow 0.25s ease,
-              transform 0.2s ease;
+  transform: scale(1);
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 a.awards__cta:hover,
 a.awards__cta:focus-visible {
   background-color: var(--color-blue);
   color: var(--color-white);
-  box-shadow: 0 0 24px 6px rgba(0, 100, 249, 0.5);
-  transform: translateY(-2px);
+  transform: scale(1.06);
 }
 
 /* ---------- Imagens em camadas ---------- */
