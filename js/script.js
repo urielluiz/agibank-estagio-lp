@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', function () {
   initPercentCounter();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax do Hero desabilitado propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
     initPositionEditor();
   } else {
     initHeroParallax();
+    initAwardsParallax();
   }
 });
 
@@ -172,6 +173,68 @@ function initHeroParallax() {
 }
 
 /* ============================================
+   AWARDS: PARALLAX DE PROFUNDIDADE
+   As 4 camadas de imagem se movem sutilmente com
+   base na posição do mouse em relação ao centro da
+   seção - cada camada tem uma "profundidade"
+   diferente (data-depth), criando sensação de 3D.
+============================================ */
+function initAwardsParallax() {
+  const stage = document.getElementById('awardsStage');
+  const depthEls = document.querySelectorAll('#awardsStage [data-parallax="depth"]');
+  if (!stage || !depthEls.length) return;
+
+  const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!hasMouse) return;
+
+  console.log('Parallax Awards inicializado ✅ | ' + depthEls.length + ' camada(s)');
+
+  const state = Array.from(depthEls).map(function (el) {
+    return {
+      el: el,
+      depth: parseFloat(el.dataset.depth) || 15,
+      currentX: 0,
+      currentY: 0,
+      targetX: 0,
+      targetY: 0
+    };
+  });
+
+  stage.addEventListener('mousemove', function (e) {
+    const rect = stage.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+    const relY = (e.clientY - rect.top) / rect.height;
+
+    const normX = (relX - 0.5) * 2; // -1 a 1
+    const normY = (relY - 0.5) * 2;
+
+    state.forEach(function (item) {
+      item.targetX = normX * item.depth;
+      item.targetY = normY * item.depth * 0.6; // movimento vertical mais discreto
+    });
+  });
+
+  stage.addEventListener('mouseleave', function () {
+    state.forEach(function (item) {
+      item.targetX = 0;
+      item.targetY = 0;
+    });
+  });
+
+  function animate() {
+    state.forEach(function (item) {
+      item.currentX += (item.targetX - item.currentX) * 0.08;
+      item.currentY += (item.targetY - item.currentY) * 0.08;
+      item.el.style.transform = 'translate(' + item.currentX.toFixed(2) + 'px, ' + item.currentY.toFixed(2) + 'px)';
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+/* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
 ============================================ */
 function initPositionEditor() {
@@ -216,8 +279,7 @@ function initPositionEditor() {
       '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
       '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Para "cta-character", a posição definida aqui é onde ela FICA PARADA no final da caminhada (ela entra vindo da direita).<br><br>' +
-      '6. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
+      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -471,9 +533,11 @@ function initWhyApplyTimeline() {
 
 /* ============================================
    SCROLL REVEAL GENÉRICO
+   Observa tanto .reveal-fade (baixo→cima) quanto
+   .reveal-fade-left (esquerda→direita).
 ============================================ */
 function initScrollReveal() {
-  const revealEls = document.querySelectorAll('.reveal-fade');
+  const revealEls = document.querySelectorAll('.reveal-fade, .reveal-fade-left');
   if (!revealEls.length) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -491,7 +555,7 @@ function initScrollReveal() {
         observer.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.35 });
+  }, { threshold: 0.3 });
 
   revealEls.forEach(function (el) {
     observer.observe(el);
@@ -602,9 +666,6 @@ function initLeafEffect() {
 
 /* ============================================
    CTA INTRO: PERSONAGEM CAMINHANDO
-   Dispara uma única vez, quando a seção entra na
-   tela - ela "anda" DA DIREITA até a posição final
-   definida no CSS, com leve bob de passo.
 ============================================ */
 function initCharacterWalk() {
   const character = document.getElementById('ctaIntroCharacter');
@@ -632,10 +693,6 @@ function initCharacterWalk() {
 
 /* ============================================
    CTA INTRO: COUNTDOWN 0% → 100%
-   Dispara junto com o restante do fade (mesmo
-   gatilho de scroll). Usa easing "ease-out" para
-   começar rápido e desacelerar perto do final,
-   dando peso ao número final.
 ============================================ */
 function initPercentCounter() {
   const counter = document.getElementById('ctaIntroCounter');
@@ -648,7 +705,7 @@ function initPercentCounter() {
   }
 
   const TARGET = 100;
-  const DURATION = 1800; // ms
+  const DURATION = 1800;
 
   function easeOutQuart(x) {
     return 1 - Math.pow(1 - x, 4);
