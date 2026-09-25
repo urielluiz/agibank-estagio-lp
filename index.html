@@ -256,13 +256,17 @@
   =================================== -->
   <section id="kickstart" class="kickstart">
 
-    <!-- Corredor de pin para a animação de morph da foto -->
     <div class="kickstart__pin-wrapper" id="kickstartPinWrapper">
-      <div class="kickstart__pin-inner">
+      <div class="kickstart__pin-inner" id="kickstartPinInner">
         
+        <!-- Clone flutuante movido para DENTRO do pin-inner.
+             Assim ele rola naturalmente para cima junto com a seção,
+             cobrindo a tela e evitando o "clarão branco". -->
+        <div class="kickstart__morph-clone" id="kickstartMorphClone">
+          <img src="assets/img/Full-Beneficios.jpg" alt="">
+        </div>
+
         <div class="container">
-          
-          <!-- O conteúdo real fica com opacidade 0 no início e revela no scroll -->
           <div class="kickstart__content" id="kickstartContent">
             
             <h2 class="kickstart__title">Pra começar com tudo!</h2>
@@ -272,14 +276,17 @@
 
               <div class="kickstart__cards">
                 <div class="kickstart__card">
-                  <p>Bolsa-auxílio<br>de <strong>R$ 2.400,00</strong></p>
+                  <p>Bolsa-auxílio</p>
+                  <strong>de R$ 2.400,00</strong>
                   <span class="kickstart__card-small">(jornada de 6h diárias)</span>
                 </div>
                 <div class="kickstart__card">
-                  <p>VR/VA<br>de <strong>R$ 1.274,61</strong></p>
+                  <p>VR/VA</p>
+                  <strong>de R$ 1.274,61</strong>
                 </div>
                 <div class="kickstart__card">
-                  <p>Auxílio-mobilidade<br>de <strong>R$ 250,00</strong></p>
+                  <p>Auxílio-mobilidade</p>
+                  <strong>de R$ 250,00</strong>
                   <span class="kickstart__card-small">ou vale-transporte</span>
                 </div>
               </div>
@@ -296,9 +303,7 @@
                   <span>Teleatendimento<br>médico e psicológico<br>gratuito</span>
                 </div>
                 
-                <!-- Esta é a pílula "alvo" onde a foto gigante vai pousar -->
                 <div class="kickstart__pill kickstart__pill--photo" id="kickstartTargetPill">
-                  <!-- A imagem real fica escondida até a animação terminar -->
                   <img src="assets/img/Pilula-Beneficios-01.png" alt="Colaboradores Agibank">
                 </div>
 
@@ -329,11 +334,6 @@
         </div>
 
       </div>
-    </div>
-
-    <!-- Clone flutuante (Efeito Morph). Fica fora do container para ser full-screen -->
-    <div class="kickstart__morph-clone" id="kickstartMorphClone">
-      <img src="assets/img/Full-Beneficios.jpg" alt="">
     </div>
 
   </section>
