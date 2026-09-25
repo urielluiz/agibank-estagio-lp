@@ -1120,26 +1120,21 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 04 - CTA PURPOSE
+   (Quarta dobra – CTA com o propósito)
 ============================================ */
 
 .cta-purpose {
   background-color: var(--color-white);
   overflow: visible;
-  padding-bottom: 0; /* Garante que encosta na próxima seção */
+  padding-bottom: 0;
+  position: relative;
+  z-index: 10; /* Garante que o Fusca e o caco vazem por cima da foto da próxima seção */
 }
 
 .cta-purpose__pin-wrapper {
   position: relative;
-  height: 160vh;
-  /* Fundo azul transferido para o wrapper inteiro,
-     garantindo que não haja espaço branco no final
-     do scroll. O topo encosta na seção Awards. */
-  background-color: var(--color-blue-medium);
-  z-index: 2; /* Garante que o Fusca vaze por cima do Kickstart */
+  height: 160vh; 
 }
-
-/* Pseudo-elemento branco REMOVIDO para que o fundo
-   azul encoste direto na foto do Kickstart */
 
 .cta-purpose__pin-inner {
   position: sticky;
@@ -1160,9 +1155,18 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* bg-bleed original removido (cor controlada pelo wrapper) */
+/* Fundo azul como faixa, com a altura calibrada por você */
 .cta-purpose__bg-bleed {
-  display: none;
+  position: absolute;
+  top: 0.00%;
+  height: 75.40%;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;
+  margin-right: -50vw;
+  background-color: var(--color-blue-medium);
+  z-index: 0;
+  pointer-events: none;
 }
 
 .cta-purpose__caco {
