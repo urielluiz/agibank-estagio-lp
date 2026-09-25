@@ -379,11 +379,10 @@ function initPositionEditor() {
     '<div class="position-editor__list"></div>' +
     '<div class="position-editor__hint">' +
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
-      '2. Use as setas do teclado para mover Top/Left (Shift = passo maior) - funciona independente da rotação.<br><br>' +
+      '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
-      '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Elementos com "Rot°" ou "Height %" têm campos extras.<br><br>' +
-      '6. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
+      '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
+      '5. Quando terminar, clique em "Copiar tudo".' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -871,7 +870,7 @@ function initPercentCounter() {
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA + CACO CHEGANDO (COM PIN)
+   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -974,32 +973,28 @@ function initCarDriveIn() {
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
 
-   Técnica de "clone flutuante": a foto grande é um
-   elemento position:fixed independente, sobreposto a
-   tudo. Sua posição/tamanho são recalculados a CADA
-   scroll, interpolando entre o estado "tela cheia" e
-   a posição REAL (ao vivo) da pílula de destino - que
-   já existe normalmente no layout, no fluxo do documento.
-
-   Isso dispensa a necessidade de "pin" tradicional:
-   o próprio clone, ao encolher, vai "revelando" o
-   conteúdo real que está por baixo dele (que sempre
-   esteve lá, só coberto visualmente). Totalmente
-   reversível, pois tudo é recalculado a cada frame com
-   base na posição atual do scroll.
+   CORREÇÃO DE BUG (Espaço em branco):
+   O bloco inteiro agora está "pinado" (travado na tela)
+   enquanto a foto encolhe, usando a mesma técnica do
+   Fusca e do Why Apply. Isso impede que a página role
+   para longe antes da animação terminar.
 ============================================ */
 function initKickstartMorph() {
-  const section = document.getElementById('kickstart');
+  const pinWrapper = document.getElementById('kickstartPinWrapper');
   const clone = document.getElementById('kickstartMorphClone');
   const targetPill = document.getElementById('kickstartTargetPill');
   const header = document.getElementById('header');
-  if (!section || !clone || !targetPill || !header) return;
+  const contentToReveal = document.getElementById('kickstartContent');
+  
+  if (!pinWrapper || !clone || !targetPill || !header || !contentToReveal) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
     clone.style.display = 'none';
+    contentToReveal.style.opacity = '1';
+    targetPill.style.opacity = '1';
     console.log('Kickstart morph desabilitado (mobile ou reduced motion).');
     return;
   }
@@ -1012,58 +1007,72 @@ function initKickstartMorph() {
     return 1 - Math.pow(1 - x, 3);
   }
 
-  let ANIM_DISTANCE = Math.max(600, window.innerHeight * 1.1);
+  function getGlobalProgress() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const wrapperTop = rect.top + window.scrollY;
+    const wrapperHeight = pinWrapper.offsetHeight;
+    const scrollable = wrapperHeight - window.innerHeight;
+
+    if (scrollable <= 0) return 1;
+
+    const raw = (window.scrollY - wrapperTop) / scrollable;
+    return clamp(raw, 0, 1);
+  }
 
   function update() {
     const headerHeight = header.offsetHeight;
-    const sectionRect = section.getBoundingClientRect();
-    const rawProgress = (headerHeight - sectionRect.top) / ANIM_DISTANCE;
-
-    const activeBuffer = 0.05;
-
-    if (rawProgress < -activeBuffer || rawProgress > 1 + activeBuffer) {
-      clone.style.display = 'none';
-      return;
-    }
-
-    clone.style.display = 'block';
-
-    const progress = clamp(rawProgress, 0, 1);
+    const progress = getGlobalProgress();
     const eased = easeOutCubic(progress);
 
-    const startRect = {
-      top: headerHeight,
-      left: 0,
-      width: window.innerWidth,
-      height: window.innerHeight - headerHeight
-    };
-
-    const targetRect = targetPill.getBoundingClientRect();
-
-    const top = startRect.top + (targetRect.top - startRect.top) * eased;
-    const left = startRect.left + (targetRect.left - startRect.left) * eased;
-    const width = startRect.width + (targetRect.width - startRect.width) * eased;
-    const height = startRect.height + (targetRect.height - startRect.height) * eased;
-
-    const startRadius = 0;
-    const endRadius = targetRect.height / 2;
-    const radius = startRadius + (endRadius - startRadius) * eased;
-
-    clone.style.top = top + 'px';
-    clone.style.left = left + 'px';
-    clone.style.width = width + 'px';
-    clone.style.height = height + 'px';
-    clone.style.borderRadius = radius + 'px';
-
-    // Crossfade sutil no finalzinho, pra esconder qualquer
-    // diferença de enquadramento entre a foto full-screen
-    // e a foto real da pílula.
-    const fadeStart = 0.92;
-    let opacity = 1;
-    if (progress > fadeStart) {
-      opacity = 1 - (progress - fadeStart) / (1 - fadeStart);
+    // Se o progresso é menor que zero (seção ainda não chegou),
+    // ou maior que 1 (já passou), escondemos o clone para não
+    // atrapalhar outras partes da página.
+    if (progress <= 0 || progress >= 1) {
+       if (progress >= 1) {
+           clone.style.display = 'none';
+           contentToReveal.style.opacity = '1';
+           targetPill.style.opacity = '1';
+       } else {
+           clone.style.display = 'block';
+           contentToReveal.style.opacity = '0';
+           targetPill.style.opacity = '0';
+       }
+    } else {
+        clone.style.display = 'block';
+        targetPill.style.opacity = '0';
     }
-    clone.style.opacity = clamp(opacity, 0, 1);
+
+    // Ponto de partida: tela cheia (abaixo do header)
+    const startTop = headerHeight;
+    const startLeft = 0;
+    const startWidth = window.innerWidth;
+    const startHeight = window.innerHeight - headerHeight;
+    const startRadius = 0;
+
+    // Ponto de chegada: a pílula real.
+    // Como a seção está "pinada" (parada na tela), a posição
+    // do targetPill via getBoundingClientRect() é estável!
+    const targetRect = targetPill.getBoundingClientRect();
+    const endTop = targetRect.top;
+    const endLeft = targetRect.left;
+    const endWidth = targetRect.width;
+    const endHeight = targetRect.height;
+    const endRadius = endHeight / 2;
+
+    const currentTop = startTop + (endTop - startTop) * eased;
+    const currentLeft = startLeft + (endLeft - startLeft) * eased;
+    const currentWidth = startWidth + (endWidth - startWidth) * eased;
+    const currentHeight = startHeight + (endHeight - startHeight) * eased;
+    const currentRadius = startRadius + (endRadius - startRadius) * eased;
+
+    clone.style.top = currentTop + 'px';
+    clone.style.left = currentLeft + 'px';
+    clone.style.width = currentWidth + 'px';
+    clone.style.height = currentHeight + 'px';
+    clone.style.borderRadius = currentRadius + 'px';
+
+    // O conteúdo de fundo revela suavemente junto com a foto encolhendo
+    contentToReveal.style.opacity = eased;
   }
 
   let ticking = false;
@@ -1078,15 +1087,10 @@ function initKickstartMorph() {
     }
   }
 
-  function onResize() {
-    ANIM_DISTANCE = Math.max(600, window.innerHeight * 1.1);
-    onScroll();
-  }
-
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onResize);
+  window.addEventListener('resize', onScroll);
 
   update();
 
-  console.log('Kickstart morph inicializado ✅');
+  console.log('Kickstart morph inicializado ✅ (com pin wrapper)');
 }
