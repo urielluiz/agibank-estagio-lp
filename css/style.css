@@ -768,18 +768,7 @@ body.position-editor-active [data-editable].is-selected {
   margin: 0 auto;
   aspect-ratio: 1440 / var(--cta-ratio-h);
   overflow: visible;
-  /* fundo removido daqui - agora fica na camada
-     full-bleed abaixo, que "vaza" até a borda real
-     da tela, independente do tamanho do monitor */
 }
-
-/* ---------- Fundo azul full-bleed ----------
-   Técnica clássica de "quebrar para fora do
-   container": a partir de um elemento centralizado
-   e limitado a 1440px, este filho absoluto se
-   estica até as bordas reais do viewport (100vw),
-   preenchendo toda a largura da tela sem depender
-   do tamanho do monitor. */
 
 .cta-intro__bg-bleed {
   position: absolute;
@@ -794,16 +783,11 @@ body.position-editor-active [data-editable].is-selected {
   pointer-events: none;
 }
 
-/* ---------- Ilustração ----------
-   Posicionada para "vazar" para cima do painel azul,
-   entrando na área branca da seção (assim como o
-   prédio faz no design original). */
-
 .cta-intro__illustration {
   position: absolute;
-  top: -7%;
-  left: 37%;
-  width: 63%;
+  top: -7.00%;
+  left: 37.00%;
+  width: 63.00%;
   z-index: 2;
   pointer-events: none;
   user-select: none;
@@ -819,9 +803,9 @@ body.position-editor-active [data-editable].is-selected {
 
 .cta-intro__leaf-zone {
   position: absolute;
-  top: 2%;
-  left: 73%;
-  width: 18%;
+  top: 5.80%;
+  left: 77.60%;
+  width: 19.70%;
   height: 30%;
   z-index: 3;
   pointer-events: none;
@@ -832,13 +816,11 @@ body.position-editor-active .cta-intro__leaf-zone {
   background-color: rgba(255, 214, 0, 0.08);
 }
 
-/* ---------- Conteúdo (texto + CTA) ---------- */
-
 .cta-intro__content {
   position: absolute;
-  top: 22%;
-  left: 9.6%;
-  width: 32%;
+  top: 22.00%;
+  left: 9.60%;
+  width: 32.00%;
   z-index: 4;
   display: flex;
   flex-direction: column;
@@ -1109,10 +1091,6 @@ body.position-editor-active .cta-intro__leaf-zone {
   }
 
   .cta-intro__bg-bleed {
-    /* No mobile empilhado, o próprio .cta-intro__stage
-       já ocupa a largura toda, então a camada bleed
-       cobre normalmente inset:0 sem necessidade do
-       cálculo de 50vw */
     left: 0;
     right: 0;
     margin-left: 0;
