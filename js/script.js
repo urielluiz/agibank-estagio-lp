@@ -233,20 +233,6 @@ function initAwardsParallax() {
 
 /* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
-
-   CORREÇÃO DE BUG: antes, a posição atual (top/left)
-   era lida via getBoundingClientRect() a cada movimento
-   de seta - isso quebrava quando o elemento tinha uma
-   rotação aplicada, porque a "caixa" rotacionada não
-   corresponde mais ao top/left real, fazendo o cálculo
-   de próxima posição ficar incorreto (parecia "só andar
-   pra um lado").
-
-   AGORA: guardamos TOP, LEFT, WIDTH, HEIGHT e ROTATION
-   como estado interno em JS (state[name]), sempre lidos
-   e escritos a partir desse estado - nunca mais via
-   getBoundingClientRect(). Isso desacopla totalmente o
-   posicionamento da rotação aplicada.
 ============================================ */
 function initPositionEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
@@ -255,7 +241,6 @@ function initPositionEditor() {
 
   document.body.classList.add('position-editor-active');
 
-  // Estado interno: fonte única de verdade para cada elemento editável
   const state = {};
 
   function getFields(el) {
@@ -265,11 +250,6 @@ function initPositionEditor() {
   function readInitialValue(el, prop) {
     const parent = el.offsetParent || el.parentElement;
     const parentRect = parent.getBoundingClientRect();
-
-    // Para ler o valor INICIAL, usamos o computed style diretamente
-    // (top/left/width/height em px, convertido pra %) - isso ainda
-    // é seguro aqui porque é a ÚNICA vez que lemos do DOM, antes de
-    // qualquer rotação ser aplicada.
     const computed = getComputedStyle(el);
 
     if (prop === 'top') {
@@ -294,7 +274,6 @@ function initPositionEditor() {
     return 0;
   }
 
-  // Inicializa o estado de cada elemento a partir da posição atual no CSS
   editableEls.forEach(function (el) {
     const name = el.dataset.editable;
     const fields = getFields(el);
@@ -304,10 +283,6 @@ function initPositionEditor() {
       state[name][f] = readInitialValue(el, f);
     });
 
-    // Zera qualquer transform pré-definido em CSS (ex: o Fusca tem
-    // um transform de "repouso" via CSS pra evitar flash antes do
-    // JS de scroll assumir) - em modo edição queremos ver o estado
-    // neutro, controlado 100% pelo editor.
     if (fields.indexOf('rotation') !== -1) {
       el.style.transform = 'rotate(0deg)';
     }
@@ -433,7 +408,7 @@ function initPositionEditor() {
     panel.querySelectorAll('input[data-prop][data-target="' + selectedName + '"]').forEach(function (input) {
       const prop = input.dataset.prop;
       const value = s[prop];
-      input.value = (value !== undefined) ? value.toFixed ? value.toFixed(2) : value : 0;
+      input.value = (value !== undefined) ? (value.toFixed ? value.toFixed(2) : value) : 0;
     });
   }
 
@@ -509,7 +484,7 @@ function initPositionEditor() {
     });
   });
 
-  console.log('Editor de Posição inicializado ✅ (bug de rotação corrigido)');
+  console.log('Editor de Posição inicializado ✅');
 }
 
 /* ============================================
@@ -847,6 +822,11 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
+   A rotação FINAL calibrada no editor é 0deg (ele já
+   fica reto ao "estacionar"). O JS soma um deslocamento
+   extra de chegada (translateX + rotação inicial de
+   -7°) que desaparece gradualmente conforme o progresso
+   avança - resultando na rotação final = 0 + 0 = 0deg.
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -864,7 +844,8 @@ function initCarDriveIn() {
 
   const CAR_SPAN = 0.65;
   const START_TRANSLATE_X = 45;
-  const START_ROTATE = -7;
+  const START_ROTATE_OFFSET = -7; // rotação EXTRA de chegada, somada à final (0deg)
+  const FINAL_ROTATE = 0; // rotação final calibrada no editor
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
@@ -892,7 +873,7 @@ function initCarDriveIn() {
     const eased = easeOutCubic(carProgress);
 
     const translateX = START_TRANSLATE_X * (1 - eased);
-    const rotate = START_ROTATE * (1 - eased);
+    const rotate = FINAL_ROTATE + START_ROTATE_OFFSET * (1 - eased);
 
     car.style.transform =
       'translateX(' + translateX.toFixed(2) + '%) ' +
