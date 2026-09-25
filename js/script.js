@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initHeroParallax();
     initAwardsParallax();
     initCarDriveIn();
+    initCacoMouseParallax();
   }
 });
 
@@ -232,6 +233,57 @@ function initAwardsParallax() {
 }
 
 /* ============================================
+   CTA PURPOSE: PARALLAX DE MOUSE NO CACO
+   Aplicado num wrapper INTERNO (.cta-purpose__caco-
+   -parallax), separado do elemento pai que recebe o
+   transform de scroll (fade + rotação de chegada) -
+   assim os dois efeitos (scroll e mouse) não competem
+   pelo mesmo "transform" e se somam visualmente.
+============================================ */
+function initCacoMouseParallax() {
+  const stage = document.getElementById('ctaPurposeStage');
+  const wrapper = document.querySelector('.cta-purpose__caco-parallax');
+  if (!stage || !wrapper) return;
+
+  const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!hasMouse) return;
+
+  const depth = parseFloat(wrapper.dataset.depth) || 14;
+  let currentX = 0;
+  let currentY = 0;
+  let targetX = 0;
+  let targetY = 0;
+
+  stage.addEventListener('mousemove', function (e) {
+    const rect = stage.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+    const relY = (e.clientY - rect.top) / rect.height;
+
+    const normX = (relX - 0.5) * 2;
+    const normY = (relY - 0.5) * 2;
+
+    targetX = normX * depth;
+    targetY = normY * depth * 0.6;
+  });
+
+  stage.addEventListener('mouseleave', function () {
+    targetX = 0;
+    targetY = 0;
+  });
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.08;
+    currentY += (targetY - currentY) * 0.08;
+    wrapper.style.transform = 'translate(' + currentX.toFixed(2) + 'px, ' + currentY.toFixed(2) + 'px)';
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  console.log('Parallax de mouse no caco (CTA Purpose) inicializado ✅');
+}
+
+/* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
 ============================================ */
 function initPositionEditor() {
@@ -286,6 +338,11 @@ function initPositionEditor() {
     if (fields.indexOf('rotation') !== -1) {
       el.style.transform = 'rotate(0deg)';
     }
+
+    // Em modo edição, sempre mostramos o elemento com opacidade
+    // total (independente de estados de fade controlados via JS
+    // de scroll fora do modo edição).
+    el.style.opacity = '1';
   });
 
   function applyState(el, name) {
@@ -821,38 +878,57 @@ function initPercentCounter() {
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
-   A rotação FINAL calibrada no editor é 0deg (ele já
-   fica reto ao "estacionar"). O JS soma um deslocamento
-   extra de chegada (translateX + rotação inicial de
-   -7°) que desaparece gradualmente conforme o progresso
-   avança - resultando na rotação final = 0 + 0 = 0deg.
+   CTA PURPOSE: FUSCA + CACO CHEGANDO (COM PIN)
+
+   REFINAMENTO PREMIUM:
+   - Fade in: ambos os elementos começam com opacity 0
+     e vão surgindo suavemente enquanto já se movem -
+     evita o efeito de "aparecer torto de repente".
+   - Curva de easing mais suave (easeOutQuint) no início,
+     dando uma sensação mais "flutuante" e refinada.
+   - CAR_SPAN maior: a animação se estende por mais
+     tempo de scroll, ficando mais gradual/cinematográfica.
+   - Caco e Fusca são sincronizados no mesmo progresso,
+     reforçando a coesão da composição.
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
   const car = document.getElementById('ctaPurposeCar');
+  const caco = document.getElementById('ctaPurposeCaco');
   if (!pinWrapper || !car) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
-    console.log('Fusca: pin/scrub desabilitado (mobile ou reduced motion).');
+    console.log('Fusca/Caco: pin/scrub desabilitado (mobile ou reduced motion).');
+    car.style.opacity = '1';
     car.style.transform = 'none';
+    if (caco) {
+      caco.style.opacity = '1';
+      caco.style.transform = 'rotate(43deg)';
+    }
     return;
   }
 
-  const CAR_SPAN = 0.65;
-  const START_TRANSLATE_X = 45;
-  const START_ROTATE_OFFSET = -7; // rotação EXTRA de chegada, somada à final (0deg)
-  const FINAL_ROTATE = 0; // rotação final calibrada no editor
+  const ANIM_SPAN = 0.8; // animação completa ocupa 80% do corredor de scroll (mais gradual)
+  const FADE_SPAN = 0.35; // fade termina em 35% do progresso da animação (surge cedo, já em movimento)
+
+  const CAR_START_TRANSLATE_X = 45;
+  const CAR_START_ROTATE_OFFSET = -7;
+  const CAR_FINAL_ROTATE = 0;
+
+  const CACO_FINAL_ROTATE = 43;
+  const CACO_START_ROTATE_OFFSET = -25; // graus extras na chegada, somados à rotação final
+  const CACO_START_TRANSLATE_X = 20; // leve deslocamento extra do caco, sincronizado ao carro
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
   }
 
-  function easeOutCubic(x) {
-    return 1 - Math.pow(1 - x, 3);
+  // Curva suave, com início mais "flutuante" que o easeOutCubic
+  function easeOutQuint(x) {
+    return 1 - Math.pow(1 - x, 5);
   }
 
   function getGlobalProgress() {
@@ -869,15 +945,33 @@ function initCarDriveIn() {
 
   function update() {
     const globalProgress = getGlobalProgress();
-    const carProgress = clamp(globalProgress / CAR_SPAN, 0, 1);
-    const eased = easeOutCubic(carProgress);
+    const animProgress = clamp(globalProgress / ANIM_SPAN, 0, 1);
+    const eased = easeOutQuint(animProgress);
 
-    const translateX = START_TRANSLATE_X * (1 - eased);
-    const rotate = FINAL_ROTATE + START_ROTATE_OFFSET * (1 - eased);
+    // Fade: sobe rápido no início do progresso da animação,
+    // ficando 100% opaco bem antes do movimento terminar.
+    const fadeProgress = clamp(animProgress / FADE_SPAN, 0, 1);
+    const opacity = fadeProgress; // linear é suficiente aqui, o fade é rápido
 
+    // Fusca
+    const carTranslateX = CAR_START_TRANSLATE_X * (1 - eased);
+    const carRotate = CAR_FINAL_ROTATE + CAR_START_ROTATE_OFFSET * (1 - eased);
+
+    car.style.opacity = opacity;
     car.style.transform =
-      'translateX(' + translateX.toFixed(2) + '%) ' +
-      'rotate(' + rotate.toFixed(2) + 'deg)';
+      'translateX(' + carTranslateX.toFixed(2) + '%) ' +
+      'rotate(' + carRotate.toFixed(2) + 'deg)';
+
+    // Caco (sincronizado com o mesmo progresso do carro)
+    if (caco) {
+      const cacoTranslateX = CACO_START_TRANSLATE_X * (1 - eased);
+      const cacoRotate = CACO_FINAL_ROTATE + CACO_START_ROTATE_OFFSET * (1 - eased);
+
+      caco.style.opacity = opacity;
+      caco.style.transform =
+        'translateX(' + cacoTranslateX.toFixed(2) + '%) ' +
+        'rotate(' + cacoRotate.toFixed(2) + 'deg)';
+    }
   }
 
   let ticking = false;
@@ -897,5 +991,5 @@ function initCarDriveIn() {
 
   update();
 
-  console.log('Fusca: pin + scrub inicializado ✅');
+  console.log('Fusca + Caco: pin + scrub + fade inicializado ✅');
 }
