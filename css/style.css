@@ -1140,12 +1140,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* ---------- Pin / corredor de scroll ----------
-   Mesma técnica do Why Apply: o corredor de scroll
-   (220vh) segura o bloco inteiro na tela enquanto o
-   Fusca termina de "chegar" - só solta a seção depois
-   que a animação já foi totalmente vista. */
-
 .cta-purpose__pin-wrapper {
   position: relative;
   height: 220vh;
@@ -1170,15 +1164,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* ---------- Fundo azul médio ----------
-   Top e Height agora são independentes (editáveis),
-   permitindo que o Fusca "vaze" para fora do retângulo
-   azul, como no design original. */
+/* ---------- Fundo azul médio ---------- */
 
 .cta-purpose__bg-bleed {
   position: absolute;
-  top: 0;
-  height: 100%;
+  top: 0.00%;
+  height: 75.40%;
   left: 50%;
   right: 50%;
   margin-left: -50vw;
@@ -1188,16 +1179,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
-/* ---------- Caco verde (rotação ajustável) ---------- */
+/* ---------- Caco verde ---------- */
 
 .cta-purpose__caco {
   position: absolute;
-  top: -22.00%;
-  left: 46.00%;
+  top: -55.20%;
+  left: 63.80%;
   width: 42.00%;
   z-index: 1;
   pointer-events: none;
   user-select: none;
+  transform: rotate(43deg);
 }
 
 .cta-purpose__caco img {
@@ -1207,16 +1199,18 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ---------- Fusca ----------
-   Posição/rotação aqui = estado FINAL (parado).
-   O JS aplica translateX + rotate extras com base no
-   progresso do pin - conforme o scroll avança dentro
-   do corredor, o carro se aproxima e endireita. */
+   Posição/rotação = estado FINAL (parado). O JS
+   aplica translateX extra com base no progresso do
+   pin, MULTIPLICANDO a rotação final por (1 - eased)
+   somada à rotação inicial de "chegada" - dessa forma
+   respeitamos a rotação final calibrada (0deg) mas
+   ainda mantemos o efeito de "freiar/endireitar". */
 
 .cta-purpose__car {
   position: absolute;
-  top: 18.00%;
-  left: 46.00%;
-  width: 54.00%;
+  top: -9.00%;
+  left: 53.00%;
+  width: 61.60%;
   z-index: 2;
   pointer-events: none;
   user-select: none;
@@ -1234,7 +1228,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .cta-purpose__content {
   position: absolute;
-  top: 30.00%;
+  top: 10.00%;
   left: 8.00%;
   width: 36.00%;
   z-index: 3;
@@ -1538,7 +1532,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* CTA Purpose - fallback temporário para mobile */
   .cta-purpose__pin-wrapper {
     height: auto;
   }
