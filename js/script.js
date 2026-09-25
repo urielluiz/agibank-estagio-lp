@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initLeafEffect();
   initCharacterWalk();
   initPercentCounter();
+  initCarDriveIn();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -174,10 +175,6 @@ function initHeroParallax() {
 
 /* ============================================
    AWARDS: PARALLAX DE PROFUNDIDADE
-   As 4 camadas de imagem se movem sutilmente com
-   base na posição do mouse em relação ao centro da
-   seção - cada camada tem uma "profundidade"
-   diferente (data-depth), criando sensação de 3D.
 ============================================ */
 function initAwardsParallax() {
   const stage = document.getElementById('awardsStage');
@@ -205,12 +202,12 @@ function initAwardsParallax() {
     const relX = (e.clientX - rect.left) / rect.width;
     const relY = (e.clientY - rect.top) / rect.height;
 
-    const normX = (relX - 0.5) * 2; // -1 a 1
+    const normX = (relX - 0.5) * 2;
     const normY = (relY - 0.5) * 2;
 
     state.forEach(function (item) {
       item.targetX = normX * item.depth;
-      item.targetY = normY * item.depth * 0.6; // movimento vertical mais discreto
+      item.targetY = normY * item.depth * 0.6;
     });
   });
 
@@ -279,7 +276,8 @@ function initPositionEditor() {
       '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
       '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
+      '5. Para "purpose-car", a posição aqui é onde ele FICA PARADO (ele entra vindo da direita, rotacionado).<br><br>' +
+      '6. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -533,8 +531,6 @@ function initWhyApplyTimeline() {
 
 /* ============================================
    SCROLL REVEAL GENÉRICO
-   Observa tanto .reveal-fade (baixo→cima) quanto
-   .reveal-fade-left (esquerda→direita).
 ============================================ */
 function initScrollReveal() {
   const revealEls = document.querySelectorAll('.reveal-fade, .reveal-fade-left');
@@ -742,4 +738,85 @@ function initPercentCounter() {
   observer.observe(counter);
 
   console.log('Countdown "100%" inicializado ✅');
+}
+
+/* ============================================
+   CTA PURPOSE: FUSCA CHEGANDO COM O SCROLL
+   Sem "pin" - o carro reage 100% à posição de
+   scroll da seção. Progresso 0 = seção ainda
+   entrando por baixo da tela (carro "de lado",
+   deslocado à direita). Progresso 1 = seção já
+   ocupando boa parte da tela (carro parado, reto,
+   na posição final). Totalmente reversível: rolar
+   para cima refaz o movimento ao contrário.
+============================================ */
+function initCarDriveIn() {
+  const stage = document.getElementById('ctaPurposeStage');
+  const car = document.getElementById('ctaPurposeCar');
+  if (!stage || !car) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  if (reduceMotion || isMobile) {
+    console.log('Fusca: animação de scroll desabilitada (mobile ou reduced motion).');
+    car.style.transform = 'none';
+    return;
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  }
+
+  function easeOutCubic(x) {
+    return 1 - Math.pow(1 - x, 3);
+  }
+
+  // Distâncias/ângulos do estado inicial (carro "chegando")
+  const START_TRANSLATE_X = 45; // % da própria largura do carro
+  const START_ROTATE = -7;      // graus
+
+  function getProgress() {
+    const rect = stage.getBoundingClientRect();
+    const vh = window.innerHeight;
+
+    // progress 0: topo da seção ainda no fundo da tela
+    // progress 1: topo da seção já subiu para ~25% da tela
+    const start = vh;
+    const end = vh * 0.25;
+
+    const raw = (start - rect.top) / (start - end);
+    return clamp(raw, 0, 1);
+  }
+
+  function update() {
+    const progress = getProgress();
+    const eased = easeOutCubic(progress);
+
+    const translateX = START_TRANSLATE_X * (1 - eased);
+    const rotate = START_ROTATE * (1 - eased);
+
+    car.style.transform =
+      'translateX(' + translateX.toFixed(2) + '%) ' +
+      'rotate(' + rotate.toFixed(2) + 'deg)';
+  }
+
+  let ticking = false;
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  update();
+
+  console.log('Fusca: animação de scroll inicializada ✅');
 }
