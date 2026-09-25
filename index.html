@@ -76,7 +76,6 @@
 
   <!-- ===================================
        SEÇÃO 01 - WHY APPLY
-       (Primeira dobra – Por que se inscrever)
   =================================== -->
   <section id="why-apply" class="why-apply">
 
@@ -138,13 +137,11 @@
 
   <!-- ===================================
        SEÇÃO 02 - CTA INTRO
-       (Segunda dobra – CTA)
   =================================== -->
   <section id="cta-intro" class="cta-intro">
     <div class="cta-intro__stage" id="ctaIntroStage" data-ratio-var="--cta-ratio-h" data-ratio-min="350" data-ratio-max="650" data-ratio-label="CTA Intro">
 
       <div class="cta-intro__bg-bleed"></div>
-
       <div class="cta-intro__leaf-zone" id="ctaIntroLeafZone" data-editable="leaf-zone"></div>
 
       <div class="cta-intro__illustration" data-editable="cta-illustration">
@@ -171,7 +168,6 @@
 
   <!-- ===================================
        SEÇÃO 03 - AWARDS
-       (Terceira dobra – Reconhecimentos Agi)
   =================================== -->
   <section id="awards" class="awards">
     <div class="awards__stage" id="awardsStage" data-ratio-var="--awards-ratio-h" data-ratio-min="450" data-ratio-max="800" data-ratio-label="Awards">
@@ -217,7 +213,6 @@
 
   <!-- ===================================
        SEÇÃO 04 - CTA PURPOSE
-       (Quarta dobra – CTA com o propósito)
   =================================== -->
   <section id="cta-purpose" class="cta-purpose">
 
@@ -259,84 +254,92 @@
        SEÇÃO 05 - KICKSTART
        (Quinta dobra – Pra começar com tudo)
   =================================== -->
-  <section id="kickstart" class="kickstart section-padding">
-    <div class="container">
+  <section id="kickstart" class="kickstart">
 
-      <h2 class="kickstart__title">Pra começar com tudo!</h2>
+    <!-- Corredor de pin para a animação de morph da foto -->
+    <div class="kickstart__pin-wrapper" id="kickstartPinWrapper">
+      <div class="kickstart__pin-inner">
+        
+        <div class="container">
+          
+          <!-- O conteúdo real fica com opacidade 0 no início e revela no scroll -->
+          <div class="kickstart__content" id="kickstartContent">
+            
+            <h2 class="kickstart__title">Pra começar com tudo!</h2>
 
-      <div class="kickstart__block">
-        <h3 class="kickstart__subtitle">Pacote financeiro</h3>
+            <div class="kickstart__block">
+              <h3 class="kickstart__subtitle">Pacote financeiro</h3>
 
-        <div class="kickstart__cards">
-          <div class="kickstart__card">
-            <p>Bolsa-auxílio<br>de <strong>R$ 2.400,00</strong></p>
-            <span class="kickstart__card-small">(jornada de 6h diárias)</span>
-          </div>
-          <div class="kickstart__card">
-            <p>VR/VA<br>de <strong>R$ 1.274,61</strong></p>
-          </div>
-          <div class="kickstart__card">
-            <p>Auxílio-mobilidade<br>de <strong>R$ 250,00</strong></p>
-            <span class="kickstart__card-small">ou vale-transporte</span>
+              <div class="kickstart__cards">
+                <div class="kickstart__card">
+                  <p>Bolsa-auxílio<br>de <strong>R$ 2.400,00</strong></p>
+                  <span class="kickstart__card-small">(jornada de 6h diárias)</span>
+                </div>
+                <div class="kickstart__card">
+                  <p>VR/VA<br>de <strong>R$ 1.274,61</strong></p>
+                </div>
+                <div class="kickstart__card">
+                  <p>Auxílio-mobilidade<br>de <strong>R$ 250,00</strong></p>
+                  <span class="kickstart__card-small">ou vale-transporte</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="kickstart__block">
+              <h3 class="kickstart__subtitle">Benefícios</h3>
+
+              <div class="kickstart__pills">
+                <div class="kickstart__pill">
+                  <span>Plano de saúde<br>e odontológico</span>
+                </div>
+                <div class="kickstart__pill">
+                  <span>Teleatendimento<br>médico e psicológico<br>gratuito</span>
+                </div>
+                
+                <!-- Esta é a pílula "alvo" onde a foto gigante vai pousar -->
+                <div class="kickstart__pill kickstart__pill--photo" id="kickstartTargetPill">
+                  <!-- A imagem real fica escondida até a animação terminar -->
+                  <img src="assets/img/Pilula-Beneficios-01.png" alt="Colaboradores Agibank">
+                </div>
+
+                <div class="kickstart__pill">
+                  <span>TotalPass</span>
+                </div>
+
+                <div class="kickstart__pill kickstart__pill--photo">
+                  <img src="assets/img/Pilula-Beneficios-02.png" alt="Colaboradora Agibank">
+                </div>
+                <div class="kickstart__pill">
+                  <span>Fretado gratuito*</span>
+                </div>
+                <div class="kickstart__pill">
+                  <span>Day-off no mês<br>do seu aniversário</span>
+                </div>
+                <div class="kickstart__pill">
+                  <span>Plano de saúde para pet</span>
+                </div>
+              </div>
+            </div>
+
+            <p class="kickstart__legal">
+              *Transporte com lugares reserváveis mediante a disponibilidade de assentos e rotas. Chegada ao Agi Campus às 8h30 e saída às 18h20.
+            </p>
+
           </div>
         </div>
+
       </div>
-
-      <div class="kickstart__block">
-        <h3 class="kickstart__subtitle">Benefícios</h3>
-
-        <div class="kickstart__pills" id="kickstartPills">
-
-          <div class="kickstart__pill">
-            <span>Plano de saúde e odontológico</span>
-          </div>
-
-          <div class="kickstart__pill">
-            <span>Teleatendimento médico e psicológico gratuito</span>
-          </div>
-
-          <div class="kickstart__pill kickstart__pill--photo" id="kickstartTargetPill">
-            <img src="assets/img/Pilula-Beneficios-01.png" alt="Colaboradores Agibank">
-          </div>
-
-          <div class="kickstart__pill">
-            <span>TotalPass</span>
-          </div>
-
-          <div class="kickstart__pill kickstart__pill--photo">
-            <img src="assets/img/Pilula-Beneficios-02.png" alt="Colaboradora Agibank">
-          </div>
-
-          <div class="kickstart__pill">
-            <span>Fretado gratuito*</span>
-          </div>
-
-          <div class="kickstart__pill">
-            <span>Day-off no mês do seu aniversário</span>
-          </div>
-
-          <div class="kickstart__pill">
-            <span>Plano de saúde para pet</span>
-          </div>
-
-        </div>
-      </div>
-
-      <p class="kickstart__legal">
-        *Transporte com lugares reserváveis mediante a disponibilidade de assentos e rotas. Chegada ao Agi Campus às 8h30 e saída às 18h20.
-      </p>
-
     </div>
 
-    <!-- Clone flutuante usado no efeito de morph (foto full-screen → pílula) -->
+    <!-- Clone flutuante (Efeito Morph). Fica fora do container para ser full-screen -->
     <div class="kickstart__morph-clone" id="kickstartMorphClone">
       <img src="assets/img/Full-Beneficios.jpg" alt="">
     </div>
+
   </section>
 
   <!-- ===================================
        SEÇÕES AINDA NÃO DESENVOLVIDAS
-       (placeholders temporários de desenvolvimento)
   =================================== -->
   <section id="requirements" class="dev-placeholder">
     <span class="dev-placeholder__label">06 · Requirements</span>
