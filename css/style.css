@@ -934,12 +934,21 @@ body.position-editor-active .cta-intro__leaf-zone {
   transform: translateY(-2px);
 }
 
-/* ---------- Reveal fade genérico (de baixo para cima) ---------- */
+/* ---------- Reveal fade genérico (de baixo para cima) ----------
+   IMPORTANTE: a transição SÓ é aplicada quando o item já
+   tem a classe .is-visible. Isso evita "sacudidas" causadas
+   por recálculos de layout (parallax, imagens carregando, etc)
+   enquanto o elemento ainda está no estado inicial (invisível). */
 
 .reveal-fade-item {
   opacity: 0;
   transform: translateY(20px);
+}
+
+.reveal-fade.is-visible .reveal-fade-item {
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .reveal-fade.is-visible .reveal-fade-item:nth-child(1) { transition-delay: 0.1s; }
@@ -948,17 +957,17 @@ body.position-editor-active .cta-intro__leaf-zone {
 .reveal-fade.is-visible .reveal-fade-item:nth-child(4) { transition-delay: 0.7s; }
 .reveal-fade.is-visible .reveal-fade-item:nth-child(5) { transition-delay: 0.9s; }
 
-.reveal-fade.is-visible .reveal-fade-item {
-  opacity: 1;
-  transform: translateY(0);
-}
-
 /* ---------- Reveal fade da esquerda para a direita ---------- */
 
 .reveal-fade-left-item {
   opacity: 0;
   transform: translateX(-28px);
+}
+
+.reveal-fade-left.is-visible .reveal-fade-left-item {
   transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  opacity: 1;
+  transform: translateX(0);
 }
 
 .reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(1) { transition-delay: 0.1s; }
@@ -966,11 +975,6 @@ body.position-editor-active .cta-intro__leaf-zone {
 .reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(3) { transition-delay: 0.5s; }
 .reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(4) { transition-delay: 0.7s; }
 .reveal-fade-left.is-visible .reveal-fade-left-item:nth-child(5) { transition-delay: 0.9s; }
-
-.reveal-fade-left.is-visible .reveal-fade-left-item {
-  opacity: 1;
-  transform: translateX(0);
-}
 
 @media (prefers-reduced-motion: reduce) {
   .reveal-fade-item,
@@ -1062,10 +1066,9 @@ body.position-editor-active .cta-intro__leaf-zone {
 
 /* ---------- CTA (botão) ----------
    Estado normal: fundo Azul Marinho, texto branco.
-   Hover: fundo Azul Agibank + glow na mesma cor,
-   texto PERMANECE branco (reforçado explicitamente
-   com !important para evitar qualquer sobreposição
-   de regras de link/anchor). */
+   Hover: fundo Azul Agibank + glow, texto permanece
+   branco. Transição rápida (0.25s) e simplificada
+   para uma resposta imediata ao passar/tirar o mouse. */
 
 a.awards__cta {
   display: inline-flex;
@@ -1073,22 +1076,22 @@ a.awards__cta {
   justify-content: center;
   align-self: flex-start;
   background-color: var(--color-navy);
-  color: var(--color-white) !important;
+  color: var(--color-white);
   font-weight: 700;
   font-size: var(--fs-cta);
   padding: 16px 32px;
   border-radius: var(--radius-full);
   margin-top: var(--space-xs);
-  transition: background-color var(--transition-medium),
-              box-shadow var(--transition-medium),
-              transform var(--transition-fast);
+  transition: background-color 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.2s ease;
 }
 
 a.awards__cta:hover,
 a.awards__cta:focus-visible {
   background-color: var(--color-blue);
-  color: var(--color-white) !important;
-  box-shadow: 0 0 28px 8px rgba(0, 100, 249, 0.55);
+  color: var(--color-white);
+  box-shadow: 0 0 24px 6px rgba(0, 100, 249, 0.5);
   transform: translateY(-2px);
 }
 
