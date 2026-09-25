@@ -11,10 +11,12 @@ document.addEventListener('DOMContentLoaded', function () {
   initHeaderScroll();
   initMobileMenu();
   initWhyApplyTimeline();
+  initScrollReveal();
+  initLeafEffect();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax do Hero desabilitado propositalmente.');
-    initHeroEditor();
+    initPositionEditor();
   } else {
     initHeroParallax();
   }
@@ -168,62 +170,74 @@ function initHeroParallax() {
 }
 
 /* ============================================
-   HERO: EDITOR VISUAL (ativa com ?edit=1)
+   EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
 ============================================ */
-function initHeroEditor() {
+function initPositionEditor() {
   const editableEls = document.querySelectorAll('[data-editable]');
-  const heroStage = document.getElementById('heroStage');
-  if (!editableEls.length || !heroStage) return;
+  const ratioEls = document.querySelectorAll('[data-ratio-var]');
+  if (!editableEls.length) return;
 
-  document.body.classList.add('hero-editor-active');
+  document.body.classList.add('position-editor-active');
 
   const badge = document.createElement('div');
-  badge.className = 'hero-editor__badge';
+  badge.className = 'position-editor__badge';
   badge.textContent = '🛠 MODO EDIÇÃO ATIVO';
   document.body.appendChild(badge);
 
-  const currentRatio = getComputedStyle(heroStage).getPropertyValue('--hero-ratio-h').trim() || '650';
-
   const panel = document.createElement('div');
-  panel.className = 'hero-editor';
+  panel.className = 'position-editor';
+
+  let ratioHtml = '';
+  ratioEls.forEach(function (el, i) {
+    const varName = el.dataset.ratioVar;
+    const label = el.dataset.ratioLabel || varName;
+    const min = el.dataset.ratioMin || 300;
+    const max = el.dataset.ratioMax || 900;
+    const current = getComputedStyle(el).getPropertyValue(varName).trim() || min;
+
+    ratioHtml +=
+      '<div class="position-editor__ratio">' +
+        '<label>Altura "' + label + '" (' + varName + ': <span data-ratio-display="' + i + '">' + current + '</span>)</label>' +
+        '<input type="range" data-ratio-input="' + i + '" data-ratio-var="' + varName + '" data-ratio-target="' + i + '" min="' + min + '" max="' + max + '" step="5" value="' + current + '">' +
+      '</div>';
+  });
+
   panel.innerHTML =
-    '<div class="hero-editor__header">' +
-      '<strong>Editor do Hero</strong>' +
-      '<button type="button" class="hero-editor__copy">Copiar configuração</button>' +
+    '<div class="position-editor__header">' +
+      '<strong>Editor de Posição</strong>' +
+      '<button type="button" class="position-editor__copy">Copiar tudo</button>' +
     '</div>' +
-    '<div class="hero-editor__ratio">' +
-      '<label>Altura do Hero (proporção 1440 / <span id="heroRatioValue">' + currentRatio + '</span>)</label>' +
-      '<input type="range" id="heroRatioInput" min="450" max="850" step="5" value="' + currentRatio + '">' +
-    '</div>' +
-    '<div class="hero-editor__list"></div>' +
-    '<div class="hero-editor__hint">' +
+    ratioHtml +
+    '<div class="position-editor__list"></div>' +
+    '<div class="position-editor__hint">' +
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos Top / Left / Width.<br><br>' +
-      '4. Ajuste a altura geral do Hero na barrinha rosa no topo.<br><br>' +
-      '5. Quando terminar tudo, clique em "Copiar configuração" e cole no chat.' +
+      '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
+      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
     '</div>';
   document.body.appendChild(panel);
 
-  const ratioInput = panel.querySelector('#heroRatioInput');
-  const ratioValue = panel.querySelector('#heroRatioValue');
-
-  ratioInput.addEventListener('input', function () {
-    heroStage.style.setProperty('--hero-ratio-h', ratioInput.value);
-    ratioValue.textContent = ratioInput.value;
+  panel.querySelectorAll('[data-ratio-input]').forEach(function (input, i) {
+    input.addEventListener('input', function () {
+      const el = ratioEls[i];
+      const varName = input.dataset.ratioVar;
+      el.style.setProperty(varName, input.value);
+      panel.querySelector('[data-ratio-display="' + i + '"]').textContent = input.value;
+    });
   });
 
-  const list = panel.querySelector('.hero-editor__list');
+  const list = panel.querySelector('.position-editor__list');
   let selected = null;
 
   editableEls.forEach(function (el) {
     const name = el.dataset.editable;
 
     const item = document.createElement('div');
-    item.className = 'hero-editor__item';
+    item.className = 'position-editor__item';
     item.dataset.itemFor = name;
     item.innerHTML =
-      '<button type="button" class="hero-editor__select" data-target="' + name + '">' + name + '</button>' +
+      '<button type="button" class="position-editor__select" data-target="' + name + '">' + name + '</button>' +
       '<label>Top % <input type="number" step="0.1" data-prop="top" data-target="' + name + '"></label>' +
       '<label>Left % <input type="number" step="0.1" data-prop="left" data-target="' + name + '"></label>' +
       '<label>Width % <input type="number" step="0.1" data-prop="width" data-target="' + name + '"></label>';
@@ -247,7 +261,7 @@ function initHeroEditor() {
 
   function selectElement(el) {
     if (selected) selected.classList.remove('is-selected');
-    document.querySelectorAll('.hero-editor__item').forEach(function (i) {
+    document.querySelectorAll('.position-editor__item').forEach(function (i) {
       i.classList.remove('is-active');
     });
 
@@ -264,13 +278,13 @@ function initHeroEditor() {
   function updateInputs() {
     if (!selected) return;
     const name = selected.dataset.editable;
-    panel.querySelectorAll('input[data-target="' + name + '"]').forEach(function (input) {
+    panel.querySelectorAll('input[data-prop][data-target="' + name + '"]').forEach(function (input) {
       input.value = getPercent(selected, input.dataset.prop);
     });
   }
 
   panel.addEventListener('click', function (e) {
-    if (e.target.matches('.hero-editor__select')) {
+    if (e.target.matches('.position-editor__select')) {
       const name = e.target.dataset.target;
       const el = document.querySelector('[data-editable="' + name + '"]');
       selectElement(el);
@@ -305,10 +319,14 @@ function initHeroEditor() {
     updateInputs();
   });
 
-  panel.querySelector('.hero-editor__copy').addEventListener('click', function () {
-    let output = '/* ===== CONFIGURAÇÃO FINAL DO HERO ===== */\n\n';
-    output += '/* hero-stage (altura da seção) */\n';
-    output += 'aspect-ratio-height: ' + heroStage.style.getPropertyValue('--hero-ratio-h') + ';\n\n';
+  panel.querySelector('.position-editor__copy').addEventListener('click', function () {
+    let output = '/* ===== CONFIGURAÇÃO FINAL DE POSIÇÃO ===== */\n\n';
+
+    ratioEls.forEach(function (el) {
+      const varName = el.dataset.ratioVar;
+      output += '/* ratio ' + (el.dataset.ratioLabel || varName) + ' */\n';
+      output += varName + ': ' + el.style.getPropertyValue(varName) + ';\n\n';
+    });
 
     editableEls.forEach(function (el) {
       const name = el.dataset.editable;
@@ -328,13 +346,6 @@ function initHeroEditor() {
 
 /* ============================================
    SEÇÃO 01 - WHY APPLY: PIN + SCROLL SCRUBBING
-   O wrapper (#whyApplyPinWrapper) tem altura extra
-   (300vh). Enquanto o usuário rola por essa altura,
-   o progresso é calculado com base em QUANTO desse
-   corredor já foi percorrido - não mais na posição
-   visual da seção. Isso garante que a seção fique
-   "grudada" na tela até revelar (ou esconder, se
-   rolar pra cima) todos os cards.
 ============================================ */
 function initWhyApplyTimeline() {
   const pinWrapper = document.getElementById('whyApplyPinWrapper');
@@ -362,7 +373,7 @@ function initWhyApplyTimeline() {
   }
 
   const total = dots.length;
-  const ITEM_SPAN = 0.4; // cada item "ocupa" 40% do progresso total (com sobreposição)
+  const ITEM_SPAN = 0.4;
 
   function easeOutCubic(x) {
     return 1 - Math.pow(1 - x, 3);
@@ -378,9 +389,6 @@ function initWhyApplyTimeline() {
     return Math.min(Math.max(value, min), max);
   }
 
-  /* ---------- Progresso baseado no corredor de scroll ----------
-     0 = wrapper acabou de chegar no topo da tela (pin começando)
-     1 = wrapper terminou de passar (pin terminando) */
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
     const wrapperTop = rect.top + window.scrollY;
@@ -456,4 +464,135 @@ function initWhyApplyTimeline() {
   update();
 
   console.log('Timeline "Why Apply" inicializada ✅ | ' + total + ' itens | pin + scrub ativo');
+}
+
+/* ============================================
+   SCROLL REVEAL GENÉRICO
+============================================ */
+function initScrollReveal() {
+  const revealEls = document.querySelectorAll('.reveal-fade');
+  if (!revealEls.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    revealEls.forEach(function (el) {
+      el.classList.add('is-visible');
+    });
+    return;
+  }
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.35 });
+
+  revealEls.forEach(function (el) {
+    observer.observe(el);
+  });
+
+  console.log('Scroll reveal inicializado ✅ | ' + revealEls.length + ' bloco(s)');
+}
+
+/* ============================================
+   CTA INTRO: EFEITO DE FOLHINHAS VOANDO
+============================================ */
+function initLeafEffect() {
+  const zone = document.getElementById('ctaIntroLeafZone');
+  if (!zone) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    console.log('Efeito de folhinhas desabilitado (prefers-reduced-motion).');
+    return;
+  }
+
+  const LEAF_COLORS = ['#77DF40', '#FFD600', '#5BC72E'];
+  let isVisible = false;
+  let spawnTimer = null;
+
+  function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  function createLeafSVG(color) {
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('width', '100%');
+    svg.setAttribute('height', '100%');
+
+    const path = document.createElementNS(svgNS, 'path');
+    path.setAttribute(
+      'd',
+      'M12 2C7 2 2 7 2 14c0 4 3 8 10 8s10-4 10-8C22 7 17 2 12 2z'
+    );
+    path.setAttribute('fill', color);
+
+    const vein = document.createElementNS(svgNS, 'path');
+    vein.setAttribute('d', 'M12 4 L12 20');
+    vein.setAttribute('stroke', 'rgba(0,0,0,0.15)');
+    vein.setAttribute('stroke-width', '1');
+
+    svg.appendChild(path);
+    svg.appendChild(vein);
+    return svg;
+  }
+
+  function spawnLeaf() {
+    const size = randomBetween(10, 20);
+    const startLeft = randomBetween(0, 90);
+    const duration = randomBetween(4, 7);
+    const drift = randomBetween(-80, 80);
+    const fall = randomBetween(180, 260);
+    const spin = randomBetween(180, 540) * (Math.random() > 0.5 ? 1 : -1);
+    const color = LEAF_COLORS[Math.floor(Math.random() * LEAF_COLORS.length)];
+
+    const leaf = document.createElement('div');
+    leaf.className = 'cta-leaf';
+    leaf.style.width = size + 'px';
+    leaf.style.height = size + 'px';
+    leaf.style.left = startLeft + '%';
+    leaf.style.setProperty('--leaf-drift', drift + 'px');
+    leaf.style.setProperty('--leaf-fall', fall + 'px');
+    leaf.style.setProperty('--leaf-spin', spin + 'deg');
+    leaf.style.animationDuration = duration + 's';
+
+    leaf.appendChild(createLeafSVG(color));
+    zone.appendChild(leaf);
+
+    leaf.addEventListener('animationend', function () {
+      leaf.remove();
+    });
+  }
+
+  function startSpawning() {
+    if (spawnTimer) return;
+    spawnTimer = setInterval(function () {
+      spawnLeaf();
+    }, randomBetween(900, 1600));
+  }
+
+  function stopSpawning() {
+    clearInterval(spawnTimer);
+    spawnTimer = null;
+  }
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        startSpawning();
+      } else {
+        stopSpawning();
+      }
+    });
+  }, { threshold: 0.1 });
+
+  observer.observe(zone);
+
+  console.log('Efeito de folhinhas inicializado ✅');
 }
