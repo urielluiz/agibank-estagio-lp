@@ -371,8 +371,8 @@ function initPositionEditor() {
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
-      '4. Ajuste alturas de seções inteiras nas barrinhas rosa no topo.<br><br>' +
-      '5. Quando terminar, clique em "Copiar tudo" e cole no chat.' +
+      '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
+      '5. Quando terminar, clique em "Copiar tudo".' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -841,7 +841,7 @@ function initPercentCounter() {
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA + CACO CHEGANDO (COM PIN)
+   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -862,6 +862,7 @@ function initCarDriveIn() {
     return;
   }
 
+  // Reduzi o corredor de scroll para não prender o usuário (160vh no CSS)
   const ANIM_SPAN = 0.8;
   const FADE_SPAN = 0.35;
 
@@ -940,11 +941,6 @@ function initCarDriveIn() {
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
-   CORREÇÃO: O clone (foto full-screen) agora fica
-   oculto (display: none) enquanto o scroll está
-   fora da área de ativação. Ele só se torna visível
-   quando a seção Kickstart entra no viewport,
-   evitando bloquear o clique nas seções anteriores.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -989,26 +985,19 @@ function initKickstartMorph() {
     const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    // CORREÇÃO AQUI: Se o progresso é <= 0 (seção ainda não
-    // chegou) ou >= 1 (seção já passou inteira), escondemos o
-    // clone para não bloquear a página.
     if (progress <= 0 || progress >= 1) {
        if (progress >= 1) {
-           // Animação terminou, o usuário continua rolando pra baixo
            clone.style.display = 'none';
            contentToReveal.style.opacity = '1';
            targetPill.style.opacity = '1';
        } else {
-           // Animação nem começou, o usuário está nas seções de cima
            clone.style.display = 'none';
            contentToReveal.style.opacity = '0';
            targetPill.style.opacity = '0';
        }
-       return; // Sai da função, não precisa calcular posições
+       return;
     } 
     
-    // Se o progresso está entre 0 e 1, a animação está rodando:
-    // mostramos o clone e escondemos a pílula de destino.
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
@@ -1057,7 +1046,5 @@ function initKickstartMorph() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  // Roda uma vez no início para garantir que o clone nasça escondido
-  // caso a página carregue no topo
   update();
 }
