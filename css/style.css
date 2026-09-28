@@ -328,7 +328,7 @@ h4 { font-size: var(--fs-h4); }
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  aspect-ratio: 1440 / var(--hero-ratio-h);
+  aspect-ratio: 1440 / var(--hero-ratio-h, 650);
   z-index: 1;
 }
 
@@ -448,6 +448,148 @@ h4 { font-size: var(--fs-h4); }
     opacity: 1 !important;
     transform: none !important;
   }
+}
+
+/* ============================================
+   EDITOR VISUAL UNIVERSAL (só aparece com ?edit=1)
+============================================ */
+
+body.position-editor-active [data-parallax] {
+  pointer-events: auto;
+}
+
+body.position-editor-active [data-editable] {
+  cursor: move;
+  outline: 1px dashed rgba(0, 100, 249, 0.5);
+}
+
+body.position-editor-active [data-editable].is-selected {
+  outline: 2px solid #FF2D78;
+  outline-offset: 2px;
+}
+
+.position-editor {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 300px;
+  height: 100vh;
+  background-color: #14172B;
+  color: #fff;
+  z-index: 99999;
+  overflow-y: auto;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  box-shadow: -4px 0 24px rgba(0,0,0,0.3);
+}
+
+.position-editor__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  position: sticky;
+  top: 0;
+  background-color: #14172B;
+  z-index: 2;
+}
+
+.position-editor__copy {
+  background-color: #77DF40;
+  color: #000F44;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.position-editor__ratio {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background-color: rgba(255, 45, 120, 0.08);
+}
+
+.position-editor__ratio label {
+  display: block;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 6px;
+  color: #FF6FA5;
+}
+
+.position-editor__ratio input[type="range"] {
+  width: 100%;
+}
+
+.position-editor__list {
+  padding: 8px 16px;
+}
+
+.position-editor__item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.position-editor__select {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background-color: rgba(255,255,255,0.06);
+  color: #fff;
+  padding: 8px 10px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.position-editor__item.is-active .position-editor__select {
+  background-color: #FF2D78;
+}
+
+.position-editor__item label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.position-editor__item input {
+  width: 70px;
+  padding: 4px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background-color: rgba(255,255,255,0.08);
+  color: #fff;
+  font-size: 12px;
+}
+
+.position-editor__hint {
+  padding: 16px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.6);
+}
+
+.position-editor__badge {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  background-color: #FF2D78;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  z-index: 99999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
 /* ============================================
@@ -724,6 +866,11 @@ h4 { font-size: var(--fs-h4); }
   pointer-events: none;
 }
 
+body.position-editor-active .cta-intro__leaf-zone {
+  outline: 1px dashed rgba(255, 214, 0, 0.7);
+  background-color: rgba(255, 214, 0, 0.08);
+}
+
 .cta-intro__content {
   position: absolute;
   top: 22.00%;
@@ -975,14 +1122,35 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    SEÇÃO 04 - CTA PURPOSE
 ============================================ */
 
-/* Fundo transparente para permitir que a seção abaixo
-   (Kickstart) seja puxada para cima e apareça embaixo 
-   do Fusca e do Caco. */
+/* CORREÇÃO DO ESPAÇO BRANCO:
+   Restaurado o padding-top para não colar no Awards.
+   Fundo transparente, permitindo que a próxima seção
+   (Kickstart) seja puxada para cima e fique por baixo
+   do Fusca. */
 .cta-purpose {
   background-color: transparent;
   overflow: visible;
+  padding-top: var(--space-2xl);
   position: relative;
   z-index: 10;
+}
+
+/* CORREÇÃO DO PIN DO FUSCA:
+   Restaurado o corredor de scroll para o Fusca
+   ter espaço para animar. */
+.cta-purpose__pin-wrapper {
+  position: relative;
+  height: 160vh;
+}
+
+.cta-purpose__pin-inner {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .cta-purpose__stage {
@@ -1098,6 +1266,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .cta-purpose__pin-wrapper {
+    height: auto;
+  }
+
+  .cta-purpose__pin-inner {
+    position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
+  }
+
   .cta-purpose__car,
   .cta-purpose__caco {
     opacity: 1 !important;
@@ -1109,13 +1287,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    SEÇÃO 05 - KICKSTART
 ============================================ */
 
-/* A MATEMÁTICA DO ENCAIXE:
-   Como a seção do Fusca é transparente na parte de baixo
-   (os 24.6% que sobram do fundo azul), nós puxamos essa
-   seção (Kickstart) para cima exatamente nessa medida.
-   Isso faz a foto gigante colar perfeitamente no azul,
-   enquanto o Fusca vaza por cima dela.
-   Cálculo: 100vw * (620/1440) * -0.246 */
+/* CORREÇÃO DO ESPAÇO BRANCO:
+   A margem negativa puxa esta seção para CIMA,
+   fazendo ela entrar debaixo da seção do Fusca.
+   O cálculo (0.246) é a diferença entre a altura
+   total da prancheta do Fusca (100%) e a altura
+   do fundo azul (75.4%). */
 .kickstart {
   background-color: var(--color-white);
   position: relative;
@@ -1553,6 +1730,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
+  .cta-purpose__pin-wrapper {
+    height: auto;
+  }
+
+  .cta-purpose__pin-inner {
+    position: static;
+    height: auto;
+    padding: var(--space-xl) 0;
+  }
+
   .cta-purpose__stage {
     aspect-ratio: auto;
     min-height: auto;
@@ -1595,7 +1782,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 16px;
   }
 
-  /* Kickstart - fallback mobile */
   .kickstart {
     margin-top: 0;
   }
