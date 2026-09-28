@@ -3,15 +3,13 @@
    JavaScript principal
 
    CHANGELOG:
-   - [REESCRITO COMPLETO] initAreasStack(): progresso de "liberação"
-     (release) agora é calculado de forma 100% independente por card
-     (nunca compara com o card vizinho) — cada card só olha para a
-     posição do seu PRÓPRIO slot em relação ao viewport. Isso elimina
-     a classe de bugs de medição cruzada. O resultado é contínuo
-     (scroll-scrubbed), com scale suave de 1 → 0.92, sincronizado
-     naturalmente com a chegada do próximo card (que é 100% CSS via
-     z-index + diferença de "top", sem cálculo de JS para isso).
-     Ativo agora também no mobile (antes desativávamos).
+   - [FIX RAIZ] initAreasStack(): removido 100% do scale() calculado
+     via scroll. Sobreposição agora é PURA CSS (sticky + top crescente
+     por card), sem nenhuma transformação de tamanho. O JS só: (1)
+     mede a altura máxima de cada card (fechado e aberto) para definir
+     a altura do slot automaticamente — funciona com 4 a 7 pílulas sem
+     ajuste manual; (2) descobre qual card está na frente (o de maior
+     índice que já "chegou") pra pintar de azul e liberar o clique.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -375,8 +373,7 @@ function initRequirementsCascade() {
 
 /* ============================================
    SEÇÃO 07 - ÁREAS DE ATUAÇÃO
-   (Sticky Stacking Cards — progresso contínuo,
-   calculado de forma independente por card)
+   (Sticky Stacking Cards — sobreposição pura CSS)
 ============================================ */
 function initAreasStack() {
   const stack = document.getElementById('areasStack');
@@ -388,9 +385,48 @@ function initAreasStack() {
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Clique abre/fecha o dropdown. Em qualquer resolução, só o card
-  // marcado como "is-active" é de fato clicável (pointer-events
-  // controlado via CSS, ver .areas__card.is-active .areas__card-header).
+  const DWELL = 300;       // px extras de scroll após a altura do card antes de ser coberto
+  const LAST_DWELL = 100;  // último card não precisa de fôlego extra (nada o cobre depois)
+
+  // Mede a MAIOR altura possível do card (fechado vs aberto), desativando
+  // a transição momentaneamente pra leitura instantânea e precisa.
+  function measureMaxHeight(card) {
+    const body = card.querySelector('.areas__card-body');
+    if (!body) return card.offsetHeight;
+
+    const wasOpen = card.classList.contains('is-open');
+    const prevTransition = body.style.transition;
+    body.style.transition = 'none';
+
+    card.classList.remove('is-open');
+    void card.offsetHeight;
+    const closedHeight = card.offsetHeight;
+
+    card.classList.add('is-open');
+    void card.offsetHeight;
+    const openHeight = card.offsetHeight;
+
+    if (wasOpen) {
+      card.classList.add('is-open');
+    } else {
+      card.classList.remove('is-open');
+    }
+    void card.offsetHeight;
+    body.style.transition = prevTransition;
+
+    return Math.max(closedHeight, openHeight);
+  }
+
+  function updateSlotHeights() {
+    cards.forEach(function (card, i) {
+      const maxHeight = measureMaxHeight(card);
+      const dwell = (i === cards.length - 1) ? LAST_DWELL : DWELL;
+      slots[i].style.height = (maxHeight + dwell) + 'px';
+    });
+  }
+
+  // Clique abre/fecha o dropdown. Só funciona no card marcado como
+  // "is-active" (pointer-events controlado via CSS).
   cards.forEach(function (card) {
     const headerBtn = card.querySelector('.areas__card-header');
     if (!headerBtn) return;
@@ -399,7 +435,23 @@ function initAreasStack() {
       const wasOpen = card.classList.contains('is-open');
       cards.forEach(function (c) { c.classList.remove('is-open'); });
       if (!wasOpen) card.classList.add('is-open');
+
+      // Recalcula alturas depois do toggle, já que measureMaxHeight
+      // sempre considera o pior caso (aberto ou fechado) — isso
+      // garante que qualquer mudança de conteúdo futuro (ex: mais
+      // pílulas adicionadas) continue funcionando sem ajuste manual.
+      requestAnimationFrame(updateSlotHeights);
     });
+  });
+
+  updateSlotHeights();
+
+  window.addEventListener('load', updateSlotHeights);
+
+  let resizeTimer = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(updateSlotHeights, 150);
   });
 
   if (reduceMotion) {
@@ -407,46 +459,27 @@ function initAreasStack() {
     return;
   }
 
-  function clamp(v, min, max) {
-    return Math.min(Math.max(v, min), max);
-  }
+  function updateActive() {
+    let activeIndex = -1;
 
-  const maxScaleLoss = parseFloat(
-    getComputedStyle(document.documentElement).getPropertyValue('--areas-max-scale-loss')
-  ) || 0.08;
-
-  function update() {
     cards.forEach(function (card, i) {
-      const slot = slots[i];
-      const slotRect = slot.getBoundingClientRect();
-      const cardHeight = card.offsetHeight;
       const topValue = parseFloat(getComputedStyle(card).top) || 0;
+      const slotRect = slots[i].getBoundingClientRect();
 
-      // O card só é considerado "chegado" quando seu próprio slot já
-      // alcançou o ponto onde ele gruda (top). Antes disso, ele ainda
-      // está abaixo na página — não deve ser tratado como ativo nem
-      // sofrer nenhuma transformação.
+      // "Chegou" quando o topo do próprio slot já alcançou o ponto
+      // onde o card gruda. Isso NUNCA compara com outro card — é só
+      // a relação entre o slot e o valor "top" do próprio card.
       const arrived = slotRect.top <= topValue + 1;
 
-      let release = 0;
-
       if (arrived) {
-        // "release" = o quanto este card já está sendo "liberado"
-        // (prestes a sair da posição grudada) conforme o PRÓPRIO slot
-        // dele se aproxima do fim. Isso NUNCA olha para o card vizinho
-        // — é 100% baseado na relação entre o slot e o viewport.
-        const releaseStart = topValue + cardHeight;
-        const releaseDistance = Math.max(slot.offsetHeight - cardHeight, 1);
-        const releaseRaw = (releaseStart - slotRect.bottom) / releaseDistance;
-        release = clamp(releaseRaw, 0, 1);
+        activeIndex = i;
       }
+    });
 
-      const scale = 1 - release * maxScaleLoss;
-      card.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    if (activeIndex === -1) activeIndex = 0;
 
-      const isFront = arrived && release < 0.06;
-
-      if (isFront) {
+    cards.forEach(function (card, i) {
+      if (i === activeIndex) {
         if (!card.classList.contains('is-active')) {
           card.classList.add('is-active');
         }
@@ -463,7 +496,7 @@ function initAreasStack() {
   function onScroll() {
     if (!ticking) {
       requestAnimationFrame(function () {
-        update();
+        updateActive();
         ticking = false;
       });
       ticking = true;
@@ -473,10 +506,8 @@ function initAreasStack() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  // Estado inicial: primeiro card ativo por padrão antes de qualquer
-  // cálculo (evita "flash" sem cor no primeiro frame).
   if (cards[0]) cards[0].classList.add('is-active');
-  update();
+  updateActive();
 }
 
 /* ============================================
