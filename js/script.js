@@ -349,13 +349,13 @@ function initPositionEditor() {
   ratioEls.forEach(function (el, i) {
     const varName = el.dataset.ratioVar;
     const label = el.dataset.ratioLabel || varName;
-    const min = el.dataset.ratioMin || 300;
+    const min = el.dataset.ratioMin || -500;
     const max = el.dataset.ratioMax || 900;
     const current = getComputedStyle(el).getPropertyValue(varName).trim() || min;
 
     ratioHtml +=
       '<div class="position-editor__ratio">' +
-        '<label>Altura "' + label + '" (' + varName + ': <span data-ratio-display="' + i + '">' + current + '</span>)</label>' +
+        '<label>' + label + ' (' + varName + ': <span data-ratio-display="' + i + '">' + current + '</span>)</label>' +
         '<input type="range" data-ratio-input="' + i + '" data-ratio-var="' + varName + '" data-ratio-target="' + i + '" min="' + min + '" max="' + max + '" step="5" value="' + current + '">' +
       '</div>';
   });
@@ -842,7 +842,9 @@ function initPercentCounter() {
 }
 
 /* ============================================
-   CTA PURPOSE: FUSCA CHEGANDO (COM PIN)
+   CTA PURPOSE: FUSCA CHEGANDO
+   CORREÇÃO: O pin foi reativado para dar espaço
+   suficiente para a animação do Fusca acontecer.
 ============================================ */
 function initCarDriveIn() {
   const pinWrapper = document.getElementById('ctaPurposePinWrapper');
@@ -865,7 +867,6 @@ function initCarDriveIn() {
     return;
   }
 
-  // Reduzi o corredor de scroll para não prender o usuário (160vh no CSS)
   const ANIM_SPAN = 0.8;
   const FADE_SPAN = 0.35;
 
@@ -944,10 +945,6 @@ function initCarDriveIn() {
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
-   CORREÇÃO: O clone (foto full-screen) agora é
-   position:absolute DENTRO da seção, nascendo
-   junto com ela no scroll natural. Ele só vira
-   pílula quando a seção "trava" (pin) no topo.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -981,8 +978,7 @@ function initKickstartMorph() {
     const rect = pinWrapper.getBoundingClientRect();
     const headerHeight = header.offsetHeight;
     
-    // O pin começa exatamente quando o topo do wrapper
-    // encosta no fundo do header
+    // O pin começa exatamente quando o topo do wrapper encosta no fundo do header
     const startScroll = headerHeight;
     const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
@@ -993,32 +989,36 @@ function initKickstartMorph() {
   }
 
   function update() {
+    const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    // Se a animação já terminou, escondemos o clone e mostramos o real
-    if (progress >= 1) {
-       clone.style.display = 'none';
-       contentToReveal.style.opacity = '1';
-       targetPill.style.opacity = '1';
+    if (progress <= 0 || progress >= 1) {
+       if (progress >= 1) {
+           clone.style.display = 'none';
+           contentToReveal.style.opacity = '1';
+           targetPill.style.opacity = '1';
+       } else {
+           clone.style.display = 'none';
+           contentToReveal.style.opacity = '0';
+           targetPill.style.opacity = '0';
+       }
        return;
     } 
     
-    // Animação em andamento (ou antes de começar, onde progress = 0)
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
     const eased = easeOutCubic(progress);
 
-    // Posição inicial: preenche todo o pin-inner
     const innerRect = pinInner.getBoundingClientRect();
+    const targetRect = targetPill.getBoundingClientRect();
+
     const startTop = 0;
     const startLeft = 0;
     const startWidth = innerRect.width;
     const startHeight = innerRect.height;
     const startRadius = 0;
 
-    // Posição final: as coordenadas reais da pílula DENTRO do pin-inner
-    const targetRect = targetPill.getBoundingClientRect();
     const endTop = targetRect.top - innerRect.top;
     const endLeft = targetRect.left - innerRect.left;
     const endWidth = targetRect.width;
@@ -1037,7 +1037,6 @@ function initKickstartMorph() {
     clone.style.height = currentHeight + 'px';
     clone.style.borderRadius = currentRadius + 'px';
 
-    // O conteúdo de fundo revela suavemente junto com a foto encolhendo
     contentToReveal.style.opacity = eased;
   }
 
