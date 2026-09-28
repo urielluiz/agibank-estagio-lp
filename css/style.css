@@ -1122,35 +1122,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    SEÇÃO 04 - CTA PURPOSE
 ============================================ */
 
-/* CORREÇÃO DO ESPAÇO BRANCO:
-   Restaurado o padding-top para não colar no Awards.
-   Fundo transparente, permitindo que a próxima seção
-   (Kickstart) seja puxada para cima e fique por baixo
-   do Fusca. */
+/* CORREÇÃO DO FUSCA:
+   Sem pin (rola naturalmente). O fundo transparente
+   permite que a próxima seção (Kickstart) suba por
+   baixo dele. O z-index garante que o Fusca vaze por
+   cima da foto da próxima seção. */
 .cta-purpose {
   background-color: transparent;
   overflow: visible;
-  padding-top: var(--space-2xl);
   position: relative;
   z-index: 10;
-}
-
-/* CORREÇÃO DO PIN DO FUSCA:
-   Restaurado o corredor de scroll para o Fusca
-   ter espaço para animar. */
-.cta-purpose__pin-wrapper {
-  position: relative;
-  height: 160vh;
-}
-
-.cta-purpose__pin-inner {
-  position: sticky;
-  top: var(--header-height);
-  z-index: 5;
-  height: calc(100vh - var(--header-height));
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 }
 
 .cta-purpose__stage {
@@ -1162,6 +1143,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
+/* Fundo azul como faixa. Altura controlada pelo editor (75.4%) */
 .cta-purpose__bg-bleed {
   position: absolute;
   top: 0.00%;
@@ -1175,6 +1157,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
+/* ---------- Animações de entrada do Fusca/Caco ----------
+   Disparadas via JS (adiciona classe .is-animated) */
+
 .cta-purpose__caco {
   position: absolute;
   top: -55.20%;
@@ -1183,9 +1168,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 1;
   pointer-events: none;
   user-select: none;
+}
+
+.cta-purpose__anim-caco {
+  transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 1.2s ease-out;
+}
+
+.cta-purpose:not(.is-animated) .cta-purpose__anim-caco {
   opacity: 0;
-  transform: rotate(43deg);
-  will-change: transform, opacity;
+  transform: translateX(20%) rotate(-25deg);
 }
 
 .cta-purpose__caco-parallax {
@@ -1207,9 +1198,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 2;
   pointer-events: none;
   user-select: none;
+}
+
+.cta-purpose__anim-car {
+  transition: transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s, opacity 1.2s ease-out 0.1s;
+}
+
+.cta-purpose:not(.is-animated) .cta-purpose__anim-car {
   opacity: 0;
   transform: translateX(45%) rotate(-7deg);
-  will-change: transform, opacity;
 }
 
 .cta-purpose__car-img {
@@ -1266,20 +1263,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .cta-purpose__pin-wrapper {
-    height: auto;
-  }
-
-  .cta-purpose__pin-inner {
-    position: static;
-    height: auto;
-    padding: var(--space-xl) 0;
-  }
-
-  .cta-purpose__car,
-  .cta-purpose__caco {
+  .cta-purpose__anim-car,
+  .cta-purpose__anim-caco {
     opacity: 1 !important;
     transform: none !important;
+    transition: none !important;
   }
 }
 
@@ -1290,13 +1278,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 /* CORREÇÃO DO ESPAÇO BRANCO:
    A margem negativa puxa esta seção para CIMA,
    fazendo ela entrar debaixo da seção do Fusca.
-   O cálculo (0.246) é a diferença entre a altura
-   total da prancheta do Fusca (100%) e a altura
-   do fundo azul (75.4%). */
+   O cálculo é ajustado via editor visual. */
 .kickstart {
   background-color: var(--color-white);
   position: relative;
-  margin-top: calc(min(100vw, var(--container-max)) * (var(--cta-purpose-ratio-h, 620) / 1440) * -0.246);
+  margin-top: calc(var(--cta-purpose-mb, -120) * 1px);
 }
 
 .kickstart__pin-wrapper {
@@ -1451,6 +1437,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   text-align: center;
 }
 
+/* CORREÇÃO DA FOTO GIGANTE:
+   O clone agora vive DENTRO do pin-inner como absolute.
+   Ele nasce visível e sobe naturalmente com o scroll.
+   Quando o pin-inner trava, ele trava junto e encolhe. */
 .kickstart__morph-clone {
   position: absolute;
   top: 0;
@@ -1459,7 +1449,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   z-index: 10;
   pointer-events: none;
-  display: none;
+  display: block;
   will-change: top, left, width, height, border-radius, opacity;
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
@@ -1728,16 +1718,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .awards__image--marciano,
   .awards__image--coin {
     display: none;
-  }
-
-  .cta-purpose__pin-wrapper {
-    height: auto;
-  }
-
-  .cta-purpose__pin-inner {
-    position: static;
-    height: auto;
-    padding: var(--space-xl) 0;
   }
 
   .cta-purpose__stage {
