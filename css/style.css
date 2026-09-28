@@ -3,20 +3,14 @@
    Design Tokens + Reset + Base
    
    🔒 SEÇÕES APROVADAS E TRAVADAS (não alterar sem pedido explícito):
-   Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart.
+   Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [FIX] .requirements__ia-icon img: adicionado pointer-events:none.
-     Causa do "flicker" no hover: a imagem cresce (scale 1.25) além da
-     caixa do container, fazendo o cursor "sair" da imagem no meio da
-     animação e disparar mouseenter/mouseleave repetidamente. Com
-     pointer-events:none, o hover passa a ser detectado só pelo
-     container externo (tamanho fixo), eliminando o flicker.
-   - [NOVO] Cascata de entrada nos cards de Requirements
-     (.requirements__grid .requirements__card): duração aumentada
-     (0.6s → 0.9s) e delay progressivo real de 180ms entre cards,
-     via JS (initRequirementsCascade). Sistema isolado, não interfere
-     no .reveal-fade já usado para textos/ícone dentro do card 4.
+   - [NOVO] Seção 07 - Áreas de Atuação: pilha de cards com dropdown,
+     controlada por scroll pinado. Usa sistema de "rank" discreto
+     (não getBoundingClientRect em tempo real) para evitar a classe
+     de bugs de medição que tivemos antes. Não usa data-editable —
+     não interfere no editor visual nem nas seções travadas.
 ============================================ */
 
 @font-face {
@@ -1473,7 +1467,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 06 - REQUIREMENTS
-   (Sexta dobra – Pré-requisitos) — AINDA EM CALIBRAÇÃO
+   (Sexta dobra – Pré-requisitos)
 ============================================ */
 
 .requirements {
@@ -1618,11 +1612,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   cursor: pointer;
 }
 
-/* FIX: pointer-events:none evita que a IMAGEM (que cresce até 1.25x
-   no hover) "roube" o mouse-leave do container quando ultrapassa a
-   caixa de 48x48px. Agora o hover é sempre detectado pelo container
-   externo, que tem tamanho fixo — isso elimina o flicker/travamento
-   que a animação tinha. */
 .requirements__ia-icon img {
   width: 100%;
   height: 100%;
@@ -1664,12 +1653,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 }
 
-/* ---------- NOVO: Cascata de entrada dos 4 cards ----------
-   Sistema isolado e independente do .reveal-fade usado dentro do
-   card horizontal (textos/ícone). Controlado via JS
-   (initRequirementsCascade), que aplica um delay progressivo real
-   por card (180ms entre um e outro) antes de adicionar a classe
-   .is-cascade-visible no grid. */
 .requirements__grid .requirements__card {
   opacity: 0;
   transform: translateY(50px);
@@ -1699,6 +1682,253 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ============================================
+   SEÇÃO 07 - ÁREAS DE ATUAÇÃO
+   (Pilha de cards com dropdown, scroll pinado)
+   NOVA SEÇÃO - ainda em calibração
+============================================ */
+
+.areas {
+  background-color: var(--color-white);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-2xl);
+}
+
+.areas__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+  flex-wrap: wrap;
+}
+
+.areas__title {
+  color: var(--color-blue);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: 560px;
+  flex: 1 1 360px;
+}
+
+.areas__divider {
+  width: 2px;
+  align-self: stretch;
+  background-color: var(--color-blue);
+  opacity: 0.35;
+  flex-shrink: 0;
+  min-height: 80px;
+}
+
+.areas__subtitle {
+  color: var(--color-blue);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 400;
+  flex: 1 1 320px;
+  max-width: 420px;
+  align-self: center;
+}
+
+/* ---------- Pin wrapper (scroll pinado) ---------- */
+
+.areas__pin-wrapper {
+  position: relative;
+  height: 400vh;
+}
+
+.areas__pin-inner {
+  position: sticky;
+  top: var(--header-height);
+  z-index: 5;
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-lg) 0;
+}
+
+/* ---------- Pilha de cards (folder stack) ---------- */
+
+.areas__stack {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto var(--space-xl) auto;
+  min-height: 200px;
+}
+
+.areas__card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-blue-medium);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: transform 0.55s cubic-bezier(0.65, 0, 0.35, 1),
+              opacity 0.55s ease,
+              background-color 0.4s ease;
+  will-change: transform, opacity;
+}
+
+.areas__card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 22px 28px;
+  background: transparent;
+  color: var(--color-blue-medium);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: default;
+  pointer-events: none;
+}
+
+.areas__card-chevron {
+  font-size: 18px;
+  transition: transform 0.35s ease;
+  flex-shrink: 0;
+  margin-left: var(--space-sm);
+}
+
+.areas__card-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.areas__card-body-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.areas__card-text {
+  color: var(--color-navy);
+  font-size: 15px;
+  line-height: 1.6;
+  padding: 0 28px 20px 28px;
+}
+
+.areas__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 0 28px 28px 28px;
+}
+
+.areas__pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.areas__pill--blue   { background-color: var(--color-blue);        color: var(--color-white); }
+.areas__pill--navy   { background-color: var(--color-navy);        color: var(--color-white); }
+.areas__pill--medium { background-color: var(--color-blue-medium); color: var(--color-white); }
+.areas__pill--green  { background-color: var(--color-green);       color: var(--color-navy); }
+.areas__pill--yellow { background-color: var(--color-yellow);      color: var(--color-navy); }
+
+/* ---------- Card ATIVO (rank 0 = frente da pilha) ---------- */
+
+.areas__card[data-rank="0"] {
+  position: relative;
+  transform: translateY(0) scale(1);
+  z-index: 10;
+  opacity: 1;
+  background-color: var(--color-blue-medium);
+  border-color: var(--color-blue-medium);
+}
+
+.areas__card[data-rank="0"] .areas__card-header {
+  color: var(--color-white);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.areas__card[data-rank="0"].is-open .areas__card-chevron {
+  transform: rotate(180deg);
+}
+
+.areas__card[data-rank="0"].is-open .areas__card-body {
+  grid-template-rows: 1fr;
+}
+
+.areas__card[data-rank="0"] .areas__card-body-inner {
+  background-color: var(--color-white);
+  border-top: 1px solid rgba(0, 15, 68, 0.08);
+}
+
+/* ---------- Cards na pilha (rank 1, 2, 3 = atrás do ativo) ---------- */
+
+.areas__card[data-rank="1"] {
+  transform: translateY(-16px) scale(0.985);
+  z-index: 9;
+  opacity: 1;
+  height: 68px;
+  pointer-events: none;
+}
+
+.areas__card[data-rank="2"] {
+  transform: translateY(-30px) scale(0.97);
+  z-index: 8;
+  opacity: 0.85;
+  height: 68px;
+  pointer-events: none;
+}
+
+.areas__card[data-rank="3"] {
+  transform: translateY(-42px) scale(0.955);
+  z-index: 7;
+  opacity: 0.7;
+  height: 68px;
+  pointer-events: none;
+}
+
+.areas__card[data-rank="1"] .areas__card-body,
+.areas__card[data-rank="2"] .areas__card-body,
+.areas__card[data-rank="3"] .areas__card-body {
+  display: none;
+}
+
+/* ---------- CTA ---------- */
+
+.areas__cta-wrap {
+  display: flex;
+  justify-content: center;
+}
+
+.areas__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-green);
+  color: var(--color-navy);
+  font-weight: 700;
+  font-size: var(--fs-cta);
+  padding: 16px 40px;
+  border-radius: var(--radius-full);
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.areas__cta:hover,
+.areas__cta:focus-visible {
+  box-shadow: 0 0 24px 6px rgba(119, 223, 64, 0.55);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .areas__card {
+    transition: none !important;
   }
 }
 
@@ -1805,6 +2035,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .requirements__title {
     font-size: 32px;
+  }
+
+  .areas__title {
+    font-size: 30px;
+  }
+
+  .areas__pin-wrapper {
+    height: 380vh;
   }
 }
 
@@ -2071,5 +2309,70 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .requirements__horizontal-girl {
     display: none;
+  }
+
+  /* Áreas de Atuação: no mobile, sem pin/pilha — todos os cards
+     em fluxo normal, todos abertos/fechados independentemente
+     via clique (comportamento de acordeão simples). O JS também
+     trata isso via matchMedia, isto aqui é o fallback visual. */
+  .areas__header {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .areas__divider {
+    display: none;
+  }
+
+  .areas__title {
+    font-size: 24px;
+  }
+
+  .areas__subtitle {
+    font-size: 15px;
+  }
+
+  .areas__pin-wrapper {
+    height: auto;
+  }
+
+  .areas__pin-inner {
+    position: static;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .areas__stack {
+    min-height: auto;
+  }
+
+  .areas__card {
+    position: relative !important;
+    margin-bottom: 12px;
+    transform: none !important;
+    opacity: 1 !important;
+    height: auto !important;
+  }
+
+  .areas__card-header {
+    color: var(--color-blue-medium);
+    cursor: pointer;
+    pointer-events: auto;
+  }
+
+  .areas__card.is-open .areas__card-chevron {
+    transform: rotate(180deg);
+  }
+
+  .areas__card.is-open .areas__card-body {
+    grid-template-rows: 1fr;
+  }
+
+  .areas__card.is-open {
+    background-color: var(--color-blue-medium);
+  }
+
+  .areas__card.is-open .areas__card-header {
+    color: var(--color-white);
   }
 }
