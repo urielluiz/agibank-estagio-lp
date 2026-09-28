@@ -1,6 +1,20 @@
 /* ============================================
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    Design Tokens + Reset + Base
+   
+   CHANGELOG (mais recente no topo):
+   - [FIX] .awards: padding-bottom voltou, mas agora em vw (escalável),
+     não em px fixo. Corrige Caco vazando + reconhecimentos avançando
+     sobre o Fusca ao mesmo tempo.
+   - [FIX] .kickstart__morph-clone: adicionado overflow:hidden (faltava
+     desde que a máscara radial foi removida). Corrige cantos não
+     arredondando durante o morph da foto pra pílula.
+   - [FIX] .requirements__ia-icon: hover reescrito. Causa raiz: animação
+     com "forwards" tem prioridade maior que :hover normal, então o
+     hover antigo nunca funcionava. Agora o hover dispara uma nova
+     animação via JS (ver script.js: initIaIconHover).
+   - [ADJUST] .requirements__card-img-wrap: proporção da imagem reduzida
+     (menos quadrada/alta, mais "paisagem"), padding do card reduzido.
 ============================================ */
 
 @font-face {
@@ -1011,12 +1025,12 @@ body.position-editor-active .cta-intro__leaf-zone {
   background-color: var(--color-white);
   padding-top: var(--space-2xl);
 
-  /* CORREÇÃO: antes tinha "padding-bottom: var(--space-2xl)" fixo em px.
-     Isso quebrava o alinhamento do Caco (seção seguinte) em telas com
-     largura diferente da usada na calibração, pois misturava px fixo
-     com % escalável. Agora a transição encosta direto no bloco azul,
-     eliminando essa variável fora de proporção. */
-  padding-bottom: 0;
+  /* FIX: antes era 0 (quebrava o respiro do Caco) ou 96px fixo
+     (quebrava em telas com largura diferente da calibrada).
+     Agora escala em vw, travado no mesmo breakpoint de 1440px
+     usado no aspect-ratio do stage — mantém a MESMA proporção
+     entre o respiro e a altura do stage em qualquer largura. */
+  padding-bottom: min(6.6667vw, 96px);
 
   overflow: visible;
   position: relative;
@@ -1136,11 +1150,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
   position: relative;
   z-index: 10;
-
-  /* CORREÇÃO: removido o "margin-top: 8px" fixo (era um paliativo
-     que só funcionava numa largura de tela específica). Agora que
-     a Awards não tem mais padding-bottom fixo, a transição já
-     encosta corretamente sem precisar desse ajuste manual. */
   margin-top: 0;
 }
 
@@ -1269,7 +1278,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    SEÇÃO 05 - KICKSTART
 ============================================ */
 
-/* Puxa 2px a mais para cima para matar a linha branca */
 .kickstart {
   background-color: var(--color-white);
   position: relative;
@@ -1437,9 +1445,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 10;
   pointer-events: none;
   display: none;
+  overflow: hidden; /* FIX: faltava isso — sem overflow:hidden, o border-radius
+                        aplicado via JS não recortava a imagem, por isso os
+                        cantos nunca arredondavam durante o morph. */
   will-change: top, left, width, height, border-radius, opacity;
-  /* Removido o -webkit-mask-image radial que estava deixando o clone
-     com um vinheta/esmaecimento indesejado nas bordas durante o morph. */
 }
 
 .kickstart__morph-clone img {
@@ -1470,7 +1479,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .requirements__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-md);
+  gap: var(--space-sm); /* ADJUST: era var(--space-md), reduzido pra ficar mais compacto */
 }
 
 /* ---------- Cards Superiores (1, 2, 3) ---------- */
@@ -1478,7 +1487,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .requirements__card {
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: var(--space-sm);
+  padding: 12px; /* ADJUST: era var(--space-sm) = 16px */
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1492,10 +1501,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .requirements__card-img-wrap {
   width: 100%;
-  aspect-ratio: 4 / 3.4;
+  /* ADJUST: era 4/3.4 (quase quadrada, imagem dominando o card).
+     16/9 deixa a área da foto bem mais baixa/compacta,
+     próximo da referência do Figma. Ajustamos juntos se precisar
+     de mais ou menos altura depois de ver ao vivo. */
+  aspect-ratio: 16 / 9;
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm); /* ADJUST: era var(--space-md) */
 }
 
 .requirements__card-img {
@@ -1503,17 +1516,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
-  /* Ajuda a suavizar upscale em telas retina quando a imagem de origem
-     não tem resolução suficiente. O ideal ainda é reenviar a imagem
-     em maior resolução (recomendado: mín. 1200px de largura). */
-  image-rendering: -webkit-optimize-contrast;
 }
 
 .requirements__card-content {
-  padding: 0 var(--space-xs) var(--space-sm) var(--space-xs);
+  padding: 0 var(--space-xs) var(--space-xs) var(--space-xs);
   display: flex;
   flex-direction: column;
-  gap: var(--space-sm);
+  gap: var(--space-xs);
   flex-grow: 1;
 }
 
@@ -1564,7 +1573,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
-  image-rendering: -webkit-optimize-contrast;
 }
 
 .requirements__horizontal-girl {
@@ -1604,6 +1612,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  cursor: pointer;
 }
 
 .requirements__ia-icon img {
@@ -1611,9 +1620,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   opacity: 0;
   transform: scale(0.5) rotate(-30deg);
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
 }
 
+/* Revelação inicial: dispara 1x quando a seção entra na tela */
 .reveal-fade.is-visible .requirements__ia-icon img {
   animation: iconReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 0.5s;
@@ -1624,9 +1633,37 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-.requirements__card--horizontal:hover .requirements__ia-icon img {
-  transform: scale(1.15) rotate(10deg);
-  filter: drop-shadow(0 0 12px rgba(0, 100, 249, 0.4));
+/*
+  FIX: a regra antiga era ".requirements__card--horizontal:hover .requirements__ia-icon img { transform: ... }"
+  — mas ela NUNCA funcionava. Motivo: a animação "iconReveal" acima usa
+  "forwards", e animações com "forwards" têm prioridade maior que
+  qualquer regra normal (mesmo :hover) pra essas mesmas propriedades,
+  pra sempre. Por isso a solução agora é: uma NOVA animação (também
+  via "animation"), disparada por JS a cada "mouseenter" no ícone
+  (ver script.js → initIaIconHover). Isso tem a mesma prioridade e
+  consegue sobrescrever o estado corretamente, toda vez que passa o mouse.
+*/
+.requirements__ia-icon.is-hover-active img {
+  animation: iconHoverReveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes iconHoverReveal {
+  0% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 0 rgba(0, 100, 249, 0));
+  }
+  35% {
+    transform: scale(0.55) rotate(-25deg);
+    filter: drop-shadow(0 0 0 rgba(0, 100, 249, 0));
+  }
+  70% {
+    transform: scale(1.25) rotate(12deg);
+    filter: drop-shadow(0 0 18px rgba(0, 100, 249, 0.55));
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 8px rgba(0, 100, 249, 0.3));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1639,9 +1676,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     opacity: 1;
     transform: none;
   }
-  .requirements__card--horizontal:hover .requirements__ia-icon img {
-    transform: none;
-    filter: none;
+  .requirements__ia-icon.is-hover-active img {
+    animation: none !important;
   }
 }
 
@@ -1878,9 +1914,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
-  /* Restaura o respiro no mobile, já que o layout aqui é
-     empilhado (flex-column) e não depende mais do cálculo
-     proporcional usado no desktop. */
   .awards {
     padding-bottom: var(--space-2xl);
   }
