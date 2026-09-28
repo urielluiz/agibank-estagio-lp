@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initPercentCounter();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax/scroll-scrub desabilitados propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
     initPositionEditor();
   } else {
     initHeroParallax();
@@ -843,15 +843,17 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA CHEGANDO
-   CORREÇÃO: O pin foi removido. A animação é
-   disparada por IntersectionObserver (via classe
-   .is-animated) garantindo uma entrada elegante
-   sem prender o scroll do usuário.
+   CORREÇÃO: O JS agora lê a rotação FINAL a
+   partir do dataset.finalRotation (ou do CSS).
+   Isso garante que a rotação animada respeite
+   a calibração do editor, sem distorcer.
 ============================================ */
 function initCarDriveIn() {
   const ctaPurpose = document.getElementById('cta-purpose');
+  const car = document.getElementById('ctaPurposeCar');
+  const caco = document.getElementById('ctaPurposeCaco');
   
-  if (!ctaPurpose) return;
+  if (!ctaPurpose || !car || !caco) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -861,26 +863,47 @@ function initCarDriveIn() {
     return;
   }
 
+  // Captura a rotação final exata que o usuário configurou no editor
+  const carFinalRot = parseFloat(car.dataset.finalRotation || 0);
+  const cacoFinalRot = parseFloat(caco.dataset.finalRotation || 43);
+
+  // Valores extras de "chegada" (somados ao valor final)
+  const CAR_START_TRANSLATE_X = 45;
+  const CAR_START_ROTATE_OFFSET = -7; 
+  
+  const CACO_START_TRANSLATE_X = 20;
+  const CACO_START_ROTATE_OFFSET = -25;
+
+  // Aplica o estado inicial de imediato (antes do IntersectionObserver disparar)
+  car.style.opacity = '0';
+  car.style.transform = `translateX(${CAR_START_TRANSLATE_X}%) rotate(${carFinalRot + CAR_START_ROTATE_OFFSET}deg)`;
+  
+  caco.style.opacity = '0';
+  caco.style.transform = `translateX(${CACO_START_TRANSLATE_X}%) rotate(${cacoFinalRot + CACO_START_ROTATE_OFFSET}deg)`;
+
   const observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
-        ctaPurpose.classList.add('is-animated');
+        
+        // Dispara a animação (transição CSS cuida do resto)
+        car.style.transition = 'transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s, opacity 1.2s ease-out 0.1s';
+        car.style.opacity = '1';
+        car.style.transform = `translateX(0%) rotate(${carFinalRot}deg)`;
+
+        caco.style.transition = 'transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 1.2s ease-out';
+        caco.style.opacity = '1';
+        caco.style.transform = `translateX(0%) rotate(${cacoFinalRot}deg)`;
+
         observer.unobserve(ctaPurpose);
       }
     });
   }, { threshold: 0.2 });
 
   observer.observe(ctaPurpose);
-
-  console.log('Fusca: animação de entrada inicializada ✅');
 }
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
-   CORREÇÃO: O clone (foto full-screen) não é mais
-   escondido preventivamente. Ele rola com a página
-   (cobrindo tudo) e só fica invisível QUANDO A
-   ANIMAÇÃO TERMINA.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -913,7 +936,6 @@ function initKickstartMorph() {
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
     const headerHeight = header.offsetHeight;
-    
     const startScroll = headerHeight;
     const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
@@ -927,15 +949,19 @@ function initKickstartMorph() {
     const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    // CORREÇÃO: O clone só desaparece quando a animação termina (progress >= 1)
-    if (progress >= 1) {
-       clone.style.display = 'none';
-       contentToReveal.style.opacity = '1';
-       targetPill.style.opacity = '1';
+    if (progress <= 0 || progress >= 1) {
+       if (progress >= 1) {
+           clone.style.display = 'none';
+           contentToReveal.style.opacity = '1';
+           targetPill.style.opacity = '1';
+       } else {
+           clone.style.display = 'none';
+           contentToReveal.style.opacity = '0';
+           targetPill.style.opacity = '0';
+       }
        return;
     } 
     
-    // Se a animação ainda não terminou, o clone é visível
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
