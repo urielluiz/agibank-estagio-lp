@@ -3,11 +3,12 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initAreasStack(): seção "Áreas de Atuação". Usa sistema
-     de RANK DISCRETO (não getBoundingClientRect em tempo real) —
-     o scroll só decide "qual índice está ativo agora" (0 a 3); todo
-     o visual de empilhamento/profundidade é CSS puro por atributo
-     data-rank. Reduz drasticamente o risco de bugs de medição.
+   - [REESCRITO] initAreasStack(): trocado o sistema de "rank" (que
+     calculava posições via getBoundingClientRect em tempo real) pela
+     técnica de sticky stacking cards. Agora o JS só compara a posição
+     real do card com o "top" que ele deveria ter quando grudado — se
+     bateu, ele é o card ativo. Todo o empilhamento visual é CSS puro
+     (position: sticky), muito mais robusto e fiel à referência.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -370,86 +371,76 @@ function initRequirementsCascade() {
 }
 
 /* ============================================
-   SEÇÃO 07 - ÁREAS DE ATUAÇÃO: PILHA + DROPDOWN
-   (novo)
+   SEÇÃO 07 - ÁREAS DE ATUAÇÃO
+   (Sticky Stacking Cards + Dropdown)
 ============================================ */
 function initAreasStack() {
-  const pinWrapper = document.getElementById('areasPinWrapper');
-  const cards = document.querySelectorAll('.areas__card');
-  const header = document.getElementById('header');
+  const stack = document.getElementById('areasStack');
+  if (!stack) return;
 
-  if (!pinWrapper || !cards.length || !header) return;
+  const cards = Array.from(stack.querySelectorAll('.areas__card'));
+  if (!cards.length) return;
 
-  const total = cards.length;
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
-  // Clique abre/fecha (funciona em qualquer modo — desktop ou mobile).
-  // Em desktop, só o card com rank="0" é clicável (pointer-events
-  // controlado via CSS). Em mobile, todos são clicáveis (fallback).
+  function isMobileNow() {
+    return window.matchMedia('(max-width: 767px)').matches;
+  }
+
+  // Clique abre/fecha o dropdown. Em desktop, só funciona no card
+  // marcado como "is-active" (controlado pelo pointer-events no CSS).
+  // Em mobile, o CSS libera pointer-events em todos, então o clique
+  // funciona como acordeão simples.
   cards.forEach(function (card) {
     const headerBtn = card.querySelector('.areas__card-header');
     if (!headerBtn) return;
 
     headerBtn.addEventListener('click', function () {
-      if (!isMobile && !reduceMotion && card.dataset.rank !== '0') return;
-
-      const isOpen = card.classList.contains('is-open');
-
-      if (isMobile || reduceMotion) {
-        // Mobile/reduced-motion: acordeão simples, um aberto por vez
-        cards.forEach(function (c) { c.classList.remove('is-open'); });
-        if (!isOpen) card.classList.add('is-open');
-      } else {
-        cards.forEach(function (c) { c.classList.remove('is-open'); });
-        if (!isOpen) card.classList.add('is-open');
-      }
+      const wasOpen = card.classList.contains('is-open');
+      cards.forEach(function (c) { c.classList.remove('is-open'); });
+      if (!wasOpen) card.classList.add('is-open');
     });
   });
 
-  if (reduceMotion || isMobile) {
-    // Fallback: sem pin, sem pilha — todos em fluxo normal (CSS
-    // do breakpoint mobile já cuida do visual). Garante que todos
-    // comecem "fechados" e sem rank aplicado (evita herdar estado
-    // de uma resolução anterior, caso a janela seja redimensionada).
-    cards.forEach(function (card) {
-      card.removeAttribute('data-rank');
-    });
+  if (reduceMotion) {
+    // Com reduced motion, não faz sentido calcular sticky em tempo
+    // real: deixamos todos com aparência de outline (não-ativo),
+    // exceto o primeiro, que fica ativo por padrão.
+    if (cards[0]) cards[0].classList.add('is-active');
     return;
   }
 
-  function clamp(v, min, max) {
-    return Math.min(Math.max(v, min), max);
-  }
+  let currentActiveIndex = 0;
 
-  function getProgress() {
-    const rect = pinWrapper.getBoundingClientRect();
-    const headerHeight = header.offsetHeight;
-    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
-    if (scrollable <= 0) return 0;
-    const raw = (headerHeight - rect.top) / scrollable;
-    return clamp(raw, 0, 0.9999);
-  }
+  function updateActiveCard() {
+    if (isMobileNow()) return; // no mobile, não há conceito de "ativo" via scroll
 
-  let currentActive = -1;
+    let activeIndex = 0;
 
-  function applyRanks(activeIndex) {
     cards.forEach(function (card, i) {
-      const dist = (i - activeIndex + total) % total;
-      card.dataset.rank = String(dist);
-      if (dist !== 0) {
-        card.classList.remove('is-open');
+      const rect = card.getBoundingClientRect();
+      const computedTop = parseFloat(getComputedStyle(card).top) || 0;
+
+      // Se o card já "grudou" no seu top (ou passou um pouco, por
+      // conta de arredondamento de subpixel), ele é candidato a ativo.
+      // Como percorremos em ordem, o ÚLTIMO que satisfizer a condição
+      // é o que está por cima na pilha (z-index maior = mais recente).
+      if (rect.top <= computedTop + 2) {
+        activeIndex = i;
       }
     });
-  }
 
-  function update() {
-    const progress = getProgress();
-    const activeIndex = clamp(Math.floor(progress * total), 0, total - 1);
+    if (activeIndex !== currentActiveIndex) {
+      currentActiveIndex = activeIndex;
 
-    if (activeIndex !== currentActive) {
-      currentActive = activeIndex;
-      applyRanks(currentActive);
+      cards.forEach(function (card, i) {
+        if (i === activeIndex) {
+          card.classList.add('is-active');
+        } else {
+          card.classList.remove('is-active');
+          card.classList.remove('is-open');
+        }
+      });
     }
   }
 
@@ -457,7 +448,7 @@ function initAreasStack() {
   function onScroll() {
     if (!ticking) {
       requestAnimationFrame(function () {
-        update();
+        updateActiveCard();
         ticking = false;
       });
       ticking = true;
@@ -467,8 +458,9 @@ function initAreasStack() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  applyRanks(0);
-  update();
+  // Estado inicial: primeiro card ativo.
+  cards[0].classList.add('is-active');
+  updateActiveCard();
 }
 
 /* ============================================
