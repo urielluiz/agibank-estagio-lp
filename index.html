@@ -213,46 +213,46 @@
 
   <!-- ===================================
        SEÇÃO 04 - CTA PURPOSE
+       (Simplificada: sem pin, animação ao entrar na tela)
   =================================== -->
   <section id="cta-purpose" class="cta-purpose">
 
-    <div class="cta-purpose__pin-wrapper" id="ctaPurposePinWrapper">
-      <div class="cta-purpose__pin-inner">
+    <div class="cta-purpose__stage" id="ctaPurposeStage" data-ratio-var="--cta-purpose-ratio-h" data-ratio-min="450" data-ratio-max="800" data-ratio-label="CTA Purpose">
 
-        <div class="cta-purpose__stage" id="ctaPurposeStage" data-ratio-var="--cta-purpose-ratio-h" data-ratio-min="450" data-ratio-max="800" data-ratio-label="CTA Purpose">
+      <div class="cta-purpose__bg-bleed" data-editable="purpose-bg" data-editable-fields="top,height"></div>
 
-          <div class="cta-purpose__bg-bleed" data-editable="purpose-bg" data-editable-fields="top,height"></div>
-
-          <div class="cta-purpose__caco" id="ctaPurposeCaco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation">
-            <div class="cta-purpose__caco-parallax" data-parallax="depth" data-depth="14">
-              <img src="assets/img/Caco-01-Proposito.png" alt="">
-            </div>
+      <!-- Wrapper extra para a animação CSS de entrada não conflitar com a posição do editor -->
+      <div class="cta-purpose__caco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation">
+        <div class="cta-purpose__anim-caco">
+          <div class="cta-purpose__caco-parallax" data-parallax="depth" data-depth="14">
+            <img src="assets/img/Caco-01-Proposito.png" alt="">
           </div>
-
-          <div class="cta-purpose__car" id="ctaPurposeCar" data-editable="purpose-car" data-editable-fields="top,left,width,rotation">
-            <img src="assets/img/Fusca-Ilustracao.png" alt="Ilustração de um Fusca chegando" class="cta-purpose__car-img">
-          </div>
-
-          <div class="cta-purpose__content reveal-fade" data-editable="purpose-content">
-            <h2 class="cta-purpose__title reveal-fade-item">
-              Vem lutar por uma experiência bancária que acolhe e encoraja todos os brasileiros!
-            </h2>
-            <p class="cta-purpose__subtext reveal-fade-item">
-              Inscrições até 06 de novembro
-            </p>
-            <a href="#" class="cta-purpose__cta reveal-fade-item">Inscreva-se</a>
-          </div>
-
         </div>
-
       </div>
+
+      <!-- Wrapper extra para a animação CSS de entrada não conflitar com a posição do editor -->
+      <div class="cta-purpose__car" id="ctaPurposeCar" data-editable="purpose-car" data-editable-fields="top,left,width,rotation">
+        <div class="cta-purpose__anim-car">
+          <img src="assets/img/Fusca-Ilustracao.png" alt="Ilustração de um Fusca chegando" class="cta-purpose__car-img">
+        </div>
+      </div>
+
+      <div class="cta-purpose__content reveal-fade" data-editable="purpose-content">
+        <h2 class="cta-purpose__title reveal-fade-item">
+          Vem lutar por uma experiência bancária que acolhe e encoraja todos os brasileiros!
+        </h2>
+        <p class="cta-purpose__subtext reveal-fade-item">
+          Inscrições até 06 de novembro
+        </p>
+        <a href="#" class="cta-purpose__cta reveal-fade-item">Inscreva-se</a>
+      </div>
+
     </div>
 
   </section>
 
   <!-- ===================================
        SEÇÃO 05 - KICKSTART
-       (Quinta dobra – Pra começar com tudo)
   =================================== -->
   <section id="kickstart" class="kickstart">
 
