@@ -3,18 +3,13 @@
    Design Tokens + Reset + Base
    
    CHANGELOG (mais recente no topo):
-   - [FIX] .awards: padding-bottom voltou, mas agora em vw (escalável),
-     não em px fixo. Corrige Caco vazando + reconhecimentos avançando
-     sobre o Fusca ao mesmo tempo.
-   - [FIX] .kickstart__morph-clone: adicionado overflow:hidden (faltava
-     desde que a máscara radial foi removida). Corrige cantos não
-     arredondando durante o morph da foto pra pílula.
-   - [FIX] .requirements__ia-icon: hover reescrito. Causa raiz: animação
-     com "forwards" tem prioridade maior que :hover normal, então o
-     hover antigo nunca funcionava. Agora o hover dispara uma nova
-     animação via JS (ver script.js: initIaIconHover).
-   - [ADJUST] .requirements__card-img-wrap: proporção da imagem reduzida
-     (menos quadrada/alta, mais "paisagem"), padding do card reduzido.
+   - [FIX] .requirements__horizontal-girl: posição atualizada com os
+     valores exatos calibrados no editor visual (top: -22%, left: 19.2%,
+     width: 68.4%). Antes estava com valores placeholder/estimados.
+   - [PENDENTE] Hover do ícone de IA: lógica implementada em CSS/JS,
+     mas depende de confirmar se a classe ".requirements__ia-icon"
+     existe exatamente assim no HTML real. Aguardando o trecho de HTML
+     do card 4 pra confirmar/corrigir o seletor.
 ============================================ */
 
 @font-face {
@@ -1024,17 +1019,10 @@ body.position-editor-active .cta-intro__leaf-zone {
 .awards {
   background-color: var(--color-white);
   padding-top: var(--space-2xl);
-
-  /* FIX: antes era 0 (quebrava o respiro do Caco) ou 96px fixo
-     (quebrava em telas com largura diferente da calibrada).
-     Agora escala em vw, travado no mesmo breakpoint de 1440px
-     usado no aspect-ratio do stage — mantém a MESMA proporção
-     entre o respiro e a altura do stage em qualquer largura. */
   padding-bottom: min(6.6667vw, 96px);
-
   overflow: visible;
   position: relative;
-  z-index: 20; /* Garante que o caco do Fusca passe POR TRÁS das imagens */
+  z-index: 20;
 }
 
 .awards__stage {
@@ -1162,11 +1150,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
 }
 
-/* Fundo azul: 2px a mais para evitar linha branca de sub-pixel */
 .cta-purpose__bg-bleed {
   position: absolute;
   top: 0.00%;
-  height: calc(75.40% + 2px);
+  height: calc(75.72% + 2px);
   left: 50%;
   right: 50%;
   margin-left: -50vw;
@@ -1180,12 +1167,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: absolute;
   top: -55.20%;
   left: 63.80%;
-  width: 42.00%;
+  width: 75.02%;
   z-index: 1;
   pointer-events: none;
   user-select: none;
   opacity: 0;
-  transform: rotate(43deg);
+  transform: rotate(0deg);
   will-change: transform, opacity;
 }
 
@@ -1204,7 +1191,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   position: absolute;
   top: -9.00%;
   left: 53.00%;
-  width: 61.60%;
+  width: 66.05%;
   z-index: 2;
   pointer-events: none;
   user-select: none;
@@ -1445,9 +1432,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 10;
   pointer-events: none;
   display: none;
-  overflow: hidden; /* FIX: faltava isso — sem overflow:hidden, o border-radius
-                        aplicado via JS não recortava a imagem, por isso os
-                        cantos nunca arredondavam durante o morph. */
+  overflow: hidden;
   will-change: top, left, width, height, border-radius, opacity;
 }
 
@@ -1479,7 +1464,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .requirements__grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-sm); /* ADJUST: era var(--space-md), reduzido pra ficar mais compacto */
+  gap: var(--space-sm);
 }
 
 /* ---------- Cards Superiores (1, 2, 3) ---------- */
@@ -1487,7 +1472,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .requirements__card {
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
-  padding: 12px; /* ADJUST: era var(--space-sm) = 16px */
+  padding: 12px;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -1501,14 +1486,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .requirements__card-img-wrap {
   width: 100%;
-  /* ADJUST: era 4/3.4 (quase quadrada, imagem dominando o card).
-     16/9 deixa a área da foto bem mais baixa/compacta,
-     próximo da referência do Figma. Ajustamos juntos se precisar
-     de mais ou menos altura depois de ver ao vivo. */
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-md);
   overflow: hidden;
-  margin-bottom: var(--space-sm); /* ADJUST: era var(--space-md) */
+  margin-bottom: var(--space-sm);
 }
 
 .requirements__card-img {
@@ -1575,11 +1556,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transition: transform 0.5s ease;
 }
 
+/* ATUALIZADO: valores exatos calibrados no editor visual (?edit=1) */
 .requirements__horizontal-girl {
   position: absolute;
-  top: -40%;
-  left: -5%;
-  width: 50%;
+  top: -22.00%;
+  left: 19.20%;
+  width: 68.40%;
   z-index: 3;
   pointer-events: none;
   will-change: transform;
@@ -1622,7 +1604,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transform: scale(0.5) rotate(-30deg);
 }
 
-/* Revelação inicial: dispara 1x quando a seção entra na tela */
 .reveal-fade.is-visible .requirements__ia-icon img {
   animation: iconReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 0.5s;
@@ -1633,16 +1614,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-/*
-  FIX: a regra antiga era ".requirements__card--horizontal:hover .requirements__ia-icon img { transform: ... }"
-  — mas ela NUNCA funcionava. Motivo: a animação "iconReveal" acima usa
-  "forwards", e animações com "forwards" têm prioridade maior que
-  qualquer regra normal (mesmo :hover) pra essas mesmas propriedades,
-  pra sempre. Por isso a solução agora é: uma NOVA animação (também
-  via "animation"), disparada por JS a cada "mouseenter" no ícone
-  (ver script.js → initIaIconHover). Isso tem a mesma prioridade e
-  consegue sobrescrever o estado corretamente, toda vez que passa o mouse.
-*/
 .requirements__ia-icon.is-hover-active img {
   animation: iconHoverReveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
