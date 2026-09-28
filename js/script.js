@@ -1,11 +1,18 @@
 /* ============================================
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    JavaScript principal
-   
+
    CHANGELOG:
-   - [ADD] initIaIconHover(): novo efeito de hover no ícone de IA
-     (requirements). Ver comentário em style.css sobre por que o
-     hover simples não funcionava.
+   - [FIX CRÍTICO] Editor visual: leitura de width/height agora usa
+     offsetWidth/offsetHeight (não é afetado por rotação/translate),
+     em vez de getBoundingClientRect (que media a caixa rotacionada
+     e gerava valores fantasmas gigantes em elementos como o Caco).
+   - [NOVO] Sistema de trava (UNLOCKED_ELEMENTS): só elementos
+     explicitamente listados podem ser selecionados/editados/exportados
+     pelo editor. Tudo mais é ignorado, mesmo clicando "Copiar tudo".
+   - [NOVO] "Copiar tudo" agora só exporta itens que foram REALMENTE
+     alterados nesta sessão (marcados como "sujos"), nunca mais o
+     estado inteiro de elementos intocados.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -314,7 +321,6 @@ function initReqGirlParallax() {
 
 /* ============================================
    REQUIREMENTS: HOVER DO ÍCONE DE IA
-   (novo — ver explicação no changelog do style.css)
 ============================================ */
 function initIaIconHover() {
   const icons = document.querySelectorAll('.requirements__ia-icon');
@@ -326,9 +332,6 @@ function initIaIconHover() {
   icons.forEach(function (icon) {
     icon.addEventListener('mouseenter', function () {
       icon.classList.remove('is-hover-active');
-      // Força o navegador a "recalcular" o elemento antes de reaplicar
-      // a classe — sem isso, se o mouse entrar e sair rápido várias
-      // vezes, a animação não reinicia (fica "presa" no mesmo ciclo).
       void icon.offsetWidth;
       icon.classList.add('is-hover-active');
     });
@@ -337,40 +340,81 @@ function initIaIconHover() {
 
 /* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
+   
+   🔒 SISTEMA DE TRAVA:
+   Só os nomes listados em UNLOCKED_ELEMENTS podem ser selecionados,
+   arrastados ou exportados pelo "Copiar tudo". Tudo que não estiver
+   nesta lista é tratado como TRAVADO — fica visível normalmente na
+   página, mas o editor o ignora completamente (sem outline, sem
+   clique, sem entrar no painel, sem entrar na exportação).
+   
+   Quando uma seção nova entrar em calibração, adicione o(s) nome(s)
+   dela aqui. Quando for aprovada, REMOVA da lista — isso trava a
+   seção de forma definitiva contra edições acidentais futuras.
 ============================================ */
 function initPositionEditor() {
-  const editableEls = document.querySelectorAll('[data-editable]');
-  const ratioEls = document.querySelectorAll('[data-ratio-var]');
-  if (!editableEls.length) return;
+  const UNLOCKED_ELEMENTS = [
+    'req-girl'
+    // Adicione aqui outros elementos ainda em calibração, se houver.
+  ];
+
+  function isLocked(name) {
+    return UNLOCKED_ELEMENTS.indexOf(name) === -1;
+  }
+
+  const allEditableEls = Array.from(document.querySelectorAll('[data-editable]'));
+  const allRatioEls = Array.from(document.querySelectorAll('[data-ratio-var]'));
+
+  if (!allEditableEls.length) return;
+
+  // Marca visualmente (via atributo) quais elementos estão travados,
+  // pra CSS poder remover o outline/cursor deles.
+  allEditableEls.forEach(function (el) {
+    if (isLocked(el.dataset.editable)) {
+      el.setAttribute('data-locked', 'true');
+    }
+  });
+
+  const editableEls = allEditableEls.filter(function (el) {
+    return !isLocked(el.dataset.editable);
+  });
+  const ratioEls = allRatioEls.filter(function (el) {
+    return !isLocked(el.dataset.ratioVar);
+  });
 
   document.body.classList.add('position-editor-active');
 
   const state = {};
+  const dirty = {};
+  const ratioDirty = {};
 
   function getFields(el) {
     return (el.dataset.editableFields || 'top,left,width').split(',');
   }
 
+  // FIX CRÍTICO: usa offsetWidth/offsetHeight (layout box, NÃO afetado
+  // por transform/rotação) em vez de getBoundingClientRect (que mede a
+  // caixa rotacionada e gera valores gigantes/errados em elementos com
+  // rotate/translate aplicados).
   function readInitialValue(el, prop) {
     const parent = el.offsetParent || el.parentElement;
-    const parentRect = parent.getBoundingClientRect();
+    const parentW = parent.offsetWidth || 1;
+    const parentH = parent.offsetHeight || 1;
     const computed = getComputedStyle(el);
 
     if (prop === 'top') {
       const px = parseFloat(computed.top) || 0;
-      return (px / parentRect.height * 100);
+      return (px / parentH * 100);
     }
     if (prop === 'left') {
       const px = parseFloat(computed.left) || 0;
-      return (px / parentRect.width * 100);
+      return (px / parentW * 100);
     }
     if (prop === 'width') {
-      const rect = el.getBoundingClientRect();
-      return (rect.width / parentRect.width * 100);
+      return (el.offsetWidth / parentW * 100);
     }
     if (prop === 'height') {
-      const rect = el.getBoundingClientRect();
-      return (rect.height / parentRect.height * 100);
+      return (el.offsetHeight / parentH * 100);
     }
     if (prop === 'rotation') {
       return 0;
@@ -383,6 +427,7 @@ function initPositionEditor() {
     const fields = getFields(el);
 
     state[name] = {};
+    dirty[name] = false;
     fields.forEach(function (f) {
       state[name][f] = readInitialValue(el, f);
     });
@@ -405,7 +450,8 @@ function initPositionEditor() {
 
   const badge = document.createElement('div');
   badge.className = 'position-editor__badge';
-  badge.textContent = '🛠 MODO EDIÇÃO ATIVO';
+  badge.textContent = '🛠 MODO EDIÇÃO — ' + editableEls.length + ' item(ns) destravado(s), ' +
+    (allEditableEls.length - editableEls.length) + ' travado(s)';
   document.body.appendChild(badge);
 
   const panel = document.createElement('div');
@@ -419,6 +465,8 @@ function initPositionEditor() {
     const max = el.dataset.ratioMax || 900;
     const current = getComputedStyle(el).getPropertyValue(varName).trim() || min;
 
+    ratioDirty[varName] = false;
+
     ratioHtml +=
       '<div class="position-editor__ratio">' +
         '<label>' + label + ' (' + varName + ': <span data-ratio-display="' + i + '">' + current + '</span>)</label>' +
@@ -426,11 +474,14 @@ function initPositionEditor() {
       '</div>';
   });
 
+  const lockedCount = allEditableEls.length - editableEls.length;
+
   panel.innerHTML =
     '<div class="position-editor__header">' +
       '<strong>Editor de Posição</strong>' +
-      '<button type="button" class="position-editor__copy">Copiar tudo</button>' +
+      '<button type="button" class="position-editor__copy">Copiar alterações</button>' +
     '</div>' +
+    '<div class="position-editor__locked-notice">🔒 ' + lockedCount + ' elemento(s) travado(s) nesta página — não aparecem aqui e não podem ser alterados.</div>' +
     ratioHtml +
     '<div class="position-editor__list"></div>' +
     '<div class="position-editor__hint">' +
@@ -438,7 +489,7 @@ function initPositionEditor() {
       '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
       '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
-      '5. Quando terminar, clique em "Copiar tudo".' +
+      '5. Só o que você REALMENTE alterar entra no "Copiar alterações" — itens intocados nunca são exportados.' +
     '</div>';
   document.body.appendChild(panel);
 
@@ -447,6 +498,7 @@ function initPositionEditor() {
       const el = ratioEls[i];
       const varName = input.dataset.ratioVar;
       el.style.setProperty(varName, input.value);
+      ratioDirty[varName] = true;
       panel.querySelector('[data-ratio-display="' + i + '"]').textContent = input.value;
     });
   });
@@ -490,6 +542,12 @@ function initPositionEditor() {
     });
   });
 
+  function markDirty(name) {
+    dirty[name] = true;
+    const item = panel.querySelector('[data-item-for="' + name + '"]');
+    if (item) item.classList.add('is-dirty');
+  }
+
   function selectElement(el, name) {
     if (selected) selected.classList.remove('is-selected');
     document.querySelectorAll('.position-editor__item').forEach(function (i) {
@@ -520,8 +578,8 @@ function initPositionEditor() {
   panel.addEventListener('click', function (e) {
     if (e.target.matches('.position-editor__select')) {
       const name = e.target.dataset.target;
-      const el = document.querySelector('[data-editable="' + name + '"]');
-      selectElement(el, name);
+      const el = document.querySelector('[data-editable="' + name + '"]:not([data-locked])');
+      if (el) selectElement(el, name);
     }
   });
 
@@ -530,11 +588,13 @@ function initPositionEditor() {
 
     const name = e.target.dataset.target;
     const prop = e.target.dataset.prop;
-    const el = document.querySelector('[data-editable="' + name + '"]');
+    const el = document.querySelector('[data-editable="' + name + '"]:not([data-locked])');
+    if (!el) return;
     const value = parseFloat(e.target.value) || 0;
 
     state[name][prop] = value;
     applyState(el, name);
+    markDirty(name);
   });
 
   document.addEventListener('keydown', function (e) {
@@ -555,19 +615,30 @@ function initPositionEditor() {
 
     state[selectedName][prop] += dir * step;
     applyState(selected, selectedName);
+    markDirty(selectedName);
     updateInputs();
   });
 
   panel.querySelector('.position-editor__copy').addEventListener('click', function () {
-    let output = '/* ===== CONFIGURAÇÃO FINAL DE POSIÇÃO ===== */\n\n';
+    const dirtyNames = Object.keys(dirty).filter(function (name) { return dirty[name]; });
+    const dirtyRatios = Object.keys(ratioDirty).filter(function (name) { return ratioDirty[name]; });
+
+    if (!dirtyNames.length && !dirtyRatios.length) {
+      alert('Nada foi alterado nesta sessão — nada para copiar. Selecione um elemento e mova/edite algo primeiro.');
+      return;
+    }
+
+    let output = '/* ===== ALTERAÇÕES DESTA SESSÃO (apenas o que foi tocado) ===== */\n\n';
 
     ratioEls.forEach(function (el) {
       const varName = el.dataset.ratioVar;
-      output += '/* ratio ' + (el.dataset.ratioLabel || varName) + ' */\n';
-      output += varName + ': ' + el.style.getPropertyValue(varName) + ';\n\n';
+      if (ratioDirty[varName]) {
+        output += '/* ratio ' + (el.dataset.ratioLabel || varName) + ' */\n';
+        output += varName + ': ' + el.style.getPropertyValue(varName) + ';\n\n';
+      }
     });
 
-    Object.keys(state).forEach(function (name) {
+    dirtyNames.forEach(function (name) {
       const s = state[name];
       output += '/* ' + name + ' */\n';
 
@@ -583,7 +654,7 @@ function initPositionEditor() {
     });
 
     navigator.clipboard.writeText(output).then(function () {
-      alert('Configuração copiada! Cole aqui no chat com o Claude.');
+      alert('Alterações copiadas! Cole aqui no chat com o Claude.');
     }).catch(function () {
       prompt('Copie o texto abaixo manualmente:', output);
     });
