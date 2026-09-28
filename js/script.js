@@ -17,14 +17,14 @@ document.addEventListener('DOMContentLoaded', function () {
   initPercentCounter();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax/scroll-scrub desabilitados propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
     initPositionEditor();
   } else {
     initHeroParallax();
     initAwardsParallax();
     initCarDriveIn();
     initCacoMouseParallax();
-    initKickstartMorph();
+    initReqGirlParallax();
   }
 });
 
@@ -263,6 +263,42 @@ function initCacoMouseParallax() {
     currentX += (targetX - currentX) * 0.08;
     currentY += (targetY - currentY) * 0.08;
     wrapper.style.transform = 'translate(' + currentX.toFixed(2) + 'px, ' + currentY.toFixed(2) + 'px)';
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+/* ============================================
+   REQUIREMENTS: PARALLAX LATERAL NA MENINA
+============================================ */
+function initReqGirlParallax() {
+  const card = document.querySelector('.requirements__card--horizontal');
+  const girl = document.getElementById('reqGirlParallax');
+  
+  if (!card || !girl) return;
+
+  const hasMouse = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!hasMouse) return;
+
+  let currentX = 0;
+  let targetX = 0;
+  const strength = 15; // px de deslocamento máximo
+
+  card.addEventListener('mousemove', function(e) {
+    const rect = card.getBoundingClientRect();
+    const relX = (e.clientX - rect.left) / rect.width;
+    const normX = (relX - 0.5) * 2;
+    targetX = normX * strength;
+  });
+
+  card.addEventListener('mouseleave', function() {
+    targetX = 0;
+  });
+
+  function animate() {
+    currentX += (targetX - currentX) * 0.08;
+    girl.style.transform = 'translateX(' + currentX.toFixed(2) + 'px)';
     requestAnimationFrame(animate);
   }
 
@@ -892,135 +928,4 @@ function initCarDriveIn() {
   }, { threshold: 0.2 });
 
   observer.observe(ctaPurpose);
-}
-
-/* ============================================
-   KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
-   CORREÇÃO DEFINITIVA: 
-   O clone só fica invisível (display: none) DEPOIS 
-   que a animação termina. Antes de começar a animar 
-   (quando o usuário está rolando as seções de cima), 
-   o clone fica VISÍVEL (display: block) e em tela 
-   cheia, cobrindo o fundo branco da seção.
-============================================ */
-function initKickstartMorph() {
-  const pinWrapper = document.getElementById('kickstartPinWrapper');
-  const pinInner = document.getElementById('kickstartPinInner');
-  const clone = document.getElementById('kickstartMorphClone');
-  const targetPill = document.getElementById('kickstartTargetPill');
-  const header = document.getElementById('header');
-  const contentToReveal = document.getElementById('kickstartContent');
-  
-  if (!pinWrapper || !pinInner || !clone || !targetPill || !header || !contentToReveal) return;
-
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const isMobile = window.matchMedia('(max-width: 767px)').matches;
-
-  if (reduceMotion || isMobile) {
-    clone.style.display = 'none';
-    contentToReveal.style.opacity = '1';
-    targetPill.style.opacity = '1';
-    return;
-  }
-
-  function clamp(v, min, max) {
-    return Math.min(Math.max(v, min), max);
-  }
-
-  function easeOutCubic(x) {
-    return 1 - Math.pow(1 - x, 3);
-  }
-
-  function getGlobalProgress() {
-    const rect = pinWrapper.getBoundingClientRect();
-    const headerHeight = header.offsetHeight;
-    
-    const startScroll = headerHeight;
-    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
-
-    if (scrollable <= 0) return 1;
-
-    const raw = (startScroll - rect.top) / scrollable;
-    return clamp(raw, 0, 1);
-  }
-
-  function update() {
-    const headerHeight = header.offsetHeight;
-    const progress = getGlobalProgress();
-    
-    // ESTADO 1: Seção ainda não grudou no topo (usuário rolando para baixo)
-    if (progress <= 0) {
-       clone.style.display = 'block'; // AQUI ESTAVA O ERRO (estava none)
-       contentToReveal.style.opacity = '0';
-       targetPill.style.opacity = '0';
-
-       // Mantém a foto em tela cheia
-       clone.style.top = '0px';
-       clone.style.left = '0px';
-       clone.style.width = '100%';
-       clone.style.height = '100%';
-       clone.style.borderRadius = '0px';
-       return;
-    }
-
-    // ESTADO 2: Animação terminou (usuário rola para as próximas seções)
-    if (progress >= 1) {
-       clone.style.display = 'none';
-       contentToReveal.style.opacity = '1';
-       targetPill.style.opacity = '1';
-       return;
-    } 
-    
-    // ESTADO 3: Durante a animação (progress entre 0.01 e 0.99)
-    clone.style.display = 'block';
-    targetPill.style.opacity = '0';
-
-    const eased = easeOutCubic(progress);
-
-    const innerRect = pinInner.getBoundingClientRect();
-    const targetRect = targetPill.getBoundingClientRect();
-
-    const startTop = 0;
-    const startLeft = 0;
-    const startWidth = innerRect.width;
-    const startHeight = innerRect.height;
-    const startRadius = 0;
-
-    const endTop = targetRect.top - innerRect.top;
-    const endLeft = targetRect.left - innerRect.left;
-    const endWidth = targetRect.width;
-    const endHeight = targetRect.height;
-    const endRadius = endHeight / 2;
-
-    const currentTop = startTop + (endTop - startTop) * eased;
-    const currentLeft = startLeft + (endLeft - startLeft) * eased;
-    const currentWidth = startWidth + (endWidth - startWidth) * eased;
-    const currentHeight = startHeight + (endHeight - startHeight) * eased;
-    const currentRadius = startRadius + (endRadius - startRadius) * eased;
-
-    clone.style.top = currentTop + 'px';
-    clone.style.left = currentLeft + 'px';
-    clone.style.width = currentWidth + 'px';
-    clone.style.height = currentHeight + 'px';
-    clone.style.borderRadius = currentRadius + 'px';
-
-    contentToReveal.style.opacity = eased;
-  }
-
-  let ticking = false;
-
-  function onScroll() {
-    if (!ticking) {
-      requestAnimationFrame(function () {
-        update();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-
-  update();
 }
