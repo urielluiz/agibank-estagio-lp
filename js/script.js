@@ -1,6 +1,11 @@
 /* ============================================
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    JavaScript principal
+   
+   CHANGELOG:
+   - [ADD] initIaIconHover(): novo efeito de hover no ícone de IA
+     (requirements). Ver comentário em style.css sobre por que o
+     hover simples não funcionava.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -16,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initCharacterWalk();
   initPercentCounter();
   initKickstartMorph();
+  initIaIconHover();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -284,7 +290,7 @@ function initReqGirlParallax() {
 
   let currentX = 0;
   let targetX = 0;
-  const strength = 15; // px de deslocamento máximo
+  const strength = 15;
 
   card.addEventListener('mousemove', function(e) {
     const rect = card.getBoundingClientRect();
@@ -304,6 +310,29 @@ function initReqGirlParallax() {
   }
 
   animate();
+}
+
+/* ============================================
+   REQUIREMENTS: HOVER DO ÍCONE DE IA
+   (novo — ver explicação no changelog do style.css)
+============================================ */
+function initIaIconHover() {
+  const icons = document.querySelectorAll('.requirements__ia-icon');
+  if (!icons.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) return;
+
+  icons.forEach(function (icon) {
+    icon.addEventListener('mouseenter', function () {
+      icon.classList.remove('is-hover-active');
+      // Força o navegador a "recalcular" o elemento antes de reaplicar
+      // a classe — sem isso, se o mouse entrar e sair rápido várias
+      // vezes, a animação não reinicia (fica "presa" no mesmo ciclo).
+      void icon.offsetWidth;
+      icon.classList.add('is-hover-active');
+    });
+  });
 }
 
 /* ============================================
@@ -933,8 +962,6 @@ function initCarDriveIn() {
 
 /* ============================================
    SEÇÃO 05 - KICKSTART: MORPH + FADE DO CONTEÚDO
-   (função que estava faltando e causava o "sumiço"
-   da seção inteira)
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -949,8 +976,6 @@ function initKickstartMorph() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
-  // Em mobile ou com "reduce motion", pulamos direto pro estado final:
-  // conteúdo visível, clone escondido, pílula real visível.
   if (reduceMotion || isMobile) {
     content.style.opacity = '1';
     clone.style.display = 'none';
@@ -958,9 +983,7 @@ function initKickstartMorph() {
     return;
   }
 
-  // Em que % do scroll pinado o morph termina de "pousar" na pílula.
   const MORPH_END = 0.55;
-  // Em que % do scroll o conteúdo (cards/pílulas) termina de aparecer.
   const CONTENT_FADE_END = 0.35;
 
   function clamp(v, min, max) {
@@ -982,16 +1005,14 @@ function initKickstartMorph() {
     return clamp(raw, 0, 1);
   }
 
-  let lastPhase = null; // 'full' | 'pill'
+  let lastPhase = null;
 
   function update() {
     const progress = getGlobalProgress();
 
-    // 1) Fade do conteúdo (cards financeiros + pílulas de benefícios)
     const contentProgress = clamp(progress / CONTENT_FADE_END, 0, 1);
     content.style.opacity = contentProgress.toFixed(3);
 
-    // 2) Morph do clone (foto cheia → pílula)
     const morphProgress = clamp(progress / MORPH_END, 0, 1);
 
     if (morphProgress >= 1) {
