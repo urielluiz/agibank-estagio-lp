@@ -1010,7 +1010,14 @@ body.position-editor-active .cta-intro__leaf-zone {
 .awards {
   background-color: var(--color-white);
   padding-top: var(--space-2xl);
-  padding-bottom: var(--space-2xl);
+
+  /* CORREÇÃO: antes tinha "padding-bottom: var(--space-2xl)" fixo em px.
+     Isso quebrava o alinhamento do Caco (seção seguinte) em telas com
+     largura diferente da usada na calibração, pois misturava px fixo
+     com % escalável. Agora a transição encosta direto no bloco azul,
+     eliminando essa variável fora de proporção. */
+  padding-bottom: 0;
+
   overflow: visible;
   position: relative;
   z-index: 20; /* Garante que o caco do Fusca passe POR TRÁS das imagens */
@@ -1129,7 +1136,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow: visible;
   position: relative;
   z-index: 10;
-  margin-top: 8px; /* Afasta sutilmente da seção Awards */
+
+  /* CORREÇÃO: removido o "margin-top: 8px" fixo (era um paliativo
+     que só funcionava numa largura de tela específica). Agora que
+     a Awards não tem mais padding-bottom fixo, a transição já
+     encosta corretamente sem precisar desse ajuste manual. */
+  margin-top: 0;
 }
 
 .cta-purpose__stage {
@@ -1426,7 +1438,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
   display: none;
   will-change: top, left, width, height, border-radius, opacity;
-  -webkit-mask-image: -webkit-radial-gradient(white, black);
+  /* Removido o -webkit-mask-image radial que estava deixando o clone
+     com um vinheta/esmaecimento indesejado nas bordas durante o morph. */
 }
 
 .kickstart__morph-clone img {
@@ -1461,7 +1474,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ---------- Cards Superiores (1, 2, 3) ---------- */
-/* Card branco com a foto "emoldurada" dentro (padding em volta) */
 
 .requirements__card {
   background-color: var(--color-white);
@@ -1473,7 +1485,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 1;
 }
 
-/* Efeito de zoom na imagem ao passar o mouse no card inteiro */
 .requirements__card:hover .requirements__card-img,
 .requirements__card:hover .requirements__horizontal-bg {
   transform: scale(1.08);
@@ -1492,6 +1503,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  /* Ajuda a suavizar upscale em telas retina quando a imagem de origem
+     não tem resolução suficiente. O ideal ainda é reenviar a imagem
+     em maior resolução (recomendado: mín. 1200px de largura). */
+  image-rendering: -webkit-optimize-contrast;
 }
 
 .requirements__card-content {
@@ -1528,7 +1543,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   align-items: center;
   padding: var(--space-md);
   gap: var(--space-lg);
-  z-index: 2; /* Fica acima dos outros cards para a menina vazar */
+  z-index: 2;
 }
 
 .requirements__horizontal-visual {
@@ -1549,9 +1564,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   height: 100%;
   object-fit: cover;
   transition: transform 0.5s ease;
+  image-rendering: -webkit-optimize-contrast;
 }
 
-/* Menina vazando (posição inicial estimada, ajustável no editor) */
 .requirements__horizontal-girl {
   position: absolute;
   top: -40%;
@@ -1599,7 +1614,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease;
 }
 
-/* Efeito de revelar o ícone IA quando a seção entra na tela */
 .reveal-fade.is-visible .requirements__ia-icon img {
   animation: iconReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 0.5s;
@@ -1610,7 +1624,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-/* Efeito de hover no ícone IA (ao passar o mouse no card todo) */
 .requirements__card--horizontal:hover .requirements__ia-icon img {
   transform: scale(1.15) rotate(10deg);
   filter: drop-shadow(0 0 12px rgba(0, 100, 249, 0.4));
@@ -1865,6 +1878,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
+  /* Restaura o respiro no mobile, já que o layout aqui é
+     empilhado (flex-column) e não depende mais do cálculo
+     proporcional usado no desktop. */
+  .awards {
+    padding-bottom: var(--space-2xl);
+  }
+
   .awards__stage {
     aspect-ratio: auto;
     min-height: auto;
@@ -1996,6 +2016,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   .requirements__horizontal-girl {
-    display: none; /* Esconde a menina no mobile para não quebrar o layout */
+    display: none;
   }
 }
