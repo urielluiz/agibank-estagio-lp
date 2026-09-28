@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initPercentCounter();
 
   if (editMode) {
-    console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
+    console.log('🛠 Modo edição ativo — parallax/scroll-scrub desabilitados propositalmente.');
     initPositionEditor();
   } else {
     initHeroParallax();
@@ -371,7 +371,7 @@ function initPositionEditor() {
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
-      '4. Ajuste alturas e margens nas barrinhas rosa no topo.<br><br>' +
+      '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
       '5. Quando terminar, clique em "Copiar tudo".' +
     '</div>';
   document.body.appendChild(panel);
@@ -843,10 +843,6 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA CHEGANDO
-   CORREÇÃO: O JS agora lê a rotação FINAL a
-   partir do dataset.finalRotation (ou do CSS).
-   Isso garante que a rotação animada respeite
-   a calibração do editor, sem distorcer.
 ============================================ */
 function initCarDriveIn() {
   const ctaPurpose = document.getElementById('cta-purpose');
@@ -863,18 +859,15 @@ function initCarDriveIn() {
     return;
   }
 
-  // Captura a rotação final exata que o usuário configurou no editor
   const carFinalRot = parseFloat(car.dataset.finalRotation || 0);
   const cacoFinalRot = parseFloat(caco.dataset.finalRotation || 43);
 
-  // Valores extras de "chegada" (somados ao valor final)
   const CAR_START_TRANSLATE_X = 45;
   const CAR_START_ROTATE_OFFSET = -7; 
   
   const CACO_START_TRANSLATE_X = 20;
   const CACO_START_ROTATE_OFFSET = -25;
 
-  // Aplica o estado inicial de imediato (antes do IntersectionObserver disparar)
   car.style.opacity = '0';
   car.style.transform = `translateX(${CAR_START_TRANSLATE_X}%) rotate(${carFinalRot + CAR_START_ROTATE_OFFSET}deg)`;
   
@@ -885,7 +878,6 @@ function initCarDriveIn() {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
         
-        // Dispara a animação (transição CSS cuida do resto)
         car.style.transition = 'transform 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s, opacity 1.2s ease-out 0.1s';
         car.style.opacity = '1';
         car.style.transform = `translateX(0%) rotate(${carFinalRot}deg)`;
@@ -904,6 +896,12 @@ function initCarDriveIn() {
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
+   CORREÇÃO DEFINITIVA: 
+   O clone só fica invisível (display: none) DEPOIS 
+   que a animação termina. Antes de começar a animar 
+   (quando o usuário está rolando as seções de cima), 
+   o clone fica VISÍVEL (display: block) e em tela 
+   cheia, cobrindo o fundo branco da seção.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -936,6 +934,7 @@ function initKickstartMorph() {
   function getGlobalProgress() {
     const rect = pinWrapper.getBoundingClientRect();
     const headerHeight = header.offsetHeight;
+    
     const startScroll = headerHeight;
     const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
@@ -949,19 +948,30 @@ function initKickstartMorph() {
     const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    if (progress <= 0 || progress >= 1) {
-       if (progress >= 1) {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '1';
-           targetPill.style.opacity = '1';
-       } else {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '0';
-           targetPill.style.opacity = '0';
-       }
+    // ESTADO 1: Seção ainda não grudou no topo (usuário rolando para baixo)
+    if (progress <= 0) {
+       clone.style.display = 'block'; // AQUI ESTAVA O ERRO (estava none)
+       contentToReveal.style.opacity = '0';
+       targetPill.style.opacity = '0';
+
+       // Mantém a foto em tela cheia
+       clone.style.top = '0px';
+       clone.style.left = '0px';
+       clone.style.width = '100%';
+       clone.style.height = '100%';
+       clone.style.borderRadius = '0px';
+       return;
+    }
+
+    // ESTADO 2: Animação terminou (usuário rola para as próximas seções)
+    if (progress >= 1) {
+       clone.style.display = 'none';
+       contentToReveal.style.opacity = '1';
+       targetPill.style.opacity = '1';
        return;
     } 
     
+    // ESTADO 3: Durante a animação (progress entre 0.01 e 0.99)
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
