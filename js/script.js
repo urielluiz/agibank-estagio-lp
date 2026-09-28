@@ -3,12 +3,15 @@
    JavaScript principal
 
    CHANGELOG:
-   - [REESCRITO] initAreasStack(): trocado o sistema de "rank" (que
-     calculava posições via getBoundingClientRect em tempo real) pela
-     técnica de sticky stacking cards. Agora o JS só compara a posição
-     real do card com o "top" que ele deveria ter quando grudado — se
-     bateu, ele é o card ativo. Todo o empilhamento visual é CSS puro
-     (position: sticky), muito mais robusto e fiel à referência.
+   - [REESCRITO COMPLETO] initAreasStack(): progresso de "liberação"
+     (release) agora é calculado de forma 100% independente por card
+     (nunca compara com o card vizinho) — cada card só olha para a
+     posição do seu PRÓPRIO slot em relação ao viewport. Isso elimina
+     a classe de bugs de medição cruzada. O resultado é contínuo
+     (scroll-scrubbed), com scale suave de 1 → 0.92, sincronizado
+     naturalmente com a chegada do próximo card (que é 100% CSS via
+     z-index + diferença de "top", sem cálculo de JS para isso).
+     Ativo agora também no mobile (antes desativávamos).
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -372,25 +375,22 @@ function initRequirementsCascade() {
 
 /* ============================================
    SEÇÃO 07 - ÁREAS DE ATUAÇÃO
-   (Sticky Stacking Cards + Dropdown)
+   (Sticky Stacking Cards — progresso contínuo,
+   calculado de forma independente por card)
 ============================================ */
 function initAreasStack() {
   const stack = document.getElementById('areasStack');
   if (!stack) return;
 
-  const cards = Array.from(stack.querySelectorAll('.areas__card'));
+  const slots = Array.from(stack.querySelectorAll('.areas__slot'));
+  const cards = slots.map(function (slot) { return slot.querySelector('.areas__card'); });
   if (!cards.length) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  function isMobileNow() {
-    return window.matchMedia('(max-width: 767px)').matches;
-  }
-
-  // Clique abre/fecha o dropdown. Em desktop, só funciona no card
-  // marcado como "is-active" (controlado pelo pointer-events no CSS).
-  // Em mobile, o CSS libera pointer-events em todos, então o clique
-  // funciona como acordeão simples.
+  // Clique abre/fecha o dropdown. Em qualquer resolução, só o card
+  // marcado como "is-active" é de fato clicável (pointer-events
+  // controlado via CSS, ver .areas__card.is-active .areas__card-header).
   cards.forEach(function (card) {
     const headerBtn = card.querySelector('.areas__card-header');
     if (!headerBtn) return;
@@ -403,52 +403,67 @@ function initAreasStack() {
   });
 
   if (reduceMotion) {
-    // Com reduced motion, não faz sentido calcular sticky em tempo
-    // real: deixamos todos com aparência de outline (não-ativo),
-    // exceto o primeiro, que fica ativo por padrão.
     if (cards[0]) cards[0].classList.add('is-active');
     return;
   }
 
-  let currentActiveIndex = 0;
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
 
-  function updateActiveCard() {
-    if (isMobileNow()) return; // no mobile, não há conceito de "ativo" via scroll
+  const maxScaleLoss = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue('--areas-max-scale-loss')
+  ) || 0.08;
 
-    let activeIndex = 0;
-
+  function update() {
     cards.forEach(function (card, i) {
-      const rect = card.getBoundingClientRect();
-      const computedTop = parseFloat(getComputedStyle(card).top) || 0;
+      const slot = slots[i];
+      const slotRect = slot.getBoundingClientRect();
+      const cardHeight = card.offsetHeight;
+      const topValue = parseFloat(getComputedStyle(card).top) || 0;
 
-      // Se o card já "grudou" no seu top (ou passou um pouco, por
-      // conta de arredondamento de subpixel), ele é candidato a ativo.
-      // Como percorremos em ordem, o ÚLTIMO que satisfizer a condição
-      // é o que está por cima na pilha (z-index maior = mais recente).
-      if (rect.top <= computedTop + 2) {
-        activeIndex = i;
+      // O card só é considerado "chegado" quando seu próprio slot já
+      // alcançou o ponto onde ele gruda (top). Antes disso, ele ainda
+      // está abaixo na página — não deve ser tratado como ativo nem
+      // sofrer nenhuma transformação.
+      const arrived = slotRect.top <= topValue + 1;
+
+      let release = 0;
+
+      if (arrived) {
+        // "release" = o quanto este card já está sendo "liberado"
+        // (prestes a sair da posição grudada) conforme o PRÓPRIO slot
+        // dele se aproxima do fim. Isso NUNCA olha para o card vizinho
+        // — é 100% baseado na relação entre o slot e o viewport.
+        const releaseStart = topValue + cardHeight;
+        const releaseDistance = Math.max(slot.offsetHeight - cardHeight, 1);
+        const releaseRaw = (releaseStart - slotRect.bottom) / releaseDistance;
+        release = clamp(releaseRaw, 0, 1);
       }
-    });
 
-    if (activeIndex !== currentActiveIndex) {
-      currentActiveIndex = activeIndex;
+      const scale = 1 - release * maxScaleLoss;
+      card.style.transform = 'scale(' + scale.toFixed(4) + ')';
 
-      cards.forEach(function (card, i) {
-        if (i === activeIndex) {
+      const isFront = arrived && release < 0.06;
+
+      if (isFront) {
+        if (!card.classList.contains('is-active')) {
           card.classList.add('is-active');
-        } else {
+        }
+      } else {
+        if (card.classList.contains('is-active')) {
           card.classList.remove('is-active');
           card.classList.remove('is-open');
         }
-      });
-    }
+      }
+    });
   }
 
   let ticking = false;
   function onScroll() {
     if (!ticking) {
       requestAnimationFrame(function () {
-        updateActiveCard();
+        update();
         ticking = false;
       });
       ticking = true;
@@ -458,9 +473,10 @@ function initAreasStack() {
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
 
-  // Estado inicial: primeiro card ativo.
-  cards[0].classList.add('is-active');
-  updateActiveCard();
+  // Estado inicial: primeiro card ativo por padrão antes de qualquer
+  // cálculo (evita "flash" sem cor no primeiro frame).
+  if (cards[0]) cards[0].classList.add('is-active');
+  update();
 }
 
 /* ============================================
