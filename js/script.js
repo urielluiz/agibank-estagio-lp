@@ -3,16 +3,10 @@
    JavaScript principal
 
    CHANGELOG:
-   - [FIX CRÍTICO] Editor visual: leitura de width/height agora usa
-     offsetWidth/offsetHeight (não é afetado por rotação/translate),
-     em vez de getBoundingClientRect (que media a caixa rotacionada
-     e gerava valores fantasmas gigantes em elementos como o Caco).
-   - [NOVO] Sistema de trava (UNLOCKED_ELEMENTS): só elementos
-     explicitamente listados podem ser selecionados/editados/exportados
-     pelo editor. Tudo mais é ignorado, mesmo clicando "Copiar tudo".
-   - [NOVO] "Copiar tudo" agora só exporta itens que foram REALMENTE
-     alterados nesta sessão (marcados como "sujos"), nunca mais o
-     estado inteiro de elementos intocados.
+   - [NOVO] initRequirementsCascade(): cascata de entrada nos 4 cards
+     de Requirements, com delay progressivo real de 180ms entre eles.
+     Isolado do sistema .reveal-fade já existente (não interfere em
+     textos/ícone IA do card 4).
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -29,6 +23,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initPercentCounter();
   initKickstartMorph();
   initIaIconHover();
+  initRequirementsCascade();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -339,23 +334,46 @@ function initIaIconHover() {
 }
 
 /* ============================================
+   REQUIREMENTS: CASCATA DE ENTRADA DOS 4 CARDS
+   (novo — resolve "muito rápido" + "sem cascata entre cards")
+============================================ */
+function initRequirementsCascade() {
+  const grid = document.querySelector('.requirements__grid');
+  if (!grid) return;
+
+  const cards = grid.querySelectorAll('.requirements__card');
+  if (!cards.length) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    grid.classList.add('is-cascade-visible');
+    return;
+  }
+
+  const STAGGER_STEP = 0.18; // segundos entre um card e o próximo
+
+  cards.forEach(function (card, i) {
+    card.style.transitionDelay = (i * STAGGER_STEP).toFixed(2) + 's';
+  });
+
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        grid.classList.add('is-cascade-visible');
+        observer.unobserve(grid);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  observer.observe(grid);
+}
+
+/* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
-   
-   🔒 SISTEMA DE TRAVA:
-   Só os nomes listados em UNLOCKED_ELEMENTS podem ser selecionados,
-   arrastados ou exportados pelo "Copiar tudo". Tudo que não estiver
-   nesta lista é tratado como TRAVADO — fica visível normalmente na
-   página, mas o editor o ignora completamente (sem outline, sem
-   clique, sem entrar no painel, sem entrar na exportação).
-   
-   Quando uma seção nova entrar em calibração, adicione o(s) nome(s)
-   dela aqui. Quando for aprovada, REMOVA da lista — isso trava a
-   seção de forma definitiva contra edições acidentais futuras.
 ============================================ */
 function initPositionEditor() {
   const UNLOCKED_ELEMENTS = [
     'req-girl'
-    // Adicione aqui outros elementos ainda em calibração, se houver.
   ];
 
   function isLocked(name) {
@@ -367,8 +385,6 @@ function initPositionEditor() {
 
   if (!allEditableEls.length) return;
 
-  // Marca visualmente (via atributo) quais elementos estão travados,
-  // pra CSS poder remover o outline/cursor deles.
   allEditableEls.forEach(function (el) {
     if (isLocked(el.dataset.editable)) {
       el.setAttribute('data-locked', 'true');
@@ -392,10 +408,6 @@ function initPositionEditor() {
     return (el.dataset.editableFields || 'top,left,width').split(',');
   }
 
-  // FIX CRÍTICO: usa offsetWidth/offsetHeight (layout box, NÃO afetado
-  // por transform/rotação) em vez de getBoundingClientRect (que mede a
-  // caixa rotacionada e gera valores gigantes/errados em elementos com
-  // rotate/translate aplicados).
   function readInitialValue(el, prop) {
     const parent = el.offsetParent || el.parentElement;
     const parentW = parent.offsetWidth || 1;
