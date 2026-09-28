@@ -4,14 +4,19 @@
    
    🔒 SEÇÕES APROVADAS E TRAVADAS (não alterar sem pedido explícito):
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart.
-   A trava é reforçada no editor visual (ver script.js → UNLOCKED_ELEMENTS).
    
    CHANGELOG:
-   - [FIX CRÍTICO] .cta-purpose__caco e .cta-purpose__car: revertidos para
-     os valores corretos (width 42% / 61.60%). Causa raiz: bug no editor
-     visual que media elementos rotacionados incorretamente via
-     getBoundingClientRect(), gerando valores fantasmas (75%) para
-     elementos que nunca foram tocados. Bug corrigido no script.js.
+   - [FIX] .requirements__ia-icon img: adicionado pointer-events:none.
+     Causa do "flicker" no hover: a imagem cresce (scale 1.25) além da
+     caixa do container, fazendo o cursor "sair" da imagem no meio da
+     animação e disparar mouseenter/mouseleave repetidamente. Com
+     pointer-events:none, o hover passa a ser detectado só pelo
+     container externo (tamanho fixo), eliminando o flicker.
+   - [NOVO] Cascata de entrada nos cards de Requirements
+     (.requirements__grid .requirements__card): duração aumentada
+     (0.6s → 0.9s) e delay progressivo real de 180ms entre cards,
+     via JS (initRequirementsCascade). Sistema isolado, não interfere
+     no .reveal-fade já usado para textos/ícone dentro do card 4.
 ============================================ */
 
 @font-face {
@@ -1186,9 +1191,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   pointer-events: none;
 }
 
-/* REVERTIDO: width correto é 42% (o "75.02%" que apareceu era um
-   valor fantasma causado pelo bug de medição do editor em elementos
-   rotacionados — ver changelog no topo do arquivo). */
 .cta-purpose__caco {
   position: absolute;
   top: -55.20%;
@@ -1213,9 +1215,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: block;
 }
 
-/* REVERTIDO: width correto é 61.60% (mesmo bug do item acima —
-   este elemento também tem transform aplicado por padrão, o que
-   distorcia a leitura do editor). */
 .cta-purpose__car {
   position: absolute;
   top: -9.00%;
@@ -1619,11 +1618,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   cursor: pointer;
 }
 
+/* FIX: pointer-events:none evita que a IMAGEM (que cresce até 1.25x
+   no hover) "roube" o mouse-leave do container quando ultrapassa a
+   caixa de 48x48px. Agora o hover é sempre detectado pelo container
+   externo, que tem tamanho fixo — isso elimina o flicker/travamento
+   que a animação tinha. */
 .requirements__ia-icon img {
   width: 100%;
   height: 100%;
   opacity: 0;
   transform: scale(0.5) rotate(-30deg);
+  pointer-events: none;
 }
 
 .reveal-fade.is-visible .requirements__ia-icon img {
@@ -1659,6 +1664,24 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 }
 
+/* ---------- NOVO: Cascata de entrada dos 4 cards ----------
+   Sistema isolado e independente do .reveal-fade usado dentro do
+   card horizontal (textos/ícone). Controlado via JS
+   (initRequirementsCascade), que aplica um delay progressivo real
+   por card (180ms entre um e outro) antes de adicionar a classe
+   .is-cascade-visible no grid. */
+.requirements__grid .requirements__card {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.requirements__grid.is-cascade-visible .requirements__card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .requirements__card:hover .requirements__card-img,
   .requirements__card:hover .requirements__horizontal-bg {
@@ -1671,6 +1694,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
   .requirements__ia-icon.is-hover-active img {
     animation: none !important;
+  }
+  .requirements__grid .requirements__card {
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 }
 
