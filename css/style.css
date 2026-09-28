@@ -6,14 +6,11 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [REESCRITO COMPLETO] Seção 07 - Áreas de Atuação: implementação
-     "sticky stacking cards" com progresso CONTÍNUO (scroll-scrubbed),
-     não mais binário. Cada card calcula seu próprio progresso de
-     "liberação" (release) de forma independente (sem comparar com o
-     card vizinho), evitando bugs de medição cruzada. Cards ficam
-     maiores/mais premium (fechados), encolhem suavemente (scale 1 →
-     0.92) conforme são cobertos pelo próximo. Ativo em desktop E
-     mobile (antes desativávamos no mobile).
+   - [FIX RAIZ] Seção 07 - Áreas de Atuação: removido TODO o scale()
+     via JS. A técnica correta (confirmada pela referência) é pura
+     sobreposição via position:sticky com "top" crescente por card —
+     sem encolhimento nenhum. O card de trás não muda de tamanho, só
+     fica coberto, sobrando uma fatia fina do topo dele visível.
 ============================================ */
 
 @font-face {
@@ -114,10 +111,8 @@
 
   /* ---- Áreas de Atuação (sticky stacking cards) ---- */
   --areas-card-radius: 32px;
-  --areas-base-top: calc(var(--header-height) + 24px);
-  --areas-step: 24px;
-  --areas-slot-height: 560px;
-  --areas-max-scale-loss: 0.08;
+  --areas-base-top: calc(var(--header-height) + 16px);
+  --areas-step: 20px;
 }
 
 *,
@@ -1697,7 +1692,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 07 - ÁREAS DE ATUAÇÃO
-   (Sticky Stacking Cards — progresso contínuo)
+   (Sticky Stacking Cards — sobreposição pura,
+   SEM scale. Fidelidade total à referência.)
 ============================================ */
 
 .areas {
@@ -1750,20 +1746,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
-/* Cada "slot" reserva a altura/tempo de scroll que aquele card ocupa
-   antes de ser coberto pelo próximo. Todos os slots têm a MESMA altura
-   (--areas-slot-height) — o "degrau" visual vem do --i (top crescente),
-   não da altura do slot. */
+/* Altura de cada slot é definida via JS (measureMaxHeight + dwell),
+   com este valor apenas como fallback de segurança antes do JS rodar. */
 .areas__slot {
   position: relative;
-  height: var(--areas-slot-height);
-}
-
-.areas__slot--last {
-  /* Último card não precisa da "cauda" de scroll extra para liberar
-     espaço a um próximo card (não existe um próximo) — reduzimos a
-     altura reservada para não deixar um vão vazio grande antes do CTA. */
-  height: calc(var(--areas-slot-height) * 0.55);
+  min-height: 500px;
 }
 
 .areas__card {
@@ -1776,10 +1763,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   border: 1.5px solid var(--color-blue-medium);
   border-radius: var(--areas-card-radius);
   overflow: hidden;
-  box-shadow: 0 2px 10px rgba(0, 15, 68, 0.04);
-
-  transform-origin: top center;
-  will-change: transform;
 
   transition: background-color 0.35s ease,
               border-color 0.35s ease,
@@ -1903,7 +1886,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .areas__card {
     transition: none !important;
-    transform: none !important;
   }
 }
 
@@ -1942,8 +1924,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-h4: 17px;
     --header-height: 76px;
 
-    --areas-step: 20px;
-    --areas-slot-height: 480px;
+    --areas-step: 18px;
   }
 
   .container {
@@ -2036,9 +2017,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-cta: 16px;
     --header-height: 72px;
 
-    --areas-base-top: calc(var(--header-height) + 14px);
+    --areas-base-top: calc(var(--header-height) + 10px);
     --areas-step: 12px;
-    --areas-slot-height: 420px;
     --areas-card-radius: 24px;
   }
 
@@ -2295,8 +2275,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* Áreas de Atuação: mantém o sticky-stack também no mobile,
-     apenas com offsets/altura de slot menores (definidos acima). */
   .areas__header {
     flex-direction: column;
     gap: var(--space-md);
