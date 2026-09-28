@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initLeafEffect();
   initCharacterWalk();
   initPercentCounter();
+  initKickstartMorph();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -928,4 +929,128 @@ function initCarDriveIn() {
   }, { threshold: 0.2 });
 
   observer.observe(ctaPurpose);
+}
+
+/* ============================================
+   SEÇÃO 05 - KICKSTART: MORPH + FADE DO CONTEÚDO
+   (função que estava faltando e causava o "sumiço"
+   da seção inteira)
+============================================ */
+function initKickstartMorph() {
+  const pinWrapper = document.getElementById('kickstartPinWrapper');
+  const pinInner = document.getElementById('kickstartPinInner');
+  const content = document.getElementById('kickstartContent');
+  const clone = document.getElementById('kickstartMorphClone');
+  const targetPill = document.getElementById('kickstartTargetPill');
+  const header = document.getElementById('header');
+
+  if (!pinWrapper || !pinInner || !content || !clone || !targetPill || !header) return;
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  // Em mobile ou com "reduce motion", pulamos direto pro estado final:
+  // conteúdo visível, clone escondido, pílula real visível.
+  if (reduceMotion || isMobile) {
+    content.style.opacity = '1';
+    clone.style.display = 'none';
+    targetPill.style.opacity = '1';
+    return;
+  }
+
+  // Em que % do scroll pinado o morph termina de "pousar" na pílula.
+  const MORPH_END = 0.55;
+  // Em que % do scroll o conteúdo (cards/pílulas) termina de aparecer.
+  const CONTENT_FADE_END = 0.35;
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  function easeInOutCubic(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+
+  function getGlobalProgress() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const headerHeight = header.offsetHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
+
+    if (scrollable <= 0) return 1;
+
+    const raw = (headerHeight - rect.top) / scrollable;
+    return clamp(raw, 0, 1);
+  }
+
+  let lastPhase = null; // 'full' | 'pill'
+
+  function update() {
+    const progress = getGlobalProgress();
+
+    // 1) Fade do conteúdo (cards financeiros + pílulas de benefícios)
+    const contentProgress = clamp(progress / CONTENT_FADE_END, 0, 1);
+    content.style.opacity = contentProgress.toFixed(3);
+
+    // 2) Morph do clone (foto cheia → pílula)
+    const morphProgress = clamp(progress / MORPH_END, 0, 1);
+
+    if (morphProgress >= 1) {
+      if (lastPhase !== 'pill') {
+        clone.style.display = 'none';
+        targetPill.style.opacity = '1';
+        lastPhase = 'pill';
+      }
+      return;
+    }
+
+    if (lastPhase !== 'full') {
+      clone.style.display = 'block';
+      targetPill.style.opacity = '0';
+      lastPhase = 'full';
+    }
+
+    const eased = easeInOutCubic(morphProgress);
+
+    const pinRect = pinInner.getBoundingClientRect();
+    const pillRect = targetPill.getBoundingClientRect();
+
+    const startTop = 0;
+    const startLeft = 0;
+    const startWidth = pinRect.width;
+    const startHeight = pinRect.height;
+
+    const endTop = pillRect.top - pinRect.top;
+    const endLeft = pillRect.left - pinRect.left;
+    const endWidth = pillRect.width;
+    const endHeight = pillRect.height;
+
+    const currentTop = startTop + (endTop - startTop) * eased;
+    const currentLeft = startLeft + (endLeft - startLeft) * eased;
+    const currentWidth = startWidth + (endWidth - startWidth) * eased;
+    const currentHeight = startHeight + (endHeight - startHeight) * eased;
+    const currentRadius = 999 * eased;
+
+    clone.style.top = currentTop + 'px';
+    clone.style.left = currentLeft + 'px';
+    clone.style.width = currentWidth + 'px';
+    clone.style.height = currentHeight + 'px';
+    clone.style.borderRadius = currentRadius + 'px';
+  }
+
+  let ticking = false;
+
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  update();
 }
