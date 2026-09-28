@@ -371,7 +371,7 @@ function initPositionEditor() {
       '1. Clique num elemento na tela (ou no nome dele aqui) para selecionar.<br><br>' +
       '2. Use as setas do teclado para mover Top/Left (Shift = passo maior).<br><br>' +
       '3. Ou digite valores exatos nos campos.<br><br>' +
-      '4. Ajuste alturas nas barrinhas rosa.<br><br>' +
+      '4. Ajuste alturas e margens nas barrinhas rosa no topo.<br><br>' +
       '5. Quando terminar, clique em "Copiar tudo".' +
     '</div>';
   document.body.appendChild(panel);
@@ -843,108 +843,44 @@ function initPercentCounter() {
 
 /* ============================================
    CTA PURPOSE: FUSCA CHEGANDO
-   CORREÇÃO: O pin foi reativado para dar espaço
-   suficiente para a animação do Fusca acontecer.
+   CORREÇÃO: O pin foi removido. A animação é
+   disparada por IntersectionObserver (via classe
+   .is-animated) garantindo uma entrada elegante
+   sem prender o scroll do usuário.
 ============================================ */
 function initCarDriveIn() {
-  const pinWrapper = document.getElementById('ctaPurposePinWrapper');
-  const car = document.getElementById('ctaPurposeCar');
-  const caco = document.getElementById('ctaPurposeCaco');
-  const header = document.getElementById('header');
+  const ctaPurpose = document.getElementById('cta-purpose');
   
-  if (!pinWrapper || !car || !header) return;
+  if (!ctaPurpose) return;
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
   if (reduceMotion || isMobile) {
-    car.style.opacity = '1';
-    car.style.transform = 'none';
-    if (caco) {
-      caco.style.opacity = '1';
-      caco.style.transform = 'rotate(43deg)';
-    }
+    ctaPurpose.classList.add('is-animated');
     return;
   }
 
-  const ANIM_SPAN = 0.8;
-  const FADE_SPAN = 0.35;
+  const observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        ctaPurpose.classList.add('is-animated');
+        observer.unobserve(ctaPurpose);
+      }
+    });
+  }, { threshold: 0.2 });
 
-  const CAR_START_TRANSLATE_X = 45;
-  const CAR_START_ROTATE_OFFSET = -7;
-  const CAR_FINAL_ROTATE = 0;
+  observer.observe(ctaPurpose);
 
-  const CACO_FINAL_ROTATE = 43;
-  const CACO_START_ROTATE_OFFSET = -25;
-  const CACO_START_TRANSLATE_X = 20;
-
-  function clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-
-  function easeOutQuint(x) {
-    return 1 - Math.pow(1 - x, 5);
-  }
-
-  function getGlobalProgress() {
-    const rect = pinWrapper.getBoundingClientRect();
-    const headerHeight = header.offsetHeight;
-    const startScroll = headerHeight;
-    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
-
-    if (scrollable <= 0) return 1;
-
-    const raw = (startScroll - rect.top) / scrollable;
-    return clamp(raw, 0, 1);
-  }
-
-  function update() {
-    const globalProgress = getGlobalProgress();
-    const animProgress = clamp(globalProgress / ANIM_SPAN, 0, 1);
-    const eased = easeOutQuint(animProgress);
-
-    const fadeProgress = clamp(animProgress / FADE_SPAN, 0, 1);
-    const opacity = fadeProgress;
-
-    const carTranslateX = CAR_START_TRANSLATE_X * (1 - eased);
-    const carRotate = CAR_FINAL_ROTATE + CAR_START_ROTATE_OFFSET * (1 - eased);
-
-    car.style.opacity = opacity;
-    car.style.transform =
-      'translateX(' + carTranslateX.toFixed(2) + '%) ' +
-      'rotate(' + carRotate.toFixed(2) + 'deg)';
-
-    if (caco) {
-      const cacoTranslateX = CACO_START_TRANSLATE_X * (1 - eased);
-      const cacoRotate = CACO_FINAL_ROTATE + CACO_START_ROTATE_OFFSET * (1 - eased);
-
-      caco.style.opacity = opacity;
-      caco.style.transform =
-        'translateX(' + cacoTranslateX.toFixed(2) + '%) ' +
-        'rotate(' + cacoRotate.toFixed(2) + 'deg)';
-    }
-  }
-
-  let ticking = false;
-
-  function onScroll() {
-    if (!ticking) {
-      requestAnimationFrame(function () {
-        update();
-        ticking = false;
-      });
-      ticking = true;
-    }
-  }
-
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-
-  update();
+  console.log('Fusca: animação de entrada inicializada ✅');
 }
 
 /* ============================================
    KICKSTART: MORPH DA FOTO FULL-SCREEN → PÍLULA
+   CORREÇÃO: O clone (foto full-screen) não é mais
+   escondido preventivamente. Ele rola com a página
+   (cobrindo tudo) e só fica invisível QUANDO A
+   ANIMAÇÃO TERMINA.
 ============================================ */
 function initKickstartMorph() {
   const pinWrapper = document.getElementById('kickstartPinWrapper');
@@ -978,7 +914,6 @@ function initKickstartMorph() {
     const rect = pinWrapper.getBoundingClientRect();
     const headerHeight = header.offsetHeight;
     
-    // O pin começa exatamente quando o topo do wrapper encosta no fundo do header
     const startScroll = headerHeight;
     const scrollable = pinWrapper.offsetHeight - window.innerHeight;
 
@@ -992,19 +927,15 @@ function initKickstartMorph() {
     const headerHeight = header.offsetHeight;
     const progress = getGlobalProgress();
     
-    if (progress <= 0 || progress >= 1) {
-       if (progress >= 1) {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '1';
-           targetPill.style.opacity = '1';
-       } else {
-           clone.style.display = 'none';
-           contentToReveal.style.opacity = '0';
-           targetPill.style.opacity = '0';
-       }
+    // CORREÇÃO: O clone só desaparece quando a animação termina (progress >= 1)
+    if (progress >= 1) {
+       clone.style.display = 'none';
+       contentToReveal.style.opacity = '1';
+       targetPill.style.opacity = '1';
        return;
     } 
     
+    // Se a animação ainda não terminou, o clone é visível
     clone.style.display = 'block';
     targetPill.style.opacity = '0';
 
