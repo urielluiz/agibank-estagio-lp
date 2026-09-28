@@ -6,15 +6,14 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [REESCRITO] Seção 07 - Áreas de Atuação: trocado o sistema de
-     "rank" via JS (getBoundingClientRect em tempo real) pela técnica
-     clássica de "sticky stacking cards" — cada card é position:sticky
-     com um top ligeiramente diferente um do outro. O empilhamento e
-     o efeito de "espiada" arredondada acima é 100% CSS (sem cálculo
-     de posição via JS). O JS agora só compara a posição real do card
-     com o top esperado dele, para decidir qual está "ativo" (pintar
-     de azul + liberar clique do dropdown). Muito mais robusto e
-     fiel à referência enviada.
+   - [REESCRITO COMPLETO] Seção 07 - Áreas de Atuação: implementação
+     "sticky stacking cards" com progresso CONTÍNUO (scroll-scrubbed),
+     não mais binário. Cada card calcula seu próprio progresso de
+     "liberação" (release) de forma independente (sem comparar com o
+     card vizinho), evitando bugs de medição cruzada. Cards ficam
+     maiores/mais premium (fechados), encolhem suavemente (scale 1 →
+     0.92) conforme são cobertos pelo próximo. Ativo em desktop E
+     mobile (antes desativávamos no mobile).
 ============================================ */
 
 @font-face {
@@ -113,7 +112,12 @@
   --awards-ratio-h: 620;
   --cta-purpose-ratio-h: 620;
 
-  --areas-slot-height: 70vh;
+  /* ---- Áreas de Atuação (sticky stacking cards) ---- */
+  --areas-card-radius: 32px;
+  --areas-base-top: calc(var(--header-height) + 24px);
+  --areas-step: 24px;
+  --areas-slot-height: 560px;
+  --areas-max-scale-loss: 0.08;
 }
 
 *,
@@ -1693,7 +1697,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 07 - ÁREAS DE ATUAÇÃO
-   (Sticky Stacking Cards + Dropdown)
+   (Sticky Stacking Cards — progresso contínuo)
 ============================================ */
 
 .areas {
@@ -1746,29 +1750,46 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
-/* Cada "slot" define a distância de scroll que aquele card ocupa
-   antes de ser coberto pelo próximo. Ajustável via --areas-slot-height. */
+/* Cada "slot" reserva a altura/tempo de scroll que aquele card ocupa
+   antes de ser coberto pelo próximo. Todos os slots têm a MESMA altura
+   (--areas-slot-height) — o "degrau" visual vem do --i (top crescente),
+   não da altura do slot. */
 .areas__slot {
   position: relative;
-  height: var(--areas-slot-height, 70vh);
+  height: var(--areas-slot-height);
+}
+
+.areas__slot--last {
+  /* Último card não precisa da "cauda" de scroll extra para liberar
+     espaço a um próximo card (não existe um próximo) — reduzimos a
+     altura reservada para não deixar um vão vazio grande antes do CTA. */
+  height: calc(var(--areas-slot-height) * 0.55);
 }
 
 .areas__card {
   position: sticky;
+  top: calc(var(--areas-base-top) + var(--i) * var(--areas-step));
+  z-index: calc(var(--i) + 1);
+
+  width: 100%;
   background-color: var(--color-white);
-  border: 2px solid var(--color-blue-medium);
-  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--color-blue-medium);
+  border-radius: var(--areas-card-radius);
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 15, 68, 0.04);
-  transition: background-color 0.45s ease,
-              border-color 0.45s ease,
-              box-shadow 0.45s ease;
+
+  transform-origin: top center;
+  will-change: transform;
+
+  transition: background-color 0.35s ease,
+              border-color 0.35s ease,
+              box-shadow 0.35s ease;
 }
 
 .areas__card.is-active {
   background-color: var(--color-blue-medium);
   border-color: var(--color-blue-medium);
-  box-shadow: 0 12px 32px rgba(0, 51, 176, 0.28);
+  box-shadow: 0 16px 36px rgba(0, 51, 176, 0.28);
 }
 
 .areas__card-header {
@@ -1776,14 +1797,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 22px 28px;
+  padding: 40px 40px;
   background: transparent;
   color: var(--color-blue-medium);
-  font-size: 20px;
+  font-size: 28px;
   font-weight: 700;
   cursor: default;
   pointer-events: none;
-  transition: color 0.45s ease;
+  transition: color 0.35s ease;
 }
 
 .areas__card.is-active .areas__card-header {
@@ -1793,7 +1814,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .areas__card-chevron {
-  font-size: 18px;
+  font-size: 20px;
   transition: transform 0.35s ease;
   flex-shrink: 0;
   margin-left: var(--space-sm);
@@ -1822,22 +1843,22 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .areas__card-text {
   color: var(--color-navy);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.6;
-  padding: 20px 28px 20px 28px;
+  padding: 24px 40px 20px 40px;
 }
 
 .areas__pills {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 0 28px 28px 28px;
+  padding: 0 40px 32px 40px;
 }
 
 .areas__pill {
   display: inline-flex;
   align-items: center;
-  padding: 8px 18px;
+  padding: 9px 20px;
   border-radius: var(--radius-full);
   font-size: 13px;
   font-weight: 500;
@@ -1856,6 +1877,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: flex;
   justify-content: center;
   margin-top: var(--space-lg);
+  position: relative;
+  z-index: 50;
 }
 
 .areas__cta {
@@ -1880,6 +1903,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   .areas__card {
     transition: none !important;
+    transform: none !important;
   }
 }
 
@@ -1917,7 +1941,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-h3: 22px;
     --fs-h4: 17px;
     --header-height: 76px;
-    --areas-slot-height: 60vh;
+
+    --areas-step: 20px;
+    --areas-slot-height: 480px;
   }
 
   .container {
@@ -1992,6 +2018,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .areas__title {
     font-size: 30px;
   }
+
+  .areas__card-header {
+    padding: 32px 32px;
+    font-size: 24px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -2004,6 +2035,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-small: 12px;
     --fs-cta: 16px;
     --header-height: 72px;
+
+    --areas-base-top: calc(var(--header-height) + 14px);
+    --areas-step: 12px;
+    --areas-slot-height: 420px;
+    --areas-card-radius: 24px;
   }
 
   .container {
@@ -2259,8 +2295,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* Áreas de Atuação: sem sticky-stack no mobile — vira acordeão
-     simples empilhado, todos os cards clicáveis independentemente. */
+  /* Áreas de Atuação: mantém o sticky-stack também no mobile,
+     apenas com offsets/altura de slot menores (definidos acima). */
   .areas__header {
     flex-direction: column;
     gap: var(--space-md);
@@ -2278,28 +2314,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
-  .areas__slot {
-    height: auto;
-    margin-bottom: 12px;
-  }
-
-  .areas__card {
-    position: relative !important;
-    top: auto !important;
-  }
-
   .areas__card-header {
-    color: var(--color-blue-medium);
-    cursor: pointer;
-    pointer-events: auto;
+    padding: 24px 22px;
+    font-size: 18px;
   }
 
-  .areas__card.is-open {
-    background-color: var(--color-blue-medium);
-    border-color: var(--color-blue-medium);
+  .areas__card-text {
+    padding: 18px 22px 16px 22px;
+    font-size: 14px;
   }
 
-  .areas__card.is-open .areas__card-header {
-    color: var(--color-white);
+  .areas__pills {
+    padding: 0 22px 22px 22px;
   }
 }
