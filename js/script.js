@@ -3,10 +3,11 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initRequirementsCascade(): cascata de entrada nos 4 cards
-     de Requirements, com delay progressivo real de 180ms entre eles.
-     Isolado do sistema .reveal-fade já existente (não interfere em
-     textos/ícone IA do card 4).
+   - [NOVO] initAreasStack(): seção "Áreas de Atuação". Usa sistema
+     de RANK DISCRETO (não getBoundingClientRect em tempo real) —
+     o scroll só decide "qual índice está ativo agora" (0 a 3); todo
+     o visual de empilhamento/profundidade é CSS puro por atributo
+     data-rank. Reduz drasticamente o risco de bugs de medição.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -24,6 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initKickstartMorph();
   initIaIconHover();
   initRequirementsCascade();
+  initAreasStack();
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -335,7 +337,6 @@ function initIaIconHover() {
 
 /* ============================================
    REQUIREMENTS: CASCATA DE ENTRADA DOS 4 CARDS
-   (novo — resolve "muito rápido" + "sem cascata entre cards")
 ============================================ */
 function initRequirementsCascade() {
   const grid = document.querySelector('.requirements__grid');
@@ -350,7 +351,7 @@ function initRequirementsCascade() {
     return;
   }
 
-  const STAGGER_STEP = 0.18; // segundos entre um card e o próximo
+  const STAGGER_STEP = 0.18;
 
   cards.forEach(function (card, i) {
     card.style.transitionDelay = (i * STAGGER_STEP).toFixed(2) + 's';
@@ -366,6 +367,108 @@ function initRequirementsCascade() {
   }, { threshold: 0.15 });
 
   observer.observe(grid);
+}
+
+/* ============================================
+   SEÇÃO 07 - ÁREAS DE ATUAÇÃO: PILHA + DROPDOWN
+   (novo)
+============================================ */
+function initAreasStack() {
+  const pinWrapper = document.getElementById('areasPinWrapper');
+  const cards = document.querySelectorAll('.areas__card');
+  const header = document.getElementById('header');
+
+  if (!pinWrapper || !cards.length || !header) return;
+
+  const total = cards.length;
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  // Clique abre/fecha (funciona em qualquer modo — desktop ou mobile).
+  // Em desktop, só o card com rank="0" é clicável (pointer-events
+  // controlado via CSS). Em mobile, todos são clicáveis (fallback).
+  cards.forEach(function (card) {
+    const headerBtn = card.querySelector('.areas__card-header');
+    if (!headerBtn) return;
+
+    headerBtn.addEventListener('click', function () {
+      if (!isMobile && !reduceMotion && card.dataset.rank !== '0') return;
+
+      const isOpen = card.classList.contains('is-open');
+
+      if (isMobile || reduceMotion) {
+        // Mobile/reduced-motion: acordeão simples, um aberto por vez
+        cards.forEach(function (c) { c.classList.remove('is-open'); });
+        if (!isOpen) card.classList.add('is-open');
+      } else {
+        cards.forEach(function (c) { c.classList.remove('is-open'); });
+        if (!isOpen) card.classList.add('is-open');
+      }
+    });
+  });
+
+  if (reduceMotion || isMobile) {
+    // Fallback: sem pin, sem pilha — todos em fluxo normal (CSS
+    // do breakpoint mobile já cuida do visual). Garante que todos
+    // comecem "fechados" e sem rank aplicado (evita herdar estado
+    // de uma resolução anterior, caso a janela seja redimensionada).
+    cards.forEach(function (card) {
+      card.removeAttribute('data-rank');
+    });
+    return;
+  }
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  function getProgress() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const headerHeight = header.offsetHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
+    if (scrollable <= 0) return 0;
+    const raw = (headerHeight - rect.top) / scrollable;
+    return clamp(raw, 0, 0.9999);
+  }
+
+  let currentActive = -1;
+
+  function applyRanks(activeIndex) {
+    cards.forEach(function (card, i) {
+      const dist = (i - activeIndex + total) % total;
+      card.dataset.rank = String(dist);
+      if (dist !== 0) {
+        card.classList.remove('is-open');
+      }
+    });
+  }
+
+  function update() {
+    const progress = getProgress();
+    const activeIndex = clamp(Math.floor(progress * total), 0, total - 1);
+
+    if (activeIndex !== currentActive) {
+      currentActive = activeIndex;
+      applyRanks(currentActive);
+    }
+  }
+
+  let ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  applyRanks(0);
+  update();
 }
 
 /* ============================================
