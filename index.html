@@ -213,7 +213,6 @@
 
   <!-- ===================================
        SEÇÃO 04 - CTA PURPOSE
-       (Simplificada: sem pin, animação ao entrar na tela)
   =================================== -->
   <section id="cta-purpose" class="cta-purpose">
 
@@ -221,20 +220,14 @@
 
       <div class="cta-purpose__bg-bleed" data-editable="purpose-bg" data-editable-fields="top,height"></div>
 
-      <!-- Wrapper extra para a animação CSS de entrada não conflitar com a posição do editor -->
-      <div class="cta-purpose__caco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation">
-        <div class="cta-purpose__anim-caco">
-          <div class="cta-purpose__caco-parallax" data-parallax="depth" data-depth="14">
-            <img src="assets/img/Caco-01-Proposito.png" alt="">
-          </div>
+      <div class="cta-purpose__caco" id="ctaPurposeCaco" data-editable="purpose-caco" data-editable-fields="top,left,width,rotation" data-final-rotation="43">
+        <div class="cta-purpose__caco-parallax" data-parallax="depth" data-depth="14">
+          <img src="assets/img/Caco-01-Proposito.png" alt="">
         </div>
       </div>
 
-      <!-- Wrapper extra para a animação CSS de entrada não conflitar com a posição do editor -->
-      <div class="cta-purpose__car" id="ctaPurposeCar" data-editable="purpose-car" data-editable-fields="top,left,width,rotation">
-        <div class="cta-purpose__anim-car">
-          <img src="assets/img/Fusca-Ilustracao.png" alt="Ilustração de um Fusca chegando" class="cta-purpose__car-img">
-        </div>
+      <div class="cta-purpose__car" id="ctaPurposeCar" data-editable="purpose-car" data-editable-fields="top,left,width,rotation" data-final-rotation="0">
+        <img src="assets/img/Fusca-Ilustracao.png" alt="Ilustração de um Fusca chegando" class="cta-purpose__car-img">
       </div>
 
       <div class="cta-purpose__content reveal-fade" data-editable="purpose-content">
