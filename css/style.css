@@ -7,14 +7,12 @@
    Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor.
    
    CHANGELOG:
-   - [NOVO] Seção 10 - Agibank na Mídia: carrossel via CSS scroll-snap
-     nativo (sem cálculo de posição via JS). Centralização do primeiro
-     card feita 100% via CSS (padding calc(), baseado na variável
-     --media-card-width) — robusto em qualquer largura de tela, sem
-     depender de medição em JS. JS só cuida de: mover o scroll ao
-     clicar nas setas, e destacar (scale) o card mais próximo do
-     centro via comparação de getBoundingClientRect no evento de
-     scroll (mesmo padrão seguro já usado em outras seções).
+   - [ADJUST] Agibank na Mídia: adicionado padding de 12px no card
+     (mesma "moldura branca" já usada nos cards de Requirements),
+     criando respiro entre a imagem e a borda do card em vez do
+     efeito "full bleed" anterior. Espaçamento entre cards do
+     carrossel reduzido de 40px (--space-lg) para 16px (--space-sm),
+     deixando o agrupamento mais compacto, como na referência.
 ============================================ */
 
 @font-face {
@@ -2196,9 +2194,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
+/* ADJUST: gap entre cards era var(--space-lg) = 40px, agora
+   var(--space-sm) = 16px, aproximando os cards conforme referência. */
 .media__track {
   display: flex;
-  gap: var(--space-lg);
+  gap: var(--space-sm);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
@@ -2213,13 +2213,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
+/* ADJUST: adicionado padding: 12px (mesma moldura branca usada nos
+   cards de Requirements) — antes a imagem ia de ponta a ponta do
+   card ("full bleed"), agora sobra um respiro branco ao redor,
+   igual à referência enviada. */
 .media__card {
   flex: 0 0 auto;
   width: var(--media-card-width);
   scroll-snap-align: center;
   background-color: var(--color-white);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   box-shadow: 0 10px 28px rgba(0, 15, 68, 0.15);
@@ -2235,10 +2239,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 2;
 }
 
+/* ADJUST: border-radius próprio (var(--radius-md)) + margin-bottom,
+   já que agora a imagem não ocupa mais o card inteiro (existe o
+   padding de 12px do .media__card ao redor). overflow:hidden aqui
+   garante que os cantos da FOTO fiquem arredondados. */
 .media__card-img-wrap {
   width: 100%;
   aspect-ratio: 16 / 10;
+  border-radius: var(--radius-md);
   overflow: hidden;
+  margin-bottom: var(--space-sm);
 }
 
 .media__card-img {
@@ -2248,7 +2258,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .media__card-text {
-  padding: 20px 24px 28px 24px;
+  padding: 0 8px 8px 8px;
   color: var(--color-blue);
   font-weight: 700;
   font-size: 16px;
@@ -2813,7 +2823,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   .media__card-text {
-    padding: 16px 18px 22px 18px;
+    padding: 0 6px 6px 6px;
     font-size: 14px;
   }
 }
