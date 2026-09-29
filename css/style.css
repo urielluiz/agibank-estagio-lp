@@ -6,19 +6,15 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [FIX] Areas Accordion: removida a transição/troca de border-radius
-     entre estados fechado (999px) e aberto (24px). Causa raiz do
-     "morph" e da bordinha quebrada: as duas animações (raio da borda
-     e altura via grid-template-rows) rodavam com timings diferentes,
-     ficando dessincronizadas em alguns frames. Agora o border-radius
-     fica FIXO em 999px sempre — o navegador limita automaticamente o
-     raio visual a no máximo metade da altura atual da caixa, então o
-     item vira "pílula" quando baixo (fechado) e "cápsula bem
-     arredondada" quando alto (aberto), sem nenhuma animação de raio
-     e sem dessincronia.
-   - [ADJUST] Fundo do conteúdo aberto do accordion: branco → cinza
-     claro (--color-gray-light), para destacar do fundo branco da
-     página.
+   - [FIX RAIZ] Areas Accordion: border-radius fixo (999px) causava um
+     raio gigante (~150px) quando o card ficava alto (aberto), pois o
+     navegador limita o raio a "metade da altura atual" — isso comia
+     boa parte do conteúdo/pílulas nos cantos inferiores. Correção:
+     dois valores fixos e SEM transição de border-radius (fechado:
+     999px = pílula; aberto: 28px = retangular arredondado). A troca
+     é instantânea (não anima), evitando o efeito "morph" que você
+     não queria, enquanto a altura (grid-template-rows) continua
+     animando suavemente.
 ============================================ */
 
 @font-face {
@@ -116,6 +112,8 @@
   --cta-ratio-h: 480;
   --awards-ratio-h: 620;
   --cta-purpose-ratio-h: 620;
+
+  --areas-radius-open: 28px;
 }
 
 *,
@@ -1750,16 +1748,19 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto var(--space-lg) auto;
 }
 
-/* FIX: border-radius fixo em 999px SEMPRE (sem transição, sem troca
-   de valor entre fechado/aberto). O navegador limita automaticamente
-   o raio visual a no máximo metade da altura atual da caixa — então
-   o item é "pílula" quando baixo (fechado) e "cápsula" bem arredondada
-   quando alto (aberto), sem nenhuma animação de raio e sem a
-   dessincronia que causava o morph + a bordinha quebrada. */
+/* FIX RAIZ: fechado = pílula (999px). Aberto = raio fixo pequeno
+   (28px), retangular arredondado. SEM transição de border-radius —
+   a troca é instantânea no momento do clique (não anima), evitando
+   tanto o "morph" quanto o raio gigante comendo o conteúdo que
+   acontecia quando 999px era aplicado numa caixa alta. */
 .areas__item {
   background-color: var(--color-blue);
   border-radius: var(--radius-full);
   overflow: hidden;
+}
+
+.areas__item.is-open {
+  border-radius: var(--areas-radius-open);
 }
 
 .areas__item-header {
@@ -1797,8 +1798,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .areas__item-body-inner {
   overflow: hidden;
   min-height: 0;
-  /* ADJUST: era var(--color-white). Cinza claro para destacar do
-     fundo branco da página. */
   background-color: var(--color-gray-light);
 }
 
