@@ -4,13 +4,17 @@
    
    🔒 SEÇÕES APROVADAS E TRAVADAS (não alterar sem pedido explícito):
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
-   Áreas de Atuação, Processo Seletivo.
+   Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor.
    
    CHANGELOG:
-   - [NOVO] Seção 09 - Efetivação/Proposta de Valor: fade-in simples
-     (reveal-fade já existente) + vídeo com "facade pattern" (capa
-     clicável, iframe do YouTube só é criado no clique — evita
-     carregar scripts pesados do YouTube pra quem não assiste).
+   - [NOVO] Seção 10 - Agibank na Mídia: carrossel via CSS scroll-snap
+     nativo (sem cálculo de posição via JS). Centralização do primeiro
+     card feita 100% via CSS (padding calc(), baseado na variável
+     --media-card-width) — robusto em qualquer largura de tela, sem
+     depender de medição em JS. JS só cuida de: mover o scroll ao
+     clicar nas setas, e destacar (scale) o card mais próximo do
+     centro via comparação de getBoundingClientRect no evento de
+     scroll (mesmo padrão seguro já usado em outras seções).
 ============================================ */
 
 @font-face {
@@ -114,6 +118,8 @@
 
   --process-header-gap: 32px;
   --process-step-gap: 20px;
+
+  --media-card-width: 340px;
 }
 
 *,
@@ -2150,6 +2156,134 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ============================================
+   SEÇÃO 10 - AGIBANK NA MÍDIA
+   (Carrossel via scroll-snap nativo)
+============================================ */
+
+.media {
+  background-color: var(--color-blue);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-2xl);
+  overflow: hidden;
+}
+
+.media__header {
+  max-width: 700px;
+  margin: 0 auto var(--space-2xl) auto;
+  text-align: center;
+}
+
+.media__title {
+  color: var(--color-white);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  margin-bottom: var(--space-sm);
+}
+
+.media__subtitle {
+  color: var(--color-white);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+.media__carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.media__track {
+  display: flex;
+  gap: var(--space-lg);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-xl) calc((100% - var(--media-card-width)) / 2);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.media__track::-webkit-scrollbar {
+  display: none;
+}
+
+.media__card {
+  flex: 0 0 auto;
+  width: var(--media-card-width);
+  scroll-snap-align: center;
+  background-color: var(--color-white);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 28px rgba(0, 15, 68, 0.15);
+  transform: scale(0.88);
+  opacity: 0.7;
+  transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+}
+
+.media__card.is-active {
+  transform: scale(1.06);
+  opacity: 1;
+  box-shadow: 0 22px 48px rgba(0, 15, 68, 0.3);
+  z-index: 2;
+}
+
+.media__card-img-wrap {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+}
+
+.media__card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.media__card-text {
+  padding: 20px 24px 28px 24px;
+  color: var(--color-blue);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.media__arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.25);
+  color: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+.media__arrow:hover {
+  background-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .media__track {
+    scroll-behavior: auto;
+  }
+  .media__card {
+    transition: none !important;
+  }
+}
+
+/* ============================================
    PLACEHOLDERS TEMPORÁRIOS DE DESENVOLVIMENTO
 ============================================ */
 
@@ -2183,6 +2317,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-h3: 22px;
     --fs-h4: 17px;
     --header-height: 76px;
+
+    --media-card-width: 300px;
   }
 
   .container {
@@ -2281,6 +2417,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .value-prop__content {
     gap: var(--space-xl);
   }
+
+  .media__title {
+    font-size: 30px;
+  }
+
+  .media__arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -2293,6 +2439,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-small: 12px;
     --fs-cta: 16px;
     --header-height: 72px;
+
+    --media-card-width: 78vw;
   }
 
   .container {
@@ -2644,5 +2792,28 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .value-prop__text-title {
     font-size: 20px;
+  }
+
+  .media__title {
+    font-size: 24px;
+  }
+
+  .media__subtitle {
+    font-size: 15px;
+  }
+
+  .media__carousel {
+    gap: var(--space-sm);
+  }
+
+  .media__arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .media__card-text {
+    padding: 16px 18px 22px 18px;
+    font-size: 14px;
   }
 }
