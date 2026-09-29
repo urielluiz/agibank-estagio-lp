@@ -6,15 +6,19 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [FIX RAIZ] Areas Accordion: border-radius fixo (999px) causava um
-     raio gigante (~150px) quando o card ficava alto (aberto), pois o
-     navegador limita o raio a "metade da altura atual" — isso comia
-     boa parte do conteúdo/pílulas nos cantos inferiores. Correção:
-     dois valores fixos e SEM transição de border-radius (fechado:
-     999px = pílula; aberto: 28px = retangular arredondado). A troca
-     é instantânea (não anima), evitando o efeito "morph" que você
-     não queria, enquanto a altura (grid-template-rows) continua
-     animando suavemente.
+   - [FIX] Areas Accordion: eliminado o "pulinho"/morph ao FECHAR o
+     item. Causa: border-radius:999px é limitado pelo navegador a no
+     máximo metade da altura atual da caixa — ao fechar, a classe
+     is-open é removida na hora (raio tenta voltar a 999px), mas a
+     caixa ainda está alta (em pleno encolhimento), então o raio
+     visual ficava sendo recalculado a cada frame conforme a altura
+     diminuía, parecendo um morph. Correção: usa-se transition-delay
+     de duração ZERO no border-radius — ao abrir, troca instantânea
+     (delay 0s); ao fechar, a troca só acontece DEPOIS que a animação
+     de altura já terminou (delay = 0.45s, igual à duração do
+     colapso), então o raio fica fixo em 28px durante todo o
+     movimento e só "salta" pra pílula no instante final, parado,
+     sem nenhum efeito visível de morph.
 ============================================ */
 
 @font-face {
@@ -114,6 +118,7 @@
   --cta-purpose-ratio-h: 620;
 
   --areas-radius-open: 28px;
+  --areas-collapse-duration: 0.45s;
 }
 
 *,
@@ -1748,19 +1753,24 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto var(--space-lg) auto;
 }
 
-/* FIX RAIZ: fechado = pílula (999px). Aberto = raio fixo pequeno
-   (28px), retangular arredondado. SEM transição de border-radius —
-   a troca é instantânea no momento do clique (não anima), evitando
-   tanto o "morph" quanto o raio gigante comendo o conteúdo que
-   acontecia quando 999px era aplicado numa caixa alta. */
+/* FIX FINAL: border-radius com transition-delay de DURAÇÃO ZERO.
+   - Fechado (regra base): a troca para 999px só acontece DEPOIS que
+     a animação de colapso (grid-template-rows) já terminou —
+     delay = --areas-collapse-duration. Isso evita o navegador ficar
+     recalculando o limite do raio (metade da altura) durante todo o
+     encolhimento, que era a causa do "pulinho"/morph ao fechar.
+   - Aberto (.is-open): a troca para 28px é instantânea (delay 0s),
+     mantendo o comportamento de abertura que já estava bom. */
 .areas__item {
   background-color: var(--color-blue);
   border-radius: var(--radius-full);
   overflow: hidden;
+  transition: border-radius 0s linear var(--areas-collapse-duration);
 }
 
 .areas__item.is-open {
   border-radius: var(--areas-radius-open);
+  transition: border-radius 0s linear 0s;
 }
 
 .areas__item-header {
@@ -1788,7 +1798,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .areas__item-body {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: grid-template-rows var(--areas-collapse-duration) cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 .areas__item.is-open .areas__item-body {
