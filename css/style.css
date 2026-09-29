@@ -6,19 +6,11 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [FIX] Areas Accordion: eliminado o "pulinho"/morph ao FECHAR o
-     item. Causa: border-radius:999px é limitado pelo navegador a no
-     máximo metade da altura atual da caixa — ao fechar, a classe
-     is-open é removida na hora (raio tenta voltar a 999px), mas a
-     caixa ainda está alta (em pleno encolhimento), então o raio
-     visual ficava sendo recalculado a cada frame conforme a altura
-     diminuía, parecendo um morph. Correção: usa-se transition-delay
-     de duração ZERO no border-radius — ao abrir, troca instantânea
-     (delay 0s); ao fechar, a troca só acontece DEPOIS que a animação
-     de altura já terminou (delay = 0.45s, igual à duração do
-     colapso), então o raio fica fixo em 28px durante todo o
-     movimento e só "salta" pra pílula no instante final, parado,
-     sem nenhum efeito visível de morph.
+   - [FIX] Areas Header: adicionado max-width:900px + margin:0 auto,
+     igual ao .areas__accordion. Antes o header não tinha largura
+     máxima (ocupava o container inteiro), enquanto o accordion
+     abaixo tinha 900px centralizado — isso causava o desalinhamento
+     visual entre título/texto de apoio e a pilha de accordions.
 ============================================ */
 
 @font-face {
@@ -1707,11 +1699,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   padding-bottom: var(--space-2xl);
 }
 
+/* FIX: adicionado max-width + margin auto, igual ao .areas__accordion
+   abaixo. Antes o header ocupava a largura inteira do .container
+   (que é bem maior que 900px), enquanto o accordion já era limitado
+   e centralizado a 900px — isso desalinhava visualmente o título e
+   o texto de apoio em relação à pilha de accordions. */
 .areas__header {
   display: flex;
   align-items: flex-start;
   gap: var(--space-lg);
-  margin-bottom: var(--space-2xl);
+  max-width: 900px;
+  margin: 0 auto var(--space-2xl) auto;
   flex-wrap: wrap;
 }
 
@@ -1753,14 +1751,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto var(--space-lg) auto;
 }
 
-/* FIX FINAL: border-radius com transition-delay de DURAÇÃO ZERO.
-   - Fechado (regra base): a troca para 999px só acontece DEPOIS que
-     a animação de colapso (grid-template-rows) já terminou —
-     delay = --areas-collapse-duration. Isso evita o navegador ficar
-     recalculando o limite do raio (metade da altura) durante todo o
-     encolhimento, que era a causa do "pulinho"/morph ao fechar.
-   - Aberto (.is-open): a troca para 28px é instantânea (delay 0s),
-     mantendo o comportamento de abertura que já estava bom. */
 .areas__item {
   background-color: var(--color-blue);
   border-radius: var(--radius-full);
