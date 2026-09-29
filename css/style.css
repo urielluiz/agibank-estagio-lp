@@ -8,11 +8,10 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [FIX RAIZ] Campus/Escritório: revertido para object-fit: cover com 
-     tamanhos 100% fixos (width/height reais). Isso garante zero espaço em 
-     branco (sem o fundo aparecendo) e elimina a sobreposição negativa. 
-     O card ativo cresce de verdade, empurrando os vizinhos para o lado 
-     de forma limpa, sem cortar a imagem deles com z-index.
+   - [FIX DEFINITIVO] Campus/Escritório: reforçadas as regras com seletores
+     mais específicos (#campusTrack) e !important como blindagem contra
+     conflitos de especificidade ou cache. Cards inativos voltam a ter
+     tamanho reduzido e cantos arredondados garantidos.
 ============================================ */
 
 @font-face {
@@ -120,12 +119,12 @@
   --media-card-width: 340px;
 
   /* Tamanhos reais dos cards do campus */
---campus-active-width: 500px;
+  --campus-active-width: 500px;
   --campus-active-height: 340px;
   --campus-inactive-width: 340px;
   --campus-inactive-height: 240px;
-    --campus-overlap: -45px;
-   --campus-radius: 24px;
+  --campus-overlap: -45px;
+  --campus-radius: 24px;
 }
 
 *,
@@ -2293,6 +2292,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS/ESCRITÓRIO
+   [BLINDADO] Seletores com #campusTrack + !important
+   para evitar qualquer conflito de especificidade
+   com CSS externo/legado ou cache.
 ============================================ */
 .campus-gallery {
   background-color: var(--color-white);
@@ -2319,7 +2321,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
-.campus-gallery__track {
+#campusTrack.campus-gallery__track {
   display: flex;
   align-items: center;
   overflow-x: auto;
@@ -2333,49 +2335,50 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   scrollbar-width: none;
 }
 
-.campus-gallery__track::-webkit-scrollbar {
+#campusTrack.campus-gallery__track::-webkit-scrollbar {
   display: none;
 }
 
-.campus-gallery__card {
-   position: relative;
-  flex: 0 0 auto;
-  width: var(--campus-inactive-width);
-  height: var(--campus-inactive-height);
-  background-color: var(--color-navy);
+#campusTrack .campus-gallery__card {
+  position: relative !important;
+  flex: 0 0 auto !important;
+  width: var(--campus-inactive-width) !important;
+  height: var(--campus-inactive-height) !important;
+  background-color: var(--color-navy) !important;
   scroll-snap-align: center;
-  border-radius: var(--campus-radius);
-  overflow: hidden;
+  border-radius: var(--campus-radius) !important;
+  overflow: hidden !important;
   /* Sombra mais leve nos inativos: evita o "borrão" quando vários cards se sobrepõem */
-  box-shadow: 0 4px 10px rgba(0, 15, 68, 0.10);
+  box-shadow: 0 4px 10px rgba(0, 15, 68, 0.10) !important;
   transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
-              box-shadow 0.4s ease;
+              box-shadow 0.4s ease !important;
 }
 
 /* Margem negativa para sobreposição (efeito baralho) */
-.campus-gallery__card:not(:first-child) {
-  margin-left: var(--campus-overlap);
+#campusTrack .campus-gallery__card:not(:first-child) {
+  margin-left: var(--campus-overlap) !important;
 }
 
-.campus-gallery__card.is-active {
-  width: var(--campus-active-width);
-  height: var(--campus-active-height);
-  background-color: var(--color-white);
+#campusTrack .campus-gallery__card.is-active {
+  width: var(--campus-active-width) !important;
+  height: var(--campus-active-height) !important;
+  background-color: var(--color-white) !important;
   /* Sombra forte só no ativo: reforça a hierarquia visual e evita blend com os laterais */
-  box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
+  box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28) !important;
   z-index: 5;
 }
 
-.campus-gallery__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+#campusTrack .campus-gallery__img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+  border-radius: inherit;
 }
 
 /* Overlay azul marinho (mais sutil que antes) */
-.campus-gallery__card::after {
+#campusTrack .campus-gallery__card::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -2383,9 +2386,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   opacity: 0.45;
   transition: opacity 0.35s ease;
   pointer-events: none;
+  border-radius: inherit;
 }
 
-.campus-gallery__card.is-active::after {
+#campusTrack .campus-gallery__card.is-active::after {
   opacity: 0;
 }
 
@@ -2411,7 +2415,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
 }
 
-.campus-gallery__card.is-active .campus-gallery__badge {
+#campusTrack .campus-gallery__card.is-active .campus-gallery__badge {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
 }
