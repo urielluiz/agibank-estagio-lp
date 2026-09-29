@@ -512,17 +512,69 @@
 
 </section>
 
-  <!----------->
-
       </div>
     </div>
   </div>
 
 </section>
 
-  <section id="program-steps" class="dev-placeholder">
-    <span class="dev-placeholder__label">08 · Program Steps</span>
-  </section>
+ <!-- ===================================
+     SEÇÃO 08 - PROCESSO SELETIVO
+=================================== -->
+<section id="process" class="process">
+
+  <div class="process__pin-wrapper" id="processPinWrapper">
+    <div class="process__pin-inner">
+
+      <div class="process__bg">
+        <img src="assets/img/Campus-BG.jpg" alt="" class="process__bg-img">
+        <div class="process__overlay" id="processOverlay"></div>
+      </div>
+
+      <div class="container process__content">
+
+        <div class="process__header" id="processHeader">
+          <h2 class="process__title">Programa de Estágio Agibank 2027</h2>
+          <p class="process__subtitle">Nosso processo seletivo é focado em <strong>identificar pessoas que querem agilizar seu crescimento e conquistar a efetivação!</strong></p>
+        </div>
+
+        <div class="process__arc-wrap">
+          <svg class="process__arc-svg" viewBox="0 0 1200 380">
+            <defs>
+              <linearGradient id="processArcFade" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%"   stop-color="#77DF40" stop-opacity="0"/>
+                <stop offset="12%"  stop-color="#77DF40" stop-opacity="1"/>
+                <stop offset="88%"  stop-color="#77DF40" stop-opacity="1"/>
+                <stop offset="100%" stop-color="#77DF40" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <path id="processArcPath" class="process__arc-path" d="M 30 340 Q 600 -100 1170 340" stroke="url(#processArcFade)" fill="none" />
+            <g id="processDots"></g>
+          </svg>
+
+          <div class="process__step-content" id="processStepContent">
+            <span class="process__step-number" id="processStepNumber">01</span>
+            <h3 class="process__step-title" id="processStepTitle">Inscrições</h3>
+          </div>
+        </div>
+
+        <!-- Fallback mobile: todos os 6 steps visíveis de uma vez, sem
+             depender do scroll pinado (evita perder conteúdo em telas
+             pequenas). Escondido em desktop/tablet via CSS. -->
+        <ul class="process__mobile-list">
+          <li><span>01</span> Inscrições</li>
+          <li><span>02</span> Testes on-line</li>
+          <li><span>03</span> Etapas em grupo</li>
+          <li><span>04</span> Entrevista final</li>
+          <li><span>05</span> Resultados</li>
+          <li><span>06</span> Início da jornada | Março</li>
+        </ul>
+
+      </div>
+    </div>
+  </div>
+
+</section>
 
   <section id="effectiveness" class="dev-placeholder">
     <span class="dev-placeholder__label">09 · Effectiveness</span>
