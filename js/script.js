@@ -3,16 +3,11 @@
    JavaScript principal
 
    CHANGELOG:
-   - [REESCRITO] initMediaCarousel(): implementado carrossel infinito
-     de verdade via clonagem de bordas. O JS clona os 4 cards reais
-     e insere uma cópia ANTES do primeiro e outra DEPOIS do último
-     (sequência final: [clones][reais][clones]). A página sempre
-     inicia posicionada no primeiro card REAL (nunca num clone).
-     Ao navegar e "entrar" na zona de clones, o script espera o
-     scroll terminar e reposiciona instantaneamente (sem animação)
-     para o card real equivalente — como os clones são idênticos aos
-     originais, esse reposicionamento é imperceptível, criando a
-     sensação de rotação infinita sem nenhum vazio nas bordas.
+   - [NOVO] initCampusCarousel(): carrossel infinito das fotos do
+     escritório. Função INDEPENDENTE de initMediaCarousel() (mesma
+     técnica de clonagem de bordas, mas código isolado) — decisão
+     proposital para evitar qualquer risco de regressão cruzada
+     entre as duas seções de carrossel.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -42,6 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
   safeRun(initProcessSteps, 'initProcessSteps');
   safeRun(initValuePropVideo, 'initValuePropVideo');
   safeRun(initMediaCarousel, 'initMediaCarousel');
+  safeRun(initCampusCarousel, 'initCampusCarousel');
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -575,9 +571,6 @@ function initMediaCarousel() {
   const realCards = Array.from(track.children);
   if (!realCards.length) return;
 
-  // Marca cada card real com seu índice original — os clones herdam
-  // esse atributo automaticamente via cloneNode(true), permitindo
-  // encontrar depois "qual card real corresponde a este clone".
   realCards.forEach(function (card, i) {
     card.dataset.realIndex = String(i);
   });
@@ -594,11 +587,6 @@ function initMediaCarousel() {
     return fragment;
   }
 
-  // Sequência final: [clones 1-4] [reais 1-4] [clones 1-4]
-  // Imediatamente antes do 1º card real fica o clone do ÚLTIMO card
-  // (por posição no fragmento); imediatamente depois do último card
-  // real fica o clone do PRIMEIRO — exatamente o comportamento de
-  // "loop" que queremos.
   track.insertBefore(buildCloneSet(), track.firstChild);
   track.appendChild(buildCloneSet());
 
@@ -642,10 +630,6 @@ function initMediaCarousel() {
     return closestCard;
   }
 
-  // Se o card centralizado for um CLONE, reposiciona instantaneamente
-  // (sem animação) para o card REAL equivalente. Como os clones são
-  // visualmente idênticos aos originais, esse "teleporte" nunca é
-  // percebido pelo usuário — é o que cria a sensação de loop infinito.
   function correctIfOnClone() {
     const active = updateActiveCard();
     if (!active || active.getAttribute('data-clone') !== 'true') return;
@@ -703,10 +687,151 @@ function initMediaCarousel() {
     });
   });
 
-  // Posiciona a página, já no carregamento, exatamente no 1º card
-  // REAL (nunca num clone) — sem nenhuma animação visível.
   requestAnimationFrame(function () {
     const firstReal = track.querySelector('.media__card:not([data-clone])');
+    if (firstReal) {
+      track.style.scrollBehavior = 'auto';
+      centerCard(firstReal, false);
+      requestAnimationFrame(function () {
+        track.style.scrollBehavior = 'smooth';
+        updateActiveCard();
+      });
+    }
+  });
+}
+
+/* ============================================
+   SEÇÃO 11 - CAMPUS/ESCRITÓRIO: CARROSSEL INFINITO
+   (função independente de initMediaCarousel — mesma
+   técnica, código isolado por segurança)
+============================================ */
+function initCampusCarousel() {
+  const track = document.getElementById('campusTrack');
+  const prevBtn = document.getElementById('campusPrev');
+  const nextBtn = document.getElementById('campusNext');
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const realCards = Array.from(track.children);
+  if (!realCards.length) return;
+
+  realCards.forEach(function (card, i) {
+    card.dataset.realIndex = String(i);
+  });
+
+  function buildCloneSet() {
+    const fragment = document.createDocumentFragment();
+    realCards.forEach(function (card) {
+      const clone = card.cloneNode(true);
+      clone.setAttribute('data-clone', 'true');
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('tabindex', '-1');
+      fragment.appendChild(clone);
+    });
+    return fragment;
+  }
+
+  track.insertBefore(buildCloneSet(), track.firstChild);
+  track.appendChild(buildCloneSet());
+
+  const allCards = Array.from(track.querySelectorAll('.campus-gallery__card'));
+
+  function centerCard(card, smooth) {
+    const trackRect = track.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const offset = (cardRect.left + cardRect.width / 2) - (trackRect.left + trackRect.width / 2);
+    const target = track.scrollLeft + offset;
+
+    if (smooth) {
+      track.scrollTo({ left: target, behavior: 'smooth' });
+    } else {
+      track.scrollLeft = target;
+    }
+  }
+
+  function updateActiveCard() {
+    const trackRect = track.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+
+    let closestCard = null;
+    let closestDistance = Infinity;
+
+    allCards.forEach(function (card) {
+      const rect = card.getBoundingClientRect();
+      const cardCenterX = rect.left + rect.width / 2;
+      const distance = Math.abs(cardCenterX - centerX);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCard = card;
+      }
+    });
+
+    allCards.forEach(function (card) {
+      card.classList.toggle('is-active', card === closestCard);
+    });
+
+    return closestCard;
+  }
+
+  function correctIfOnClone() {
+    const active = updateActiveCard();
+    if (!active || active.getAttribute('data-clone') !== 'true') return;
+
+    const idx = active.dataset.realIndex;
+    const realEquivalent = track.querySelector(
+      '.campus-gallery__card[data-real-index="' + idx + '"]:not([data-clone])'
+    );
+    if (!realEquivalent) return;
+
+    const prevBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto';
+    centerCard(realEquivalent, false);
+    requestAnimationFrame(function () {
+      track.style.scrollBehavior = prevBehavior || 'smooth';
+      updateActiveCard();
+    });
+  }
+
+  let scrollEndTimer = null;
+  track.addEventListener('scroll', function () {
+    updateActiveCard();
+    clearTimeout(scrollEndTimer);
+    scrollEndTimer = setTimeout(correctIfOnClone, 120);
+  }, { passive: true });
+
+  function stepTo(direction) {
+    const active = updateActiveCard();
+    if (!active) return;
+
+    const currentIdx = allCards.indexOf(active);
+    const targetIdx = currentIdx + direction;
+
+    if (targetIdx < 0 || targetIdx >= allCards.length) return;
+    centerCard(allCards[targetIdx], true);
+  }
+
+  prevBtn.addEventListener('click', function () {
+    stepTo(-1);
+  });
+
+  nextBtn.addEventListener('click', function () {
+    stepTo(1);
+  });
+
+  window.addEventListener('resize', function () {
+    const active = updateActiveCard();
+    if (!active) return;
+
+    const prevBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto';
+    centerCard(active, false);
+    requestAnimationFrame(function () {
+      track.style.scrollBehavior = prevBehavior || 'smooth';
+    });
+  });
+
+  requestAnimationFrame(function () {
+    const firstReal = track.querySelector('.campus-gallery__card:not([data-clone])');
     if (firstReal) {
       track.style.scrollBehavior = 'auto';
       centerCard(firstReal, false);
