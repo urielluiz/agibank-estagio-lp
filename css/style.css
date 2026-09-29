@@ -8,10 +8,11 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [FIX DEFINITIVO] Campus/Escritório: reforçadas as regras com seletores
-     mais específicos (#campusTrack) e !important como blindagem contra
-     conflitos de especificidade ou cache. Cards inativos voltam a ter
-     tamanho reduzido e cantos arredondados garantidos.
+   - [AJUSTE] Campus/Escritório: reduzido o viewport visível do carrossel
+     para mostrar apenas 3 cards por vez (1 ativo + 2 inativos), via
+     nova variável --campus-viewport-width calculada automaticamente.
+     As 2 fotos extras continuam acessíveis pelas setas/dots (sem
+     nenhuma alteração de HTML ou JS).
 ============================================ */
 
 @font-face {
@@ -125,6 +126,12 @@
   --campus-inactive-height: 240px;
   --campus-overlap: -45px;
   --campus-radius: 24px;
+
+  /* [NOVO] Margem de segurança para a sombra do card ativo não ser cortada */
+  --campus-viewport-buffer: 100px;
+  /* [NOVO] Largura do "viewport" visível: 1 card ativo + 2 inativos + buffer.
+     Calculada automaticamente a partir das variáveis acima. */
+  --campus-viewport-width: calc(var(--campus-active-width) + (var(--campus-inactive-width) * 2) + (var(--campus-overlap) * 2) + var(--campus-viewport-buffer));
 }
 
 *,
@@ -2295,6 +2302,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    [BLINDADO] Seletores com #campusTrack + !important
    para evitar qualquer conflito de especificidade
    com CSS externo/legado ou cache.
+   [AJUSTE] max-width do carrossel agora usa
+   --campus-viewport-width para mostrar só 3 cards.
 ============================================ */
 .campus-gallery {
   background-color: var(--color-white);
@@ -2317,7 +2326,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .campus-gallery__carousel {
   position: relative;
-  max-width: 1400px;
+  max-width: var(--campus-viewport-width);
   margin: 0 auto;
 }
 
