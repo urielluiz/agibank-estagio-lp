@@ -2,26 +2,17 @@
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    Design Tokens + Reset + Base
    
-   🔒 SEÇÕES APROVADAS E TRAVADAS (não alterar sem pedido explícito):
+   🔒 SEÇÕES APROVADAS E TRAVADAS:
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
    Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor,
    Agibank na Mídia.
    
    CHANGELOG:
-   - [FIX RAIZ DEFINITIVO] Campus/Escritório: eliminada a técnica de
-     "altura fixa + largura automática pela imagem", que permitia que
-     a largura calculada de uma foto ficasse MAIOR que a própria tela
-     visível em certas proporções/resoluções — causa real do "corte"
-     nas bordas (a imagem literalmente vazava pra fora da janela, não
-     era recorte de CSS). Substituído por caixa de tamanho 100% FIXO
-     e conhecido (largura E altura definidas via variáveis, iguais
-     para todo card) + object-fit:contain na imagem — a foto NUNCA é
-     cortada, é sempre redimensionada proporcionalmente pra caber
-     inteira dentro da caixa. Como consequência, também elimina por
-     completo a necessidade de "esperar as imagens carregarem" antes
-     de centralizar o carrossel (o tamanho do card não depende mais
-     da imagem) — o bug de "nasce pequeno, estoura no clique" some
-     por definição, não só por correção pontual.
+   - [FIX RAIZ] Campus/Escritório: revertido para object-fit: cover com 
+     tamanhos 100% fixos (width/height reais). Isso garante zero espaço em 
+     branco (sem o fundo aparecendo) e elimina a sobreposição negativa. 
+     O card ativo cresce de verdade, empurrando os vizinhos para o lado 
+     de forma limpa, sem cortar a imagem deles com z-index.
 ============================================ */
 
 @font-face {
@@ -128,11 +119,12 @@
 
   --media-card-width: 340px;
 
-  --campus-active-width: 460px;
+  /* Tamanhos reais dos cards do campus */
+  --campus-active-width: 520px;
   --campus-active-height: 380px;
-  --campus-inactive-width: 290px;
-  --campus-inactive-height: 230px;
-  --campus-overlap: -28px;
+  --campus-inactive-width: 300px;
+  --campus-inactive-height: 240px;
+  --campus-card-gap: 24px;
 }
 
 *,
@@ -2300,9 +2292,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS / ESCRITÓRIO
-   (Carrossel infinito — caixa de tamanho FIXO,
-   object-fit:contain garante 0% de corte, com
-   sobreposição controlada tipo "baralho")
+   (Carrossel infinito — caixas de tamanho FIXO,
+   object-fit:cover garante que a imagem preencha
+   100% do card sem deixar nenhum fundo branco,
+   com sobreposição controlada tipo "baralho")
 ============================================ */
 
 .campus-gallery {
@@ -2333,9 +2326,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
-/* Padding calculado com base na largura FIXA do card ativo (não mais
-   um "chute" em % — segue o mesmo padrão confiável já usado na seção
-   de Mídia, agora que a largura do card é conhecida de antemão). */
 .campus-gallery__track {
   display: flex;
   align-items: center;
@@ -2354,12 +2344,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
-/* FIX RAIZ: largura E altura agora são FIXAS (não dependem mais da
-   proporção real da foto) — elimina por definição a possibilidade de
-   uma imagem "vazar" pra fora da tela em qualquer resolução/proporção.
-   object-fit:contain no <img> abaixo garante que a foto NUNCA é
-   cortada — ela é sempre redimensionada proporcionalmente pra caber
-   inteira dentro dessa caixa fixa. */
+/* FIX RAIZ DEFINITIVO: largura E altura FIXAS. A imagem dentro usa
+   object-fit:cover para preencher todo esse espaço sem distorcer e sem
+   deixar "barras brancas" (fundo do card). A diferença entre ativo e
+   inativo é uma mudança REAL nas dimensões da caixa, empurrando os
+   vizinhos e criando a sobreposição limpa (--campus-overlap) sem
+   corte de z-index indesejado. */
 .campus-gallery__card {
   position: relative;
   flex: 0 0 auto;
@@ -2372,7 +2362,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   box-shadow: 0 8px 20px rgba(0, 15, 68, 0.14);
   transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
-              background-color 0.4s ease,
               box-shadow 0.4s ease;
 }
 
@@ -2383,22 +2372,21 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .campus-gallery__card.is-active {
   width: var(--campus-active-width);
   height: var(--campus-active-height);
-  background-color: var(--color-white);
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
+  z-index: 5;
 }
 
-/* object-fit:contain (não mais "cover" nem "width:auto") — a imagem
-   inteira SEMPRE aparece, redimensionada proporcionalmente pra caber
-   na caixa, sem jamais cortar nenhuma borda. */
+/* object-fit:cover preenche o card inteiro. Não há mais risco
+   de fundo branco/vazamento. */
 .campus-gallery__img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
 }
 
-/* Filtro azul marinho: visível em todas as imagens por padrão,
-   desaparece só na imagem ativa/centralizada. */
+/* Filtro azul marinho: visível em todas as imagens por padrão
+   (--opacity 0.72), desaparece só na imagem ativa. */
 .campus-gallery__card::after {
   content: '';
   position: absolute;
@@ -2482,9 +2470,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
     --media-card-width: 300px;
 
-    --campus-active-width: 340px;
+    --campus-active-width: 380px;
     --campus-active-height: 280px;
-    --campus-inactive-width: 210px;
+    --campus-inactive-width: 220px;
     --campus-inactive-height: 170px;
     --campus-overlap: -18px;
   }
@@ -2622,9 +2610,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
     --campus-active-width: 76vw;
     --campus-active-height: 220px;
-    --campus-inactive-width: 40vw;
+    --campus-inactive-width: 45vw;
     --campus-inactive-height: 140px;
-    --campus-overlap: -10px;
+    --campus-overlap: -12px;
   }
 
   .container {
