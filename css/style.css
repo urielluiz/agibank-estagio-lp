@@ -7,11 +7,14 @@
    Áreas de Atuação.
    
    CHANGELOG:
-   - [NOVO] Seção 08 - Processo Seletivo: arco SVG com 6 pontos scroll-
-     pinado. Pontos posicionados via path.getPointAtLength() (matemática
-     do próprio SVG, independente de pixel renderizado — não precisa
-     recalcular no resize, evita a classe de bugs de medição anteriores).
-     Mobile: fallback estático com todos os 6 steps visíveis (sem pin).
+   - [ADJUST] Processo Seletivo: reduzido o espaçamento vertical entre
+     título/texto de apoio → arco → step ativo. Antes usava --space-2xl
+     (96px) e --space-lg (40px) como margens, deixando os blocos muito
+     "esparramados" dentro dos 100vh do pin. Agora usa valores próprios
+     (--process-header-gap / --process-step-gap) menores, e o arco
+     ficou com max-width reduzido (860px, era 1000px), o que também
+     diminui a altura dele proporcionalmente (mantém o mesmo
+     aspect-ratio 1200/380).
 ============================================ */
 
 @font-face {
@@ -112,6 +115,9 @@
 
   --areas-radius-open: 28px;
   --areas-collapse-duration: 0.45s;
+
+  --process-header-gap: 32px;
+  --process-step-gap: 20px;
 }
 
 *,
@@ -1942,10 +1948,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   font-weight: 700;
 }
 
+/* ADJUST: margin-top reduzido (era --space-2xl = 96px) e max-width
+   reduzido (era 1000px) — como o arco mantém aspect-ratio fixo
+   (1200/380), diminuir a largura também diminui a altura dele
+   proporcionalmente, deixando o bloco inteiro mais compacto. */
 .process__arc-wrap {
   position: relative;
-  max-width: 1000px;
-  margin: var(--space-2xl) auto 0 auto;
+  max-width: 860px;
+  margin: var(--process-header-gap) auto 0 auto;
 }
 
 .process__arc-svg {
@@ -1974,9 +1984,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   filter: drop-shadow(0 0 8px rgba(119, 223, 64, 0.7));
 }
 
+/* ADJUST: margin-top reduzido (era --space-lg = 40px). */
 .process__step-content {
   text-align: center;
-  margin-top: var(--space-lg);
+  margin-top: var(--process-step-gap);
   transition: opacity 0.2s ease, transform 0.2s ease;
   opacity: 1;
   transform: translateY(0);
@@ -2133,7 +2144,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   .process__arc-wrap {
-    max-width: 780px;
+    max-width: 680px;
   }
 }
 
@@ -2433,9 +2444,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     padding: 0 22px 22px 22px;
   }
 
-  /* Processo Seletivo: fallback estático (sem pin, sem arco).
-     Todos os 6 steps ficam visíveis de uma vez, evitando perda de
-     conteúdo em telas pequenas. */
   .process__pin-wrapper {
     height: auto;
   }
