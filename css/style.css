@@ -120,11 +120,12 @@
   --media-card-width: 340px;
 
   /* Tamanhos reais dos cards do campus */
- --campus-active-width: 500px;
+--campus-active-width: 500px;
   --campus-active-height: 340px;
   --campus-inactive-width: 340px;
   --campus-inactive-height: 240px;
-  --campus-overlap: -90px;
+    --campus-overlap: -45px;
+   --campus-radius: 24px;
 }
 
 *,
@@ -2337,15 +2338,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .campus-gallery__card {
-  position: relative;
+   position: relative;
   flex: 0 0 auto;
   width: var(--campus-inactive-width);
   height: var(--campus-inactive-height);
   background-color: var(--color-navy);
   scroll-snap-align: center;
-  border-radius: var(--radius-lg);
+  border-radius: var(--campus-radius);
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0, 15, 68, 0.14);
+  /* Sombra mais leve nos inativos: evita o "borrão" quando vários cards se sobrepõem */
+  box-shadow: 0 4px 10px rgba(0, 15, 68, 0.10);
   transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               box-shadow 0.4s ease;
@@ -2360,8 +2362,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   width: var(--campus-active-width);
   height: var(--campus-active-height);
   background-color: var(--color-white);
+  /* Sombra forte só no ativo: reforça a hierarquia visual e evita blend com os laterais */
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
-  /* O z-index base é 5, mas é sobrescrito dinamicamente pelo JS */
   z-index: 5;
 }
 
