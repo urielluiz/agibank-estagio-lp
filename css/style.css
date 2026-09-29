@@ -7,14 +7,11 @@
    Áreas de Atuação.
    
    CHANGELOG:
-   - [ADJUST] Processo Seletivo: reduzido o espaçamento vertical entre
-     título/texto de apoio → arco → step ativo. Antes usava --space-2xl
-     (96px) e --space-lg (40px) como margens, deixando os blocos muito
-     "esparramados" dentro dos 100vh do pin. Agora usa valores próprios
-     (--process-header-gap / --process-step-gap) menores, e o arco
-     ficou com max-width reduzido (860px, era 1000px), o que também
-     diminui a altura dele proporcionalmente (mantém o mesmo
-     aspect-ratio 1200/380).
+   - [ADJUST] Processo Seletivo: arco SVG aumentado para preencher
+     melhor a tela. max-width do .process__arc-wrap: 860px → 1180px
+     (desktop) e 680px → 920px (tablet). Como o arco mantém
+     aspect-ratio fixo (1200/380), a altura cresce proporcionalmente
+     junto com a largura, sem distorção.
 ============================================ */
 
 @font-face {
@@ -1948,13 +1945,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   font-weight: 700;
 }
 
-/* ADJUST: margin-top reduzido (era --space-2xl = 96px) e max-width
-   reduzido (era 1000px) — como o arco mantém aspect-ratio fixo
-   (1200/380), diminuir a largura também diminui a altura dele
-   proporcionalmente, deixando o bloco inteiro mais compacto. */
+/* ADJUST: max-width aumentado (860px → 1180px) para o arco preencher
+   melhor a tela. Como mantém aspect-ratio fixo (1200/380), a altura
+   cresce junto na mesma proporção, sem distorção. */
 .process__arc-wrap {
   position: relative;
-  max-width: 860px;
+  max-width: 1180px;
   margin: var(--process-header-gap) auto 0 auto;
 }
 
@@ -1984,7 +1980,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   filter: drop-shadow(0 0 8px rgba(119, 223, 64, 0.7));
 }
 
-/* ADJUST: margin-top reduzido (era --space-lg = 40px). */
 .process__step-content {
   text-align: center;
   margin-top: var(--process-step-gap);
@@ -2144,7 +2139,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   .process__arc-wrap {
-    max-width: 680px;
+    max-width: 920px;
   }
 }
 
