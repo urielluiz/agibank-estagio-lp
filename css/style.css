@@ -8,17 +8,15 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [FIX RAIZ] Campus/Escritório: removida a sobreposição via margem
-     negativa entre cards — era isso que causava o card ativo "pintar
-     por cima" da borda dos vizinhos (não era mais corte de proporção,
-     já resolvido antes; agora era cobertura por z-index/stacking).
-     Trocado transform:scale (que não reduz o espaço ocupado no
-     layout) por mudança REAL de altura (height) entre estado
-     ativo/inativo — o card inativo agora ocupa menos espaço de
-     verdade, sobrando lugar pros vizinhos aparecerem inteiros sem
-     serem cortados pela borda visível do carrossel. Overlay azul
-     marinho escurecido (0.55 → 0.72). Removido overflow:hidden da
-     seção (não é mais necessário).
+   - [FIX RAIZ] Campus/Escritório: reintroduzida sobreposição controlada
+     entre os cards (--campus-overlap, bem menor que a tentativa
+     anterior) para recriar o efeito de "baralho empilhado" pedido.
+     O z-index de cada card agora é calculado DINAMICAMENTE via JS
+     (baseado na distância até o card ativo), não mais fixo via CSS —
+     isso garante que o card em foco sempre fica por cima com uma
+     sobreposição sutil e intencional, sem nunca cobrir a maior parte
+     da imagem dos vizinhos. Mantida a lógica de "imagem sempre
+     inteira" (altura fixa, largura automática) da correção anterior.
 ============================================ */
 
 @font-face {
@@ -127,7 +125,7 @@
 
   --campus-active-height: 380px;
   --campus-inactive-height: 230px;
-  --campus-card-gap: 24px;
+  --campus-overlap: -28px;
 }
 
 *,
@@ -2296,9 +2294,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 /* ============================================
    SEÇÃO 11 - CAMPUS / ESCRITÓRIO
    (Carrossel infinito — imagem SEMPRE inteira,
-   sem recorte; sem sobreposição por z-index —
-   o card ativo cresce de tamanho de verdade
-   via height, não via transform:scale)
+   com sobreposição controlada tipo "baralho".
+   z-index de cada card é calculado via JS,
+   conforme a distância até o card ativo.)
 ============================================ */
 
 .campus-gallery {
@@ -2332,7 +2330,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .campus-gallery__track {
   display: flex;
   align-items: center;
-  gap: var(--campus-card-gap);
   overflow-x: auto;
   overflow-y: visible;
   scroll-snap-type: x mandatory;
@@ -2348,14 +2345,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
-/* FIX RAIZ: sem overlap negativo entre cards (era isso que fazia o
-   card ativo "pintar por cima" da borda dos vizinhos, cobrindo parte
-   real da imagem deles). A diferença de tamanho ativo/inativo agora é
-   uma mudança REAL de altura (não mais transform:scale, que só muda
-   a aparência visual sem liberar espaço de verdade no layout) — o
-   card inativo ocupa menos espaço de fato, sobrando lugar suficiente
-   pros vizinhos aparecerem inteiros, sem serem cortados pela borda da
-   área visível do carrossel. */
+/* Sobreposição controlada (pequena) entre cards, reintroduzida para
+   criar o efeito de "baralho empilhado". O z-index de cada card NÃO
+   é definido aqui — é calculado dinamicamente via JS a cada card,
+   baseado na distância até o card ativo (ver initCampusCarousel). */
 .campus-gallery__card {
   position: relative;
   flex: 0 0 auto;
@@ -2368,21 +2361,25 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
               box-shadow 0.4s ease;
 }
 
+.campus-gallery__card:not(:first-child) {
+  margin-left: var(--campus-overlap);
+}
+
 .campus-gallery__card.is-active {
   height: var(--campus-active-height);
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
-  z-index: 2;
 }
 
+/* Imagem sempre inteira: altura 100% do card, largura automática
+   (proporcional), sem cropping em nenhuma circunstância. */
 .campus-gallery__img {
   height: 100%;
   width: auto;
   display: block;
 }
 
-/* Filtro azul marinho: agora mais escuro (era 0.55, agora 0.72),
-   visível em todas as imagens por padrão, some só na imagem
-   ativa/centralizada. */
+/* Filtro azul marinho: visível em todas as imagens por padrão,
+   desaparece só na imagem ativa/centralizada. */
 .campus-gallery__card::after {
   content: '';
   position: absolute;
@@ -2467,7 +2464,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --media-card-width: 300px;
     --campus-active-height: 300px;
     --campus-inactive-height: 190px;
-    --campus-card-gap: 20px;
+    --campus-overlap: -20px;
   }
 
   .container {
@@ -2602,7 +2599,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --media-card-width: 78vw;
     --campus-active-height: 220px;
     --campus-inactive-height: 140px;
-    --campus-card-gap: 14px;
+    --campus-overlap: -12px;
   }
 
   .container {
