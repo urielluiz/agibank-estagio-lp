@@ -3,13 +3,16 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initMediaCarousel(): setas movem o scroll do trilho por
-     "1 card por vez" (largura do card + gap), com loop (do último
-     volta pro primeiro e vice-versa). O destaque visual (scale) do
-     card mais próximo do centro é recalculado no evento de scroll,
-     usando o mesmo padrão seguro de comparação via
-     getBoundingClientRect já usado em outras seções — sem cálculo
-     de posição "adivinhado", sempre relativo ao estado real do DOM.
+   - [REESCRITO] initMediaCarousel(): implementado carrossel infinito
+     de verdade via clonagem de bordas. O JS clona os 4 cards reais
+     e insere uma cópia ANTES do primeiro e outra DEPOIS do último
+     (sequência final: [clones][reais][clones]). A página sempre
+     inicia posicionada no primeiro card REAL (nunca num clone).
+     Ao navegar e "entrar" na zona de clones, o script espera o
+     scroll terminar e reposiciona instantaneamente (sem animação)
+     para o card real equivalente — como os clones são idênticos aos
+     originais, esse reposicionamento é imperceptível, criando a
+     sensação de rotação infinita sem nenhum vazio nas bordas.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -561,7 +564,7 @@ function initValuePropVideo() {
 }
 
 /* ============================================
-   SEÇÃO 10 - AGIBANK NA MÍDIA: CARROSSEL
+   SEÇÃO 10 - AGIBANK NA MÍDIA: CARROSSEL INFINITO
 ============================================ */
 function initMediaCarousel() {
   const track = document.getElementById('mediaTrack');
@@ -569,8 +572,50 @@ function initMediaCarousel() {
   const nextBtn = document.getElementById('mediaNext');
   if (!track || !prevBtn || !nextBtn) return;
 
-  const cards = Array.from(track.querySelectorAll('.media__card'));
-  if (!cards.length) return;
+  const realCards = Array.from(track.children);
+  if (!realCards.length) return;
+
+  // Marca cada card real com seu índice original — os clones herdam
+  // esse atributo automaticamente via cloneNode(true), permitindo
+  // encontrar depois "qual card real corresponde a este clone".
+  realCards.forEach(function (card, i) {
+    card.dataset.realIndex = String(i);
+  });
+
+  function buildCloneSet() {
+    const fragment = document.createDocumentFragment();
+    realCards.forEach(function (card) {
+      const clone = card.cloneNode(true);
+      clone.setAttribute('data-clone', 'true');
+      clone.setAttribute('aria-hidden', 'true');
+      clone.setAttribute('tabindex', '-1');
+      fragment.appendChild(clone);
+    });
+    return fragment;
+  }
+
+  // Sequência final: [clones 1-4] [reais 1-4] [clones 1-4]
+  // Imediatamente antes do 1º card real fica o clone do ÚLTIMO card
+  // (por posição no fragmento); imediatamente depois do último card
+  // real fica o clone do PRIMEIRO — exatamente o comportamento de
+  // "loop" que queremos.
+  track.insertBefore(buildCloneSet(), track.firstChild);
+  track.appendChild(buildCloneSet());
+
+  const allCards = Array.from(track.querySelectorAll('.media__card'));
+
+  function centerCard(card, smooth) {
+    const trackRect = track.getBoundingClientRect();
+    const cardRect = card.getBoundingClientRect();
+    const offset = (cardRect.left + cardRect.width / 2) - (trackRect.left + trackRect.width / 2);
+    const target = track.scrollLeft + offset;
+
+    if (smooth) {
+      track.scrollTo({ left: target, behavior: 'smooth' });
+    } else {
+      track.scrollLeft = target;
+    }
+  }
 
   function updateActiveCard() {
     const trackRect = track.getBoundingClientRect();
@@ -579,7 +624,7 @@ function initMediaCarousel() {
     let closestCard = null;
     let closestDistance = Infinity;
 
-    cards.forEach(function (card) {
+    allCards.forEach(function (card) {
       const rect = card.getBoundingClientRect();
       const cardCenterX = rect.left + rect.width / 2;
       const distance = Math.abs(cardCenterX - centerX);
@@ -590,49 +635,87 @@ function initMediaCarousel() {
       }
     });
 
-    cards.forEach(function (card) {
+    allCards.forEach(function (card) {
       card.classList.toggle('is-active', card === closestCard);
+    });
+
+    return closestCard;
+  }
+
+  // Se o card centralizado for um CLONE, reposiciona instantaneamente
+  // (sem animação) para o card REAL equivalente. Como os clones são
+  // visualmente idênticos aos originais, esse "teleporte" nunca é
+  // percebido pelo usuário — é o que cria a sensação de loop infinito.
+  function correctIfOnClone() {
+    const active = updateActiveCard();
+    if (!active || active.getAttribute('data-clone') !== 'true') return;
+
+    const idx = active.dataset.realIndex;
+    const realEquivalent = track.querySelector(
+      '.media__card[data-real-index="' + idx + '"]:not([data-clone])'
+    );
+    if (!realEquivalent) return;
+
+    const prevBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto';
+    centerCard(realEquivalent, false);
+    requestAnimationFrame(function () {
+      track.style.scrollBehavior = prevBehavior || 'smooth';
+      updateActiveCard();
     });
   }
 
-  let ticking = false;
+  let scrollEndTimer = null;
   track.addEventListener('scroll', function () {
-    if (!ticking) {
-      requestAnimationFrame(function () {
-        updateActiveCard();
-        ticking = false;
-      });
-      ticking = true;
-    }
+    updateActiveCard();
+    clearTimeout(scrollEndTimer);
+    scrollEndTimer = setTimeout(correctIfOnClone, 120);
   }, { passive: true });
 
-  function scrollStep(direction) {
-    const firstCard = cards[0];
-    const trackStyle = getComputedStyle(track);
-    const gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
-    const amount = (firstCard.offsetWidth + gap) * direction;
-    track.scrollBy({ left: amount, behavior: 'smooth' });
+  function stepTo(direction) {
+    const active = updateActiveCard();
+    if (!active) return;
+
+    const currentIdx = allCards.indexOf(active);
+    const targetIdx = currentIdx + direction;
+
+    if (targetIdx < 0 || targetIdx >= allCards.length) return;
+    centerCard(allCards[targetIdx], true);
   }
 
   prevBtn.addEventListener('click', function () {
-    if (track.scrollLeft <= 4) {
-      track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' });
-    } else {
-      scrollStep(-1);
-    }
+    stepTo(-1);
   });
 
   nextBtn.addEventListener('click', function () {
-    const maxScroll = track.scrollWidth - track.clientWidth;
-    if (track.scrollLeft >= maxScroll - 4) {
-      track.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      scrollStep(1);
-    }
+    stepTo(1);
   });
 
-  window.addEventListener('resize', updateActiveCard);
-  updateActiveCard();
+  window.addEventListener('resize', function () {
+    const active = updateActiveCard();
+    if (!active) return;
+
+    const prevBehavior = track.style.scrollBehavior;
+    track.style.scrollBehavior = 'auto';
+    centerCard(active, false);
+    requestAnimationFrame(function () {
+      track.style.scrollBehavior = prevBehavior || 'smooth';
+    });
+  });
+
+  // Posiciona a página, já no carregamento, exatamente no 1º card
+  // REAL (nunca num clone) — sem nenhuma animação visível.
+  requestAnimationFrame(function () {
+    const firstReal = track.querySelector('.media__card:not([data-clone])');
+    if (firstReal) {
+      track.style.scrollBehavior = 'auto';
+      centerCard(firstReal, false);
+      requestAnimationFrame(function () {
+        track.style.scrollBehavior = 'smooth';
+        updateActiveCard();
+      });
+    }
+  });
 }
 
 /* ============================================
