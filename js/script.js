@@ -3,11 +3,22 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initCampusCarousel(): carrossel infinito das fotos do
-     escritório. Função INDEPENDENTE de initMediaCarousel() (mesma
-     técnica de clonagem de bordas, mas código isolado) — decisão
-     proposital para evitar qualquer risco de regressão cruzada
-     entre as duas seções de carrossel.
+   - [FIX RAIZ] initCampusCarousel(): resolvido o bug de "nasce
+     pequeno, estoura no primeiro clique". Causa: como o tamanho de
+     cada card depende da imagem já carregada (altura fixa, largura
+     automática pela proporção real da foto), o cálculo de
+     centralização rodava ANTES das imagens terminarem de carregar,
+     usando medidas erradas/incompletas — só recalculava certo no
+     primeiro evento de scroll (clique na seta), causando o "salto".
+     Agora existe uma função waitForImages() que espera de verdade
+     TODAS as imagens (reais + clones) carregarem antes de fazer
+     qualquer cálculo de centralização inicial.
+   - [NOVO] z-index de cada card agora é calculado dinamicamente a
+     cada atualização, baseado na distância até o card ativo — reintro-
+     duz o efeito de "baralho empilhado" da referência, com o card em
+     foco sempre por cima e uma sobreposição sutil (CSS: --campus-
+     overlap) nas bordas dos vizinhos, sem cobrir a maior parte de
+     nenhuma imagem.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -702,8 +713,7 @@ function initMediaCarousel() {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS/ESCRITÓRIO: CARROSSEL INFINITO
-   (função independente de initMediaCarousel — mesma
-   técnica, código isolado por segurança)
+   (função independente de initMediaCarousel)
 ============================================ */
 function initCampusCarousel() {
   const track = document.getElementById('campusTrack');
@@ -735,6 +745,22 @@ function initCampusCarousel() {
 
   const allCards = Array.from(track.querySelectorAll('.campus-gallery__card'));
 
+  // NOVO: espera TODAS as imagens (reais + clones) carregarem de
+  // verdade antes de fazer qualquer cálculo de centralização. Como o
+  // tamanho de cada card depende da imagem já carregada (altura fixa,
+  // largura automática), calcular ANTES disso gerava medidas erradas
+  // — essa era a causa raiz do "nasce pequeno, estoura no 1º clique".
+  function waitForImages(imgs) {
+    const promises = imgs.map(function (img) {
+      if (img.complete) return Promise.resolve();
+      return new Promise(function (resolve) {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', resolve, { once: true });
+      });
+    });
+    return Promise.all(promises);
+  }
+
   function centerCard(card, smooth) {
     const trackRect = track.getBoundingClientRect();
     const cardRect = card.getBoundingClientRect();
@@ -748,14 +774,29 @@ function initCampusCarousel() {
     }
   }
 
+  // NOVO: define o z-index de cada card com base na distância até o
+  // card ativo — o card em foco sempre fica por cima (maior z-index),
+  // e conforme se afasta (pra esquerda ou direita), o z-index cai.
+  // Isso recria o efeito de "baralho empilhado" da referência, com a
+  // pequena sobreposição do CSS (--campus-overlap) ficando visualmente
+  // organizada (sempre o de trás por baixo do de cima), em vez de uma
+  // ordem fixa que poderia fazer o card errado cobrir o vizinho.
+  function applyStackOrder(activeIndex) {
+    allCards.forEach(function (card, i) {
+      const distance = Math.abs(i - activeIndex);
+      card.style.zIndex = String(100 - Math.min(distance, 99));
+    });
+  }
+
   function updateActiveCard() {
     const trackRect = track.getBoundingClientRect();
     const centerX = trackRect.left + trackRect.width / 2;
 
     let closestCard = null;
+    let closestIndex = 0;
     let closestDistance = Infinity;
 
-    allCards.forEach(function (card) {
+    allCards.forEach(function (card, i) {
       const rect = card.getBoundingClientRect();
       const cardCenterX = rect.left + rect.width / 2;
       const distance = Math.abs(cardCenterX - centerX);
@@ -763,12 +804,15 @@ function initCampusCarousel() {
       if (distance < closestDistance) {
         closestDistance = distance;
         closestCard = card;
+        closestIndex = i;
       }
     });
 
     allCards.forEach(function (card) {
       card.classList.toggle('is-active', card === closestCard);
     });
+
+    applyStackOrder(closestIndex);
 
     return closestCard;
   }
@@ -830,7 +874,11 @@ function initCampusCarousel() {
     });
   });
 
-  requestAnimationFrame(function () {
+  // Centralização inicial SÓ acontece depois que todas as imagens
+  // (reais + clones) já carregaram de verdade — elimina o bug do
+  // "salto" no primeiro clique.
+  const allImgs = Array.from(track.querySelectorAll('img'));
+  waitForImages(allImgs).then(function () {
     const firstReal = track.querySelector('.campus-gallery__card:not([data-clone])');
     if (firstReal) {
       track.style.scrollBehavior = 'auto';
