@@ -3,22 +3,14 @@
    JavaScript principal
 
    CHANGELOG:
-   - [FIX RAIZ] initCampusCarousel(): resolvido o bug de "nasce
-     pequeno, estoura no primeiro clique". Causa: como o tamanho de
-     cada card depende da imagem já carregada (altura fixa, largura
-     automática pela proporção real da foto), o cálculo de
-     centralização rodava ANTES das imagens terminarem de carregar,
-     usando medidas erradas/incompletas — só recalculava certo no
-     primeiro evento de scroll (clique na seta), causando o "salto".
-     Agora existe uma função waitForImages() que espera de verdade
-     TODAS as imagens (reais + clones) carregarem antes de fazer
-     qualquer cálculo de centralização inicial.
-   - [NOVO] z-index de cada card agora é calculado dinamicamente a
-     cada atualização, baseado na distância até o card ativo — reintro-
-     duz o efeito de "baralho empilhado" da referência, com o card em
-     foco sempre por cima e uma sobreposição sutil (CSS: --campus-
-     overlap) nas bordas dos vizinhos, sem cobrir a maior parte de
-     nenhuma imagem.
+   - [SIMPLIFICADO] initCampusCarousel(): como o tamanho de cada card
+     agora é definido 100% pelo CSS (largura/altura fixas via
+     variáveis), não depende mais do carregamento da imagem para
+     saber o tamanho — a lógica de "esperar as imagens carregarem"
+     (waitForImages) foi removida por não ser mais necessária, e a
+     centralização inicial volta a ser imediata, no mesmo padrão já
+     comprovado de initMediaCarousel(). Mantida a lógica de z-index
+     dinâmico por distância até o card ativo (efeito "baralho").
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -745,22 +737,6 @@ function initCampusCarousel() {
 
   const allCards = Array.from(track.querySelectorAll('.campus-gallery__card'));
 
-  // NOVO: espera TODAS as imagens (reais + clones) carregarem de
-  // verdade antes de fazer qualquer cálculo de centralização. Como o
-  // tamanho de cada card depende da imagem já carregada (altura fixa,
-  // largura automática), calcular ANTES disso gerava medidas erradas
-  // — essa era a causa raiz do "nasce pequeno, estoura no 1º clique".
-  function waitForImages(imgs) {
-    const promises = imgs.map(function (img) {
-      if (img.complete) return Promise.resolve();
-      return new Promise(function (resolve) {
-        img.addEventListener('load', resolve, { once: true });
-        img.addEventListener('error', resolve, { once: true });
-      });
-    });
-    return Promise.all(promises);
-  }
-
   function centerCard(card, smooth) {
     const trackRect = track.getBoundingClientRect();
     const cardRect = card.getBoundingClientRect();
@@ -774,13 +750,10 @@ function initCampusCarousel() {
     }
   }
 
-  // NOVO: define o z-index de cada card com base na distância até o
-  // card ativo — o card em foco sempre fica por cima (maior z-index),
-  // e conforme se afasta (pra esquerda ou direita), o z-index cai.
-  // Isso recria o efeito de "baralho empilhado" da referência, com a
-  // pequena sobreposição do CSS (--campus-overlap) ficando visualmente
-  // organizada (sempre o de trás por baixo do de cima), em vez de uma
-  // ordem fixa que poderia fazer o card errado cobrir o vizinho.
+  // z-index de cada card baseado na distância até o card ativo — o
+  // card em foco sempre fica por cima, recriando o efeito de "baralho
+  // empilhado" junto com a pequena sobreposição definida no CSS
+  // (--campus-overlap).
   function applyStackOrder(activeIndex) {
     allCards.forEach(function (card, i) {
       const distance = Math.abs(i - activeIndex);
@@ -874,11 +847,9 @@ function initCampusCarousel() {
     });
   });
 
-  // Centralização inicial SÓ acontece depois que todas as imagens
-  // (reais + clones) já carregaram de verdade — elimina o bug do
-  // "salto" no primeiro clique.
-  const allImgs = Array.from(track.querySelectorAll('img'));
-  waitForImages(allImgs).then(function () {
+  // Centralização imediata: como o tamanho do card não depende mais
+  // da imagem, não é preciso esperar nada carregar.
+  requestAnimationFrame(function () {
     const firstReal = track.querySelector('.campus-gallery__card:not([data-clone])');
     if (firstReal) {
       track.style.scrollBehavior = 'auto';
