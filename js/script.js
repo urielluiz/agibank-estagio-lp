@@ -3,12 +3,11 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initProcessSteps(): arco SVG com 6 pontos, scroll pinado.
-     Pontos posicionados via path.getPointAtLength() (matemática do
-     próprio SVG — não depende de pixel renderizado, roda só 1x no
-     carregamento, sem recalcular no resize). Mobile: fallback
-     estático com todos os steps visíveis (função sai cedo, sem
-     scroll listener).
+   - [NOVO] initValuePropVideo(): implementa o "facade pattern" do
+     vídeo do YouTube — mostra só a miniatura + botão de play até o
+     usuário clicar; só então cria o <iframe> real (com autoplay).
+     Isso evita carregar os scripts pesados do player do YouTube pra
+     quem não vai assistir o vídeo.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -36,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   safeRun(initRequirementsCascade, 'initRequirementsCascade');
   safeRun(initAreasAccordion, 'initAreasAccordion');
   safeRun(initProcessSteps, 'initProcessSteps');
+  safeRun(initValuePropVideo, 'initValuePropVideo');
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -433,10 +433,6 @@ function initProcessSteps() {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const isMobile = window.matchMedia('(max-width: 767px)').matches;
 
-  // Cria os 6 pontos posicionados exatamente SOBRE o traçado do SVG.
-  // getPointAtLength() trabalha nas coordenadas internas do próprio SVG
-  // (viewBox), totalmente independente do tamanho renderizado em pixels —
-  // por isso só precisa rodar 1x, sem recalcular no resize.
   const totalLength = path.getTotalLength();
   const fractions = [0, 0.2, 0.4, 0.6, 0.8, 1];
   const svgNS = 'http://www.w3.org/2000/svg';
@@ -452,7 +448,6 @@ function initProcessSteps() {
     return circle;
   });
 
-  // Reveal do overlay + cabeçalho, uma única vez, ao entrar na seção.
   const revealObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
       if (entry.isIntersecting) {
@@ -472,9 +467,6 @@ function initProcessSteps() {
     stepTitle.textContent = STEPS[index];
   }
 
-  // Mobile / reduced-motion: fallback estático (lista completa já visível
-  // via HTML/CSS), então aqui só cuidamos do reveal do overlay/header e
-  // deixamos o primeiro estado do arco (mesmo escondido) consistente.
   if (reduceMotion || isMobile) {
     applyImmediate(0);
     return;
@@ -533,6 +525,36 @@ function initProcessSteps() {
   window.addEventListener('resize', onScroll);
 
   update();
+}
+
+/* ============================================
+   SEÇÃO 09 - EFETIVAÇÃO: VÍDEO (FACADE PATTERN)
+============================================ */
+function initValuePropVideo() {
+  const videoWrap = document.getElementById('valuePropVideo');
+  if (!videoWrap) return;
+
+  videoWrap.addEventListener('click', function () {
+    const videoId = videoWrap.dataset.videoId;
+    if (!videoId) return;
+
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute(
+      'src',
+      'https://www.youtube-nocookie.com/embed/' + videoId + '?autoplay=1&rel=0'
+    );
+    iframe.setAttribute('title', 'Vídeo Programa de Estágio Agibank');
+    iframe.setAttribute('frameborder', '0');
+    iframe.setAttribute(
+      'allow',
+      'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+    );
+    iframe.setAttribute('allowfullscreen', '');
+
+    videoWrap.innerHTML = '';
+    videoWrap.appendChild(iframe);
+    videoWrap.style.cursor = 'default';
+  }, { once: true });
 }
 
 /* ============================================
