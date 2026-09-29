@@ -8,13 +8,21 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [NOVO] Seção 11 - Campus/Escritório: carrossel infinito (mesma
-     técnica da seção de Mídia), mas isolado em função própria
-     (initCampusCarousel), sem reaproveitar/alterar a função do
-     carrossel de Mídia — evita qualquer risco de regressão cruzada
-     entre as duas seções. Imagens sem "card branco" (fotos puras,
-     cantos arredondados), com filtro azul marinho (::after) que
-     desaparece só na imagem ativa/centralizada.
+   - [FIX RAIZ] Campus/Escritório: removido aspect-ratio:4/3 +
+     object-fit:cover, que forçava TODA imagem a se encaixar numa
+     caixa fixa 4:3, recortando o conteúdo real da foto sempre que a
+     proporção original era diferente — essa era a causa do "corte"
+     reportado. Substituído por técnica de galeria (altura fixa,
+     largura livre): a imagem SEMPRE aparece inteira, sem nenhum
+     recorte, só redimensionada proporcionalmente; cada card assume a
+     largura natural da própria foto. Adicionada margem negativa
+     entre os cards para criar o efeito de "camadas encostadas" (o
+     card ativo fica visualmente por cima, com z-index e sombra
+     maiores, os vizinhos ficam colados/parcialmente escondidos atrás
+     dele). Nenhuma mudança em HTML ou JS foi necessária — a
+     centralização do carrossel já usa medição real via
+     getBoundingClientRect(), então se adapta sozinha às novas
+     larguras variáveis dos cards.
 ============================================ */
 
 @font-face {
@@ -120,7 +128,10 @@
   --process-step-gap: 20px;
 
   --media-card-width: 340px;
+
   --campus-card-width: 480px;
+  --campus-card-height: 420px;
+  --campus-overlap: -44px;
 }
 
 *,
@@ -2288,8 +2299,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS / ESCRITÓRIO
-   (Carrossel infinito — imagens grandes,
-   filtro navy sobre as fotos não ativas)
+   (Carrossel infinito — imagem SEMPRE inteira,
+   sem recorte; cards se sobrepõem como camadas
+   encostadas atrás da imagem em foco)
 ============================================ */
 
 .campus-gallery {
@@ -2323,8 +2335,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .campus-gallery__track {
   display: flex;
-  gap: var(--space-md);
+  align-items: center;
+  gap: 0;
   overflow-x: auto;
+  overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   flex: 1;
@@ -2338,11 +2352,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
+/* FIX RAIZ: sem aspect-ratio fixo + sem object-fit:cover — a imagem
+   nunca é recortada. Altura fixa (--campus-card-height), largura
+   livre (determinada pela proporção real de cada foto via width:auto
+   no <img>). Margem negativa (--campus-overlap) faz os cards se
+   sobreporem fisicamente, criando o efeito de "camadas encostadas". */
 .campus-gallery__card {
   position: relative;
   flex: 0 0 auto;
-  width: var(--campus-card-width);
-  aspect-ratio: 4 / 3;
+  height: var(--campus-card-height);
   scroll-snap-align: center;
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -2352,17 +2370,23 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
 }
 
+.campus-gallery__card:not(:first-child) {
+  margin-left: var(--campus-overlap);
+}
+
 .campus-gallery__card.is-active {
   transform: scale(1.05);
   opacity: 1;
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
-  z-index: 2;
+  z-index: 5;
 }
 
+/* Imagem sempre inteira: altura 100% do card, largura automática
+   (proporcional), sem cropping em nenhuma circunstância. */
 .campus-gallery__img {
-  width: 100%;
   height: 100%;
-  object-fit: cover;
+  width: auto;
+  display: block;
 }
 
 /* Filtro azul marinho: visível em todas as imagens por padrão,
@@ -2450,6 +2474,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
     --media-card-width: 300px;
     --campus-card-width: 380px;
+    --campus-card-height: 340px;
+    --campus-overlap: -32px;
   }
 
   .container {
@@ -2583,6 +2609,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
     --media-card-width: 78vw;
     --campus-card-width: 82vw;
+    --campus-card-height: 260px;
+    --campus-overlap: -22px;
   }
 
   .container {
