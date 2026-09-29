@@ -4,15 +4,17 @@
    
    🔒 SEÇÕES APROVADAS E TRAVADAS (não alterar sem pedido explícito):
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
-   Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor.
+   Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor,
+   Agibank na Mídia.
    
    CHANGELOG:
-   - [ADJUST] Agibank na Mídia: adicionado padding de 12px no card
-     (mesma "moldura branca" já usada nos cards de Requirements),
-     criando respiro entre a imagem e a borda do card em vez do
-     efeito "full bleed" anterior. Espaçamento entre cards do
-     carrossel reduzido de 40px (--space-lg) para 16px (--space-sm),
-     deixando o agrupamento mais compacto, como na referência.
+   - [NOVO] Seção 11 - Campus/Escritório: carrossel infinito (mesma
+     técnica da seção de Mídia), mas isolado em função própria
+     (initCampusCarousel), sem reaproveitar/alterar a função do
+     carrossel de Mídia — evita qualquer risco de regressão cruzada
+     entre as duas seções. Imagens sem "card branco" (fotos puras,
+     cantos arredondados), com filtro azul marinho (::after) que
+     desaparece só na imagem ativa/centralizada.
 ============================================ */
 
 @font-face {
@@ -118,6 +120,7 @@
   --process-step-gap: 20px;
 
   --media-card-width: 340px;
+  --campus-card-width: 480px;
 }
 
 *,
@@ -2194,8 +2197,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
-/* ADJUST: gap entre cards era var(--space-lg) = 40px, agora
-   var(--space-sm) = 16px, aproximando os cards conforme referência. */
 .media__track {
   display: flex;
   gap: var(--space-sm);
@@ -2213,10 +2214,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
-/* ADJUST: adicionado padding: 12px (mesma moldura branca usada nos
-   cards de Requirements) — antes a imagem ia de ponta a ponta do
-   card ("full bleed"), agora sobra um respiro branco ao redor,
-   igual à referência enviada. */
 .media__card {
   flex: 0 0 auto;
   width: var(--media-card-width);
@@ -2239,10 +2236,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   z-index: 2;
 }
 
-/* ADJUST: border-radius próprio (var(--radius-md)) + margin-bottom,
-   já que agora a imagem não ocupa mais o card inteiro (existe o
-   padding de 12px do .media__card ao redor). overflow:hidden aqui
-   garante que os cantos da FOTO fiquem arredondados. */
 .media__card-img-wrap {
   width: 100%;
   aspect-ratio: 16 / 10;
@@ -2294,6 +2287,133 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ============================================
+   SEÇÃO 11 - CAMPUS / ESCRITÓRIO
+   (Carrossel infinito — imagens grandes,
+   filtro navy sobre as fotos não ativas)
+============================================ */
+
+.campus-gallery {
+  background-color: var(--color-white);
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-2xl);
+  overflow: hidden;
+}
+
+.campus-gallery__header {
+  max-width: 800px;
+  margin: 0 auto var(--space-2xl) auto;
+  text-align: center;
+}
+
+.campus-gallery__title {
+  color: var(--color-navy);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.campus-gallery__carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.campus-gallery__track {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-xl) calc((100% - var(--campus-card-width)) / 2);
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.campus-gallery__track::-webkit-scrollbar {
+  display: none;
+}
+
+.campus-gallery__card {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--campus-card-width);
+  aspect-ratio: 4 / 3;
+  scroll-snap-align: center;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transform: scale(0.85);
+  opacity: 0.85;
+  box-shadow: 0 10px 28px rgba(0, 15, 68, 0.18);
+  transition: transform 0.35s ease, opacity 0.35s ease, box-shadow 0.35s ease;
+}
+
+.campus-gallery__card.is-active {
+  transform: scale(1.05);
+  opacity: 1;
+  box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
+  z-index: 2;
+}
+
+.campus-gallery__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Filtro azul marinho: visível em todas as imagens por padrão,
+   desaparece só na imagem ativa/centralizada. */
+.campus-gallery__card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--color-navy);
+  opacity: 0.55;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.campus-gallery__card.is-active::after {
+  opacity: 0;
+}
+
+.campus-gallery__arrow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: var(--color-gray-light);
+  color: var(--color-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 15, 68, 0.12);
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+.campus-gallery__arrow:hover {
+  background-color: var(--color-gray);
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .campus-gallery__track {
+    scroll-behavior: auto;
+  }
+  .campus-gallery__card {
+    transition: none !important;
+  }
+  .campus-gallery__card::after {
+    transition: none !important;
+  }
+}
+
+/* ============================================
    PLACEHOLDERS TEMPORÁRIOS DE DESENVOLVIMENTO
 ============================================ */
 
@@ -2329,6 +2449,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --header-height: 76px;
 
     --media-card-width: 300px;
+    --campus-card-width: 380px;
   }
 
   .container {
@@ -2437,6 +2558,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     height: 40px;
     font-size: 15px;
   }
+
+  .campus-gallery__title {
+    font-size: 30px;
+  }
+
+  .campus-gallery__arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
 }
 
 @media (max-width: 767px) {
@@ -2451,6 +2582,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --header-height: 72px;
 
     --media-card-width: 78vw;
+    --campus-card-width: 82vw;
   }
 
   .container {
@@ -2825,5 +2957,19 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .media__card-text {
     padding: 0 6px 6px 6px;
     font-size: 14px;
+  }
+
+  .campus-gallery__title {
+    font-size: 24px;
+  }
+
+  .campus-gallery__carousel {
+    gap: var(--space-sm);
+  }
+
+  .campus-gallery__arrow {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
   }
 }
