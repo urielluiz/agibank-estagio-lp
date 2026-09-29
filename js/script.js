@@ -705,21 +705,34 @@ function initMediaCarousel() {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS/ESCRITÓRIO: CARROSSEL INFINITO
-   (função independente de initMediaCarousel)
 ============================================ */
 function initCampusCarousel() {
   const track = document.getElementById('campusTrack');
   const prevBtn = document.getElementById('campusPrev');
   const nextBtn = document.getElementById('campusNext');
-  if (!track || !prevBtn || !nextBtn) return;
+  const dotsWrap = document.getElementById('campusDots');
+  if (!track || !prevBtn || !nextBtn || !dotsWrap) return;
 
   const realCards = Array.from(track.children);
   if (!realCards.length) return;
 
+  // Marca os originais para achá-los depois
   realCards.forEach(function (card, i) {
     card.dataset.realIndex = String(i);
   });
 
+  // Cria os dots de paginação (um por card real)
+  const dots = realCards.map(function (card, i) {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'campus-gallery__dot';
+    dot.setAttribute('aria-label', 'Ir para foto ' + (i + 1));
+    dot.dataset.realIndex = String(i);
+    dotsWrap.appendChild(dot);
+    return dot;
+  });
+
+  // Cria clones para a ilusão de infinito
   function buildCloneSet() {
     const fragment = document.createDocumentFragment();
     realCards.forEach(function (card) {
@@ -732,6 +745,7 @@ function initCampusCarousel() {
     return fragment;
   }
 
+  // Insere clones no início e no fim
   track.insertBefore(buildCloneSet(), track.firstChild);
   track.appendChild(buildCloneSet());
 
@@ -750,14 +764,18 @@ function initCampusCarousel() {
     }
   }
 
-  // z-index de cada card baseado na distância até o card ativo — o
-  // card em foco sempre fica por cima, recriando o efeito de "baralho
-  // empilhado" junto com a pequena sobreposição definida no CSS
-  // (--campus-overlap).
+  // Calcula o z-index de cada card em formato "pirâmide"
   function applyStackOrder(activeIndex) {
     allCards.forEach(function (card, i) {
       const distance = Math.abs(i - activeIndex);
       card.style.zIndex = String(100 - Math.min(distance, 99));
+    });
+  }
+
+  // Atualiza qual dot está ativo com base no índice real do card
+  function updateDots(realIndex) {
+    dots.forEach(function (dot) {
+      dot.classList.toggle('is-active', dot.dataset.realIndex === String(realIndex));
     });
   }
 
@@ -769,6 +787,7 @@ function initCampusCarousel() {
     let closestIndex = 0;
     let closestDistance = Infinity;
 
+    // Descobre qual card está mais perto do centro
     allCards.forEach(function (card, i) {
       const rect = card.getBoundingClientRect();
       const cardCenterX = rect.left + rect.width / 2;
@@ -781,15 +800,23 @@ function initCampusCarousel() {
       }
     });
 
+    // Aplica classe ativa
     allCards.forEach(function (card) {
       card.classList.toggle('is-active', card === closestCard);
     });
 
+    // Aplica z-index
     applyStackOrder(closestIndex);
+
+    // Sincroniza os dots
+    if (closestCard) {
+      updateDots(closestCard.dataset.realIndex);
+    }
 
     return closestCard;
   }
 
+  // O "pulo do gato" do loop infinito
   function correctIfOnClone() {
     const active = updateActiveCard();
     if (!active || active.getAttribute('data-clone') !== 'true') return;
@@ -801,14 +828,17 @@ function initCampusCarousel() {
     if (!realEquivalent) return;
 
     const prevBehavior = track.style.scrollBehavior;
-    track.style.scrollBehavior = 'auto';
-    centerCard(realEquivalent, false);
+    track.style.scrollBehavior = 'auto'; // desliga animação
+    centerCard(realEquivalent, false);   // teletransporta
+
+    // Liga animação de novo no próximo frame
     requestAnimationFrame(function () {
       track.style.scrollBehavior = prevBehavior || 'smooth';
       updateActiveCard();
     });
   }
 
+  // Listener de scroll (aguarda o fim do movimento para corrigir o clone)
   let scrollEndTimer = null;
   track.addEventListener('scroll', function () {
     updateActiveCard();
@@ -816,29 +846,33 @@ function initCampusCarousel() {
     scrollEndTimer = setTimeout(correctIfOnClone, 120);
   }, { passive: true });
 
+  // Botões de seta
   function stepTo(direction) {
     const active = updateActiveCard();
     if (!active) return;
-
     const currentIdx = allCards.indexOf(active);
     const targetIdx = currentIdx + direction;
-
     if (targetIdx < 0 || targetIdx >= allCards.length) return;
     centerCard(allCards[targetIdx], true);
   }
 
-  prevBtn.addEventListener('click', function () {
-    stepTo(-1);
-  });
+  prevBtn.addEventListener('click', function () { stepTo(-1); });
+  nextBtn.addEventListener('click', function () { stepTo(1); });
 
-  nextBtn.addEventListener('click', function () {
-    stepTo(1);
+  // Clique em um dot leva direto pro card real correspondente
+  dots.forEach(function (dot) {
+    dot.addEventListener('click', function () {
+      const realIndex = dot.dataset.realIndex;
+      const target = track.querySelector(
+        '.campus-gallery__card[data-real-index="' + realIndex + '"]:not([data-clone])'
+      );
+      if (target) centerCard(target, true);
+    });
   });
 
   window.addEventListener('resize', function () {
     const active = updateActiveCard();
     if (!active) return;
-
     const prevBehavior = track.style.scrollBehavior;
     track.style.scrollBehavior = 'auto';
     centerCard(active, false);
@@ -847,8 +881,7 @@ function initCampusCarousel() {
     });
   });
 
-  // Centralização imediata: como o tamanho do card não depende mais
-  // da imagem, não é preciso esperar nada carregar.
+  // Inicialização (pula pro primeiro card real)
   requestAnimationFrame(function () {
     const firstReal = track.querySelector('.campus-gallery__card:not([data-clone])');
     if (firstReal) {
@@ -861,7 +894,6 @@ function initCampusCarousel() {
     }
   });
 }
-
 /* ============================================
    EDITOR VISUAL UNIVERSAL (ativa com ?edit=1)
 ============================================ */
