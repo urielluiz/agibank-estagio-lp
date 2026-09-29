@@ -120,11 +120,11 @@
   --media-card-width: 340px;
 
   /* Tamanhos reais dos cards do campus */
-  --campus-active-width: 520px;
-  --campus-active-height: 380px;
-  --campus-inactive-width: 300px;
+ --campus-active-width: 500px;
+  --campus-active-height: 340px;
+  --campus-inactive-width: 340px;
   --campus-inactive-height: 240px;
-  --campus-card-gap: 24px;
+  --campus-overlap: -90px;
 }
 
 *,
@@ -2291,13 +2291,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 /* ============================================
-   SEÇÃO 11 - CAMPUS / ESCRITÓRIO
-   (Carrossel infinito — caixas de tamanho FIXO,
-   object-fit:cover garante que a imagem preencha
-   100% do card sem deixar nenhum fundo branco,
-   com sobreposição controlada tipo "baralho")
+   SEÇÃO 11 - CAMPUS/ESCRITÓRIO
 ============================================ */
-
 .campus-gallery {
   background-color: var(--color-white);
   padding-top: var(--space-2xl);
@@ -2306,7 +2301,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .campus-gallery__header {
   max-width: 800px;
-  margin: 0 auto var(--space-2xl) auto;
+  margin: 0 auto var(--space-lg) auto;
   text-align: center;
 }
 
@@ -2319,10 +2314,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .campus-gallery__carousel {
   position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--space-md);
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -2333,8 +2325,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
-  flex: 1;
   min-width: 0;
+  /* Centraliza o card ativo usando a variável de largura dele */
   padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -2344,12 +2336,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
-/* FIX RAIZ DEFINITIVO: largura E altura FIXAS. A imagem dentro usa
-   object-fit:cover para preencher todo esse espaço sem distorcer e sem
-   deixar "barras brancas" (fundo do card). A diferença entre ativo e
-   inativo é uma mudança REAL nas dimensões da caixa, empurrando os
-   vizinhos e criando a sobreposição limpa (--campus-overlap) sem
-   corte de z-index indesejado. */
 .campus-gallery__card {
   position: relative;
   flex: 0 0 auto;
@@ -2365,6 +2351,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
               box-shadow 0.4s ease;
 }
 
+/* Margem negativa para sobreposição (efeito baralho) */
 .campus-gallery__card:not(:first-child) {
   margin-left: var(--campus-overlap);
 }
@@ -2372,12 +2359,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .campus-gallery__card.is-active {
   width: var(--campus-active-width);
   height: var(--campus-active-height);
+  background-color: var(--color-white);
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
+  /* O z-index base é 5, mas é sobrescrito dinamicamente pelo JS */
   z-index: 5;
 }
 
-/* object-fit:cover preenche o card inteiro. Não há mais risco
-   de fundo branco/vazamento. */
 .campus-gallery__img {
   width: 100%;
   height: 100%;
@@ -2385,14 +2372,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: block;
 }
 
-/* Filtro azul marinho: visível em todas as imagens por padrão
-   (--opacity 0.72), desaparece só na imagem ativa. */
+/* Overlay azul marinho (mais sutil que antes) */
 .campus-gallery__card::after {
   content: '';
   position: absolute;
   inset: 0;
   background-color: var(--color-navy);
-  opacity: 0.72;
+  opacity: 0.45;
   transition: opacity 0.35s ease;
   pointer-events: none;
 }
@@ -2401,36 +2387,89 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   opacity: 0;
 }
 
-.campus-gallery__arrow {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background-color: var(--color-gray-light);
-  color: var(--color-navy);
+/* Pill "Campinas" - só aparece no card ativo */
+.campus-gallery__badge {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  z-index: 2;
+  transform: translateX(-50%) translateY(10px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-blue);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease 0.05s, transform 0.35s ease 0.05s;
+}
+
+.campus-gallery__card.is-active .campus-gallery__badge {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Barra de navegação (setas + dots) abaixo do carrossel */
+.campus-gallery__nav {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0, 15, 68, 0.12);
-  transition: background-color 0.25s ease, transform 0.2s ease;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+}
+
+.campus-gallery__dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.campus-gallery__dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  background-color: var(--color-gray);
+  cursor: pointer;
+  transition: background-color 0.25s ease, width 0.25s ease, height 0.25s ease;
+}
+
+.campus-gallery__dot.is-active {
+  width: 10px;
+  height: 10px;
+  background-color: var(--color-green);
+}
+
+.campus-gallery__arrow {
+  background: none;
+  border: none;
+  box-shadow: none;
+  color: var(--color-navy);
+  font-size: 16px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .campus-gallery__arrow:hover {
-  background-color: var(--color-gray);
-  transform: scale(1.05);
+  opacity: 0.7;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .campus-gallery__track {
-    scroll-behavior: auto;
-  }
-  .campus-gallery__card {
-    transition: none !important;
-  }
-  .campus-gallery__card::after {
-    transition: none !important;
-  }
+.campus-gallery__arrow--prev:hover {
+  transform: translateX(-3px);
+}
+
+.campus-gallery__arrow--next:hover {
+  transform: translateX(3px);
 }
 
 /* ============================================
