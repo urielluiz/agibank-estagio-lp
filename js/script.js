@@ -3,16 +3,12 @@
    JavaScript principal
 
    CHANGELOG:
-   - [FIX CRÍTICO DE ARQUITETURA] Cada função de inicialização agora
-     roda dentro de um try/catch isolado. Antes, se UMA função desse
-     erro, TODAS as funções chamadas depois dela no mesmo bloco
-     paravam de executar silenciosamente (comportamento padrão do
-     JS). Isso explica por que o accordion "não funcionava" E outros
-     efeitos (parallax do Hero/Awards/Fusca) "pararam" ao mesmo
-     tempo — um erro em initAreasAccordion() provavelmente estava
-     interrompendo tudo que vinha depois dele. Agora, se uma função
-     falhar, ela loga o erro no console (pra diagnóstico) e as
-     demais continuam funcionando normalmente.
+   - [NOVO] initProcessSteps(): arco SVG com 6 pontos, scroll pinado.
+     Pontos posicionados via path.getPointAtLength() (matemática do
+     próprio SVG — não depende de pixel renderizado, roda só 1x no
+     carregamento, sem recalcular no resize). Mobile: fallback
+     estático com todos os steps visíveis (função sai cedo, sem
+     scroll listener).
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -39,6 +35,7 @@ document.addEventListener('DOMContentLoaded', function () {
   safeRun(initIaIconHover, 'initIaIconHover');
   safeRun(initRequirementsCascade, 'initRequirementsCascade');
   safeRun(initAreasAccordion, 'initAreasAccordion');
+  safeRun(initProcessSteps, 'initProcessSteps');
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -387,36 +384,155 @@ function initRequirementsCascade() {
 ============================================ */
 function initAreasAccordion() {
   const accordion = document.getElementById('areasAccordion');
-  if (!accordion) {
-    console.warn('⚠️ initAreasAccordion: elemento #areasAccordion não encontrado no HTML.');
-    return;
-  }
+  if (!accordion) return;
 
   const items = Array.from(accordion.querySelectorAll('.areas__item'));
-  if (!items.length) {
-    console.warn('⚠️ initAreasAccordion: nenhum elemento .areas__item encontrado dentro de #areasAccordion.');
-    return;
-  }
+  if (!items.length) return;
 
   items.forEach(function (item) {
     const headerBtn = item.querySelector('.areas__item-header');
-    if (!headerBtn) {
-      console.warn('⚠️ initAreasAccordion: item sem .areas__item-header:', item);
-      return;
-    }
+    if (!headerBtn) return;
 
     headerBtn.addEventListener('click', function () {
       const wasOpen = item.classList.contains('is-open');
-
       items.forEach(function (i) { i.classList.remove('is-open'); });
-
       if (!wasOpen) {
         item.classList.add('is-open');
       }
     });
   });
+}
 
-  console.log('✅ initAreasAccordion: ' + items.length + ' item(ns) inicializado(s) com sucesso.');
+/* ============================================
+   SEÇÃO 08 - PROCESSO SELETIVO
+   (Arco SVG + scroll pinado)
+============================================ */
+function initProcessSteps() {
+  const pinWrapper = document.getElementById('processPinWrapper');
+  const header = document.getElementById('header');
+  const overlay = document.getElementById('processOverlay');
+  const headerBlock = document.getElementById('processHeader');
+  const stepContent = document.getElementById('processStepContent');
+  const stepNumber = document.getElementById('processStepNumber');
+  const stepTitle = document.getElementById('processStepTitle');
+  const dotsGroup = document.getElementById('processDots');
+  const path = document.getElementById('processArcPath');
+
+  if (!pinWrapper || !header || !overlay || !headerBlock || !stepContent ||
+      !stepNumber || !stepTitle || !dotsGroup || !path) return;
+
+  const STEPS = [
+    'Inscrições',
+    'Testes on-line',
+    'Etapas em grupo',
+    'Entrevista final',
+    'Resultados',
+    'Início da jornada | Março'
+  ];
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+  // Cria os 6 pontos posicionados exatamente SOBRE o traçado do SVG.
+  // getPointAtLength() trabalha nas coordenadas internas do próprio SVG
+  // (viewBox), totalmente independente do tamanho renderizado em pixels —
+  // por isso só precisa rodar 1x, sem recalcular no resize.
+  const totalLength = path.getTotalLength();
+  const fractions = [0, 0.2, 0.4, 0.6, 0.8, 1];
+  const svgNS = 'http://www.w3.org/2000/svg';
+
+  const dots = fractions.map(function (f) {
+    const point = path.getPointAtLength(f * totalLength);
+    const circle = document.createElementNS(svgNS, 'circle');
+    circle.setAttribute('cx', point.x);
+    circle.setAttribute('cy', point.y);
+    circle.setAttribute('r', 8);
+    circle.setAttribute('class', 'process__dot');
+    dotsGroup.appendChild(circle);
+    return circle;
+  });
+
+  // Reveal do overlay + cabeçalho, uma única vez, ao entrar na seção.
+  const revealObserver = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        overlay.classList.add('is-visible');
+        headerBlock.classList.add('is-visible');
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  revealObserver.observe(pinWrapper);
+
+  function applyImmediate(index) {
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('is-active', i === index);
+    });
+    stepNumber.textContent = String(index + 1).padStart(2, '0');
+    stepTitle.textContent = STEPS[index];
+  }
+
+  // Mobile / reduced-motion: fallback estático (lista completa já visível
+  // via HTML/CSS), então aqui só cuidamos do reveal do overlay/header e
+  // deixamos o primeiro estado do arco (mesmo escondido) consistente.
+  if (reduceMotion || isMobile) {
+    applyImmediate(0);
+    return;
+  }
+
+  let currentIndex = 0;
+  applyImmediate(0);
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  function getProgress() {
+    const rect = pinWrapper.getBoundingClientRect();
+    const headerHeight = header.offsetHeight;
+    const scrollable = pinWrapper.offsetHeight - window.innerHeight;
+    if (scrollable <= 0) return 0;
+    const raw = (headerHeight - rect.top) / scrollable;
+    return clamp(raw, 0, 0.9999);
+  }
+
+  function setActive(index) {
+    dots.forEach(function (dot, i) {
+      dot.classList.toggle('is-active', i === index);
+    });
+
+    stepContent.classList.add('is-fading');
+    setTimeout(function () {
+      stepNumber.textContent = String(index + 1).padStart(2, '0');
+      stepTitle.textContent = STEPS[index];
+      stepContent.classList.remove('is-fading');
+    }, 200);
+  }
+
+  function update() {
+    const progress = getProgress();
+    const idx = clamp(Math.floor(progress * STEPS.length), 0, STEPS.length - 1);
+    if (idx !== currentIndex) {
+      currentIndex = idx;
+      setActive(idx);
+    }
+  }
+
+  let ticking = false;
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        update();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+
+  update();
 }
 
 /* ============================================
