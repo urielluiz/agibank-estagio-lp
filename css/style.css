@@ -8,15 +8,20 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [FIX RAIZ] Campus/Escritório: reintroduzida sobreposição controlada
-     entre os cards (--campus-overlap, bem menor que a tentativa
-     anterior) para recriar o efeito de "baralho empilhado" pedido.
-     O z-index de cada card agora é calculado DINAMICAMENTE via JS
-     (baseado na distância até o card ativo), não mais fixo via CSS —
-     isso garante que o card em foco sempre fica por cima com uma
-     sobreposição sutil e intencional, sem nunca cobrir a maior parte
-     da imagem dos vizinhos. Mantida a lógica de "imagem sempre
-     inteira" (altura fixa, largura automática) da correção anterior.
+   - [FIX RAIZ DEFINITIVO] Campus/Escritório: eliminada a técnica de
+     "altura fixa + largura automática pela imagem", que permitia que
+     a largura calculada de uma foto ficasse MAIOR que a própria tela
+     visível em certas proporções/resoluções — causa real do "corte"
+     nas bordas (a imagem literalmente vazava pra fora da janela, não
+     era recorte de CSS). Substituído por caixa de tamanho 100% FIXO
+     e conhecido (largura E altura definidas via variáveis, iguais
+     para todo card) + object-fit:contain na imagem — a foto NUNCA é
+     cortada, é sempre redimensionada proporcionalmente pra caber
+     inteira dentro da caixa. Como consequência, também elimina por
+     completo a necessidade de "esperar as imagens carregarem" antes
+     de centralizar o carrossel (o tamanho do card não depende mais
+     da imagem) — o bug de "nasce pequeno, estoura no clique" some
+     por definição, não só por correção pontual.
 ============================================ */
 
 @font-face {
@@ -123,7 +128,9 @@
 
   --media-card-width: 340px;
 
+  --campus-active-width: 460px;
   --campus-active-height: 380px;
+  --campus-inactive-width: 290px;
   --campus-inactive-height: 230px;
   --campus-overlap: -28px;
 }
@@ -2293,10 +2300,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS / ESCRITÓRIO
-   (Carrossel infinito — imagem SEMPRE inteira,
-   com sobreposição controlada tipo "baralho".
-   z-index de cada card é calculado via JS,
-   conforme a distância até o card ativo.)
+   (Carrossel infinito — caixa de tamanho FIXO,
+   object-fit:contain garante 0% de corte, com
+   sobreposição controlada tipo "baralho")
 ============================================ */
 
 .campus-gallery {
@@ -2327,6 +2333,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   margin: 0 auto;
 }
 
+/* Padding calculado com base na largura FIXA do card ativo (não mais
+   um "chute" em % — segue o mesmo padrão confiável já usado na seção
+   de Mídia, agora que a largura do card é conhecida de antemão). */
 .campus-gallery__track {
   display: flex;
   align-items: center;
@@ -2336,7 +2345,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   scroll-behavior: smooth;
   flex: 1;
   min-width: 0;
-  padding: var(--space-xl) 30%;
+  padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
@@ -2345,19 +2354,25 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   display: none;
 }
 
-/* Sobreposição controlada (pequena) entre cards, reintroduzida para
-   criar o efeito de "baralho empilhado". O z-index de cada card NÃO
-   é definido aqui — é calculado dinamicamente via JS a cada card,
-   baseado na distância até o card ativo (ver initCampusCarousel). */
+/* FIX RAIZ: largura E altura agora são FIXAS (não dependem mais da
+   proporção real da foto) — elimina por definição a possibilidade de
+   uma imagem "vazar" pra fora da tela em qualquer resolução/proporção.
+   object-fit:contain no <img> abaixo garante que a foto NUNCA é
+   cortada — ela é sempre redimensionada proporcionalmente pra caber
+   inteira dentro dessa caixa fixa. */
 .campus-gallery__card {
   position: relative;
   flex: 0 0 auto;
+  width: var(--campus-inactive-width);
   height: var(--campus-inactive-height);
+  background-color: var(--color-navy);
   scroll-snap-align: center;
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: 0 8px 20px rgba(0, 15, 68, 0.14);
-  transition: height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+  transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+              height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
+              background-color 0.4s ease,
               box-shadow 0.4s ease;
 }
 
@@ -2366,15 +2381,19 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 }
 
 .campus-gallery__card.is-active {
+  width: var(--campus-active-width);
   height: var(--campus-active-height);
+  background-color: var(--color-white);
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28);
 }
 
-/* Imagem sempre inteira: altura 100% do card, largura automática
-   (proporcional), sem cropping em nenhuma circunstância. */
+/* object-fit:contain (não mais "cover" nem "width:auto") — a imagem
+   inteira SEMPRE aparece, redimensionada proporcionalmente pra caber
+   na caixa, sem jamais cortar nenhuma borda. */
 .campus-gallery__img {
+  width: 100%;
   height: 100%;
-  width: auto;
+  object-fit: contain;
   display: block;
 }
 
@@ -2462,9 +2481,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --header-height: 76px;
 
     --media-card-width: 300px;
-    --campus-active-height: 300px;
-    --campus-inactive-height: 190px;
-    --campus-overlap: -20px;
+
+    --campus-active-width: 340px;
+    --campus-active-height: 280px;
+    --campus-inactive-width: 210px;
+    --campus-inactive-height: 170px;
+    --campus-overlap: -18px;
   }
 
   .container {
@@ -2597,9 +2619,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --header-height: 72px;
 
     --media-card-width: 78vw;
+
+    --campus-active-width: 76vw;
     --campus-active-height: 220px;
+    --campus-inactive-width: 40vw;
     --campus-inactive-height: 140px;
-    --campus-overlap: -12px;
+    --campus-overlap: -10px;
   }
 
   .container {
