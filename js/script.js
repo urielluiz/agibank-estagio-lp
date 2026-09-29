@@ -3,11 +3,13 @@
    JavaScript principal
 
    CHANGELOG:
-   - [NOVO] initValuePropVideo(): implementa o "facade pattern" do
-     vídeo do YouTube — mostra só a miniatura + botão de play até o
-     usuário clicar; só então cria o <iframe> real (com autoplay).
-     Isso evita carregar os scripts pesados do player do YouTube pra
-     quem não vai assistir o vídeo.
+   - [NOVO] initMediaCarousel(): setas movem o scroll do trilho por
+     "1 card por vez" (largura do card + gap), com loop (do último
+     volta pro primeiro e vice-versa). O destaque visual (scale) do
+     card mais próximo do centro é recalculado no evento de scroll,
+     usando o mesmo padrão seguro de comparação via
+     getBoundingClientRect já usado em outras seções — sem cálculo
+     de posição "adivinhado", sempre relativo ao estado real do DOM.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -36,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
   safeRun(initAreasAccordion, 'initAreasAccordion');
   safeRun(initProcessSteps, 'initProcessSteps');
   safeRun(initValuePropVideo, 'initValuePropVideo');
+  safeRun(initMediaCarousel, 'initMediaCarousel');
 
   if (editMode) {
     console.log('🛠 Modo edição ativo — parallax desabilitado propositalmente.');
@@ -555,6 +558,81 @@ function initValuePropVideo() {
     videoWrap.appendChild(iframe);
     videoWrap.style.cursor = 'default';
   }, { once: true });
+}
+
+/* ============================================
+   SEÇÃO 10 - AGIBANK NA MÍDIA: CARROSSEL
+============================================ */
+function initMediaCarousel() {
+  const track = document.getElementById('mediaTrack');
+  const prevBtn = document.getElementById('mediaPrev');
+  const nextBtn = document.getElementById('mediaNext');
+  if (!track || !prevBtn || !nextBtn) return;
+
+  const cards = Array.from(track.querySelectorAll('.media__card'));
+  if (!cards.length) return;
+
+  function updateActiveCard() {
+    const trackRect = track.getBoundingClientRect();
+    const centerX = trackRect.left + trackRect.width / 2;
+
+    let closestCard = null;
+    let closestDistance = Infinity;
+
+    cards.forEach(function (card) {
+      const rect = card.getBoundingClientRect();
+      const cardCenterX = rect.left + rect.width / 2;
+      const distance = Math.abs(cardCenterX - centerX);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestCard = card;
+      }
+    });
+
+    cards.forEach(function (card) {
+      card.classList.toggle('is-active', card === closestCard);
+    });
+  }
+
+  let ticking = false;
+  track.addEventListener('scroll', function () {
+    if (!ticking) {
+      requestAnimationFrame(function () {
+        updateActiveCard();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  function scrollStep(direction) {
+    const firstCard = cards[0];
+    const trackStyle = getComputedStyle(track);
+    const gap = parseFloat(trackStyle.columnGap || trackStyle.gap) || 0;
+    const amount = (firstCard.offsetWidth + gap) * direction;
+    track.scrollBy({ left: amount, behavior: 'smooth' });
+  }
+
+  prevBtn.addEventListener('click', function () {
+    if (track.scrollLeft <= 4) {
+      track.scrollTo({ left: track.scrollWidth, behavior: 'smooth' });
+    } else {
+      scrollStep(-1);
+    }
+  });
+
+  nextBtn.addEventListener('click', function () {
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (track.scrollLeft >= maxScroll - 4) {
+      track.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      scrollStep(1);
+    }
+  });
+
+  window.addEventListener('resize', updateActiveCard);
+  updateActiveCard();
 }
 
 /* ============================================
