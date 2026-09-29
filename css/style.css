@@ -6,11 +6,12 @@
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements.
    
    CHANGELOG:
-   - [FIX RAIZ] Seção 07 - Áreas de Atuação: removido TODO o scale()
-     via JS. A técnica correta (confirmada pela referência) é pura
-     sobreposição via position:sticky com "top" crescente por card —
-     sem encolhimento nenhum. O card de trás não muda de tamanho, só
-     fica coberto, sobrando uma fatia fina do topo dele visível.
+   - [SIMPLIFICADO] Seção 07 - Áreas de Atuação: abandonada a técnica
+     de "sticky stacking cards" (complexa demais e sem retorno visual
+     consistente). Substituída por acordeão simples e robusto: itens
+     empilhados em fluxo normal (sem sticky/scroll pinado), clique
+     abre/fecha via grid-template-rows (mesma técnica já usada nos
+     dropdowns internos que sempre funcionaram bem no projeto).
 ============================================ */
 
 @font-face {
@@ -108,11 +109,6 @@
   --cta-ratio-h: 480;
   --awards-ratio-h: 620;
   --cta-purpose-ratio-h: 620;
-
-  /* ---- Áreas de Atuação (sticky stacking cards) ---- */
-  --areas-card-radius: 32px;
-  --areas-base-top: calc(var(--header-height) + 16px);
-  --areas-step: 20px;
 }
 
 *,
@@ -1692,8 +1688,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 07 - ÁREAS DE ATUAÇÃO
-   (Sticky Stacking Cards — sobreposição pura,
-   SEM scale. Fidelidade total à referência.)
+   (Acordeão simples — sem scroll pinado)
 ============================================ */
 
 .areas {
@@ -1738,104 +1733,79 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   align-self: center;
 }
 
-/* ---------- Pilha (sticky stacking cards) ---------- */
+/* ---------- Acordeão ---------- */
 
-.areas__stack {
-  position: relative;
+.areas__accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto var(--space-lg) auto;
 }
 
-/* Altura de cada slot é definida via JS (measureMaxHeight + dwell),
-   com este valor apenas como fallback de segurança antes do JS rodar. */
-.areas__slot {
-  position: relative;
-  min-height: 500px;
-}
-
-.areas__card {
-  position: sticky;
-  top: calc(var(--areas-base-top) + var(--i) * var(--areas-step));
-  z-index: calc(var(--i) + 1);
-
-  width: 100%;
-  background-color: var(--color-white);
-  border: 1.5px solid var(--color-blue-medium);
-  border-radius: var(--areas-card-radius);
+.areas__item {
+  background-color: var(--color-blue);
+  border-radius: var(--radius-full);
   overflow: hidden;
-
-  transition: background-color 0.35s ease,
-              border-color 0.35s ease,
-              box-shadow 0.35s ease;
+  transition: border-radius 0.4s ease;
 }
 
-.areas__card.is-active {
-  background-color: var(--color-blue-medium);
-  border-color: var(--color-blue-medium);
-  box-shadow: 0 16px 36px rgba(0, 51, 176, 0.28);
+/* Enquanto aberto, os cantos de baixo deixam de ser "pílula" pra
+   acomodar o conteúdo expandido sem parecer estranho visualmente. */
+.areas__item.is-open {
+  border-radius: var(--radius-lg);
 }
 
-.areas__card-header {
+.areas__item-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: 40px 40px;
-  background: transparent;
-  color: var(--color-blue-medium);
-  font-size: 28px;
-  font-weight: 700;
-  cursor: default;
-  pointer-events: none;
-  transition: color 0.35s ease;
-}
-
-.areas__card.is-active .areas__card-header {
+  padding: 24px 32px;
   color: var(--color-white);
-  cursor: pointer;
-  pointer-events: auto;
+  font-size: 18px;
+  font-weight: 700;
 }
 
-.areas__card-chevron {
-  font-size: 20px;
-  transition: transform 0.35s ease;
+.areas__item-chevron {
+  font-size: 16px;
   flex-shrink: 0;
   margin-left: var(--space-sm);
+  transition: transform 0.35s ease;
 }
 
-.areas__card.is-open .areas__card-chevron {
+.areas__item.is-open .areas__item-chevron {
   transform: rotate(180deg);
 }
 
-.areas__card-body {
+.areas__item-body {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.5s cubic-bezier(0.65, 0, 0.35, 1);
+  transition: grid-template-rows 0.45s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.areas__card.is-open .areas__card-body {
+.areas__item.is-open .areas__item-body {
   grid-template-rows: 1fr;
 }
 
-.areas__card-body-inner {
+.areas__item-body-inner {
   overflow: hidden;
   min-height: 0;
   background-color: var(--color-white);
-  border-top: 1px solid rgba(0, 15, 68, 0.08);
 }
 
-.areas__card-text {
+.areas__item-text {
   color: var(--color-navy);
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.6;
-  padding: 24px 40px 20px 40px;
+  padding: 24px 32px 16px 32px;
 }
 
 .areas__pills {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 0 40px 32px 40px;
+  padding: 0 32px 28px 32px;
 }
 
 .areas__pill {
@@ -1859,20 +1829,20 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .areas__cta-wrap {
   display: flex;
   justify-content: center;
-  margin-top: var(--space-lg);
-  position: relative;
-  z-index: 50;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .areas__cta {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   background-color: var(--color-green);
   color: var(--color-navy);
   font-weight: 700;
   font-size: var(--fs-cta);
-  padding: 16px 40px;
+  padding: 20px 40px;
   border-radius: var(--radius-full);
   transition: box-shadow 0.25s ease, transform 0.2s ease;
 }
@@ -1881,12 +1851,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .areas__cta:focus-visible {
   box-shadow: 0 0 24px 6px rgba(119, 223, 64, 0.55);
   transform: translateY(-2px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .areas__card {
-    transition: none !important;
-  }
 }
 
 /* ============================================
@@ -1923,8 +1887,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-h3: 22px;
     --fs-h4: 17px;
     --header-height: 76px;
-
-    --areas-step: 18px;
   }
 
   .container {
@@ -1999,11 +1961,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .areas__title {
     font-size: 30px;
   }
-
-  .areas__card-header {
-    padding: 32px 32px;
-    font-size: 24px;
-  }
 }
 
 @media (max-width: 767px) {
@@ -2016,10 +1973,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-small: 12px;
     --fs-cta: 16px;
     --header-height: 72px;
-
-    --areas-base-top: calc(var(--header-height) + 10px);
-    --areas-step: 12px;
-    --areas-card-radius: 24px;
   }
 
   .container {
@@ -2292,13 +2245,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
-  .areas__card-header {
-    padding: 24px 22px;
-    font-size: 18px;
+  .areas__item-header {
+    padding: 18px 22px;
+    font-size: 16px;
   }
 
-  .areas__card-text {
-    padding: 18px 22px 16px 22px;
+  .areas__item-text {
+    padding: 18px 22px 14px 22px;
     font-size: 14px;
   }
 
