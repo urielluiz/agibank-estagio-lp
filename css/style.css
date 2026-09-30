@@ -3311,9 +3311,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
+  /* [FIX] Espaçamentos herdados do desktop (96px) reduzidos no mobile:
+     header→vídeo, gap interno do content, e lista→texto legal. */
+  .value-prop__header {
+    margin-bottom: var(--space-lg);
+  }
+
   .value-prop__content {
     flex-direction: column;
-    gap: var(--space-lg);
+    gap: var(--space-md);
   }
 
   .value-prop__video {
@@ -3326,10 +3332,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .value-prop__subtitle {
     font-size: 17px;
+    margin-top: var(--space-xs);
   }
 
   .value-prop__text-title {
     font-size: 20px;
+    margin-bottom: var(--space-sm);
+  }
+
+  .value-prop__legal {
+    margin-top: var(--space-lg);
   }
 
   .media__title {
