@@ -1,11 +1,6 @@
 /* ============================================
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    JavaScript principal
-
-   CHANGELOG:
-   - [NOVO] initTestimonials(): alterna entre os 2 depoimentos da
-     nova seção (foto, texto, nome e cargo), acionado pelos botões
-     de seta. Registrado no safeRun.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
