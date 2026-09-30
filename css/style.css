@@ -11,12 +11,14 @@
    Todas as alterações a partir daqui ocorrem exclusivamente dentro dos
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
-   CHANGELOG:
-   - [FIX MOBILE] Awards: padding-top cortado ainda mais (40px → 8px),
-     espaço do topo continuava grande após ajuste anterior.
-   - [FIX MOBILE] CTA Purpose: texto/subtítulo/CTA centralizados;
-     gap entre texto e fusca reduzido + margin-top negativo no fusca
-     para puxá-lo visualmente mais para cima, mais próximo do texto.
+   CHANGELOG (última rodada):
+   - [FIX MOBILE] CTA Intro: leaf-zone ganhou overflow:hidden — as
+     folhas com drift positivo vazavam para fora da tela e causavam
+     scroll horizontal indevido em toda a página.
+   - [FIX MOBILE] Footer: mesmo bug de flex-basis das Áreas de Atuação
+     (flex:1 1 360px controla altura em flex-direction:column) estava
+     criando vão gigante entre redes sociais e links. Corrigido com
+     flex:none. Tarja cinza inferior ganhou mais respiro vertical.
 ============================================ */
 
 @font-face {
@@ -2989,9 +2991,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   /* Personagem: sobreposto à ilustração (mesma célula do grid),
-     alinhado ao rodapé, como se estivesse andando na calçada.
-     [AJUSTE FINO PENDENTE] Percentuais estimados — enviar print
-     após teste para calibrar com precisão. */
+     alinhado ao rodapé, como se estivesse andando na calçada. */
   .cta-intro__character {
     display: block;
     position: static;
@@ -3007,11 +3007,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   /* Zona das folhas: sobreposta à ilustração, sobre a área da árvore
      (lado direito). Mantém position:relative para os elementos
      .cta-leaf (position:absolute, gerados via JS) ficarem contidos
-     aqui dentro, e não "vazarem" pelo stage inteiro.
-     [AJUSTE FINO PENDENTE] Percentuais estimados. */
+     aqui dentro. [FIX] overflow:hidden adicionado — as folhas com
+     --leaf-drift positivo (até +80px) vazavam para fora da tela,
+     já que a zona fica bem perto da borda direita da seção,
+     causando scroll horizontal indevido em toda a página. */
   .cta-intro__leaf-zone {
     display: block;
     position: relative;
+    overflow: hidden;
     grid-column: 1;
     grid-row: 2;
     width: 34%;
@@ -3031,11 +3034,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
-  /* ---------- AWARDS (mobile) ----------
-     [FIX] Seção sem .container no HTML — o stage precisa do próprio
-     padding lateral, senão texto/imagem colam nas bordas da tela.
-     Padding-top cortado ainda mais (era 40px, muito espaço no topo).
-     Texto/CTA centralizados, imagem principal reduzida. */
+  /* ---------- AWARDS (mobile) ---------- */
   .awards {
     padding-top: var(--space-xs);
     padding-bottom: var(--space-lg);
@@ -3080,18 +3079,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* ---------- CTA PURPOSE (mobile) ----------
-     Texto/subtítulo/CTA centralizados. Gap entre texto e fusca
-     reduzido + margin-top negativo no fusca para puxá-lo visualmente
-     mais para cima, mais próximo do texto. */
+  /* ---------- CTA PURPOSE (mobile) ---------- */
   .cta-purpose__stage {
-  aspect-ratio: auto;
-  min-height: auto;
-  display: flex;
-  flex-direction: column;
-  padding: var(--space-xl) var(--container-padding-mobile) 0 var(--container-padding-mobile);
-  gap: var(--space-xs);
-}
+    aspect-ratio: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    padding: var(--space-xl) var(--container-padding-mobile) 0 var(--container-padding-mobile);
+    gap: var(--space-xs);
+  }
 
   .cta-purpose__bg-bleed {
     left: 0;
@@ -3133,6 +3129,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     align-self: center;
   }
 
+  /* ---------- KICKSTART (mobile) ---------- */
   .kickstart {
     margin-top: 0;
   }
@@ -3155,10 +3152,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 26px;
   }
 
-  /* [FIX] Espaço entre blocos (Pacote financeiro / Benefícios) estava
-     herdando 96px do desktop (--space-2xl), criando vãos enormes no
-     mobile entre o card e o título seguinte, e entre a última pílula
-     e o texto legal. Reduzido para 32px. */
   .kickstart__block {
     margin-bottom: var(--space-md);
   }
@@ -3179,8 +3172,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     padding: 16px;
   }
 
-  /* [FIX] Reduzido para não somar em cima do espaço do bloco anterior
-     (que já foi cortado acima), evitando vão duplo antes do texto legal. */
   .kickstart__legal {
     margin-top: var(--space-xs);
   }
@@ -3189,7 +3180,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none !important;
   }
 
- .requirements__grid {
+  /* ---------- REQUIREMENTS (mobile) ---------- */
+  .requirements__grid {
     grid-template-columns: 1fr;
   }
 
@@ -3201,7 +3193,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
-  /* [FIX] Ícone + texto centralizados, igual aos demais cards da seção */
   .requirements__horizontal-content {
     width: 100%;
     align-items: center;
@@ -3216,17 +3207,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     justify-content: center;
   }
 
-  /* [FIX] Imagem da mulher reativada — container mantém a mesma
-     proporção (aspect-ratio 16/9) do desktop, então o posicionamento
-     em % já se ajusta corretamente, sem precisar recalcular valores. */
   .requirements__horizontal-girl {
     display: block;
   }
 
-  /* [FIX] flex: 1 1 360px / 320px (do desktop) controla a WIDTH quando
-     o container é flex-direction:row, mas passa a controlar a HEIGHT
-     quando vira column (mobile) — por isso o vão gigante. Neutralizado
-     com flex:none. Margin-bottom do header também reduzido. */
+  /* ---------- ÁREAS DE ATUAÇÃO (mobile) ----------
+     [FIX] flex:1 1 360px/320px controla WIDTH em row (desktop), mas
+     vira HEIGHT em column (mobile), criando vão gigante. Neutralizado. */
   .areas__header {
     flex-direction: column;
     align-items: stretch;
@@ -3311,8 +3298,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
-  /* [FIX] Espaçamentos herdados do desktop (96px) reduzidos no mobile:
-     header→vídeo, gap interno do content, e lista→texto legal. */
+  /* ---------- EFETIVAÇÃO / PROPOSTA DE VALOR (mobile) ---------- */
   .value-prop__header {
     margin-bottom: var(--space-lg);
   }
@@ -3344,9 +3330,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-top: var(--space-lg);
   }
 
- /* [FIX] Header com menos espaço embaixo; card do carrossel reduzido
-     (78vw estava quase do tamanho da tela) e sem o scale(1.06) do
-     desktop, que fazia o card "estourar" e cortar nas laterais. */
+  /* ---------- AGIBANK NA MÍDIA (mobile) ----------
+     [FIX] Card com scale(1.06) do desktop + 78vw de largura estourava
+     a viewport e cortava nas laterais. Scale removido, largura reduzida. */
   .media {
     padding-top: var(--space-lg);
     padding-bottom: var(--space-lg);
@@ -3403,12 +3389,24 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 13px;
   }
 
+  /* ---------- FOOTER (mobile) ----------
+     [FIX] .footer__main tem flex:1 1 360px (controla width no
+     desktop), mas em flex-direction:column (mobile) isso vira
+     HEIGHT mínima — mesmo bug das Áreas de Atuação. Neutralizado
+     com flex:none. Tarja cinza inferior ganhou mais respiro
+     vertical, para o texto não ficar colado. */
   .footer__top-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     padding-top: var(--space-xl);
     padding-bottom: var(--space-xl);
+  }
+
+  .footer__main {
+    flex: none;
+    max-width: none;
+    width: 100%;
   }
 
   .footer__title {
@@ -3432,13 +3430,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .footer__links {
     align-items: flex-start;
     width: 100%;
+    flex: none;
   }
 
   .footer__bottom-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: var(--space-sm);
+    gap: var(--space-md);
     text-align: left;
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
   }
 
   .footer__bottom-links {
