@@ -12,10 +12,10 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Hero Banner: reordenado o empilhamento mobile. Nova
-     ordem: logo do programa > texto + CTA > foto das pessoas (evita
-     que o recorte inferior da foto fique visualmente esquisito acima
-     do texto).
+   - [FIX MOBILE] Hero Banner: foto das pessoas convertida em "quadro"
+     de altura fixa com object-fit: cover + object-position: bottom,
+     cortando a sobra transparente do PNG e colando os pés no fim do
+     bloco. Padding inferior do stage removido para eliminar o vão.
 ============================================ */
 
 @font-face {
@@ -2860,7 +2860,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: var(--space-xl) var(--container-padding-mobile);
+    padding: var(--space-xl) var(--container-padding-mobile) 0 var(--container-padding-mobile);
     gap: var(--space-md);
   }
 
@@ -2885,11 +2885,27 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-bottom: var(--space-sm);
   }
 
+  /* Foto das pessoas: quadro de altura fixa, corta a sobra
+     transparente do PNG e cola os pés no fim do bloco. */
   .hero-banner__people {
     position: static;
-    width: 68%;
-    max-width: 260px;
+    width: 100%;
+    max-width: none;
+    height: 320px;
+    overflow: hidden;
     order: 3;
+  }
+
+  .hero-banner__people-parallax {
+    width: 100%;
+    height: 100%;
+  }
+
+  .hero-banner__people-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: bottom center;
   }
 
   .why-apply__title {
