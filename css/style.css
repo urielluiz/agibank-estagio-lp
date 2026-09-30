@@ -12,10 +12,11 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Hero Banner: foto das pessoas convertida em "quadro"
-     de altura fixa com object-fit: cover + object-position: bottom,
-     cortando a sobra transparente do PNG e colando os pés no fim do
-     bloco. Padding inferior do stage removido para eliminar o vão.
+   - [FIX MOBILE] Hero Banner: altura do "quadro" da foto das pessoas
+     aumentada de 320px para 420px (via variável --hero-people-mobile-h),
+     evitando o corte da cabeça causado por object-fit: cover numa caixa
+     baixa demais. Ajustar essa variável controla o quanto da foto
+     aparece sem precisar mexer em mais nada.
 ============================================ */
 
 @font-face {
@@ -409,7 +410,7 @@ h4 { font-size: var(--fs-h4); }
 }
 
 .hero-banner__people-img {
-  width: 83%;
+  width: 100%;
   height: auto;
   display: block;
 }
@@ -2808,6 +2809,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --campus-inactive-width: 45vw;
     --campus-inactive-height: 140px;
     --campus-overlap: -12px;
+
+    /* Altura do "quadro" da foto das pessoas no Hero (mobile).
+       Aumentar mostra mais da cabeça; diminuir mostra menos (corta mais). */
+    --hero-people-mobile-h: 420px;
   }
 
   .container {
@@ -2885,13 +2890,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-bottom: var(--space-sm);
   }
 
-  /* Foto das pessoas: quadro de altura fixa, corta a sobra
-     transparente do PNG e cola os pés no fim do bloco. */
+  /* Foto das pessoas: quadro de altura fixa (ajustável via variável),
+     corta a sobra transparente do PNG e cola os pés no fim do bloco,
+     sem cortar a cabeça. */
   .hero-banner__people {
     position: static;
     width: 100%;
     max-width: none;
-    height: 320px;
+    height: var(--hero-people-mobile-h);
     overflow: hidden;
     order: 3;
   }
