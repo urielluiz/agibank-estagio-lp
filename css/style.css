@@ -12,10 +12,11 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Awards: reduzido o espaço em branco do topo da seção;
-     adicionado padding lateral ao stage (que não tinha .container no
-     HTML, por isso texto/imagem colavam nas bordas); texto e CTA
-     centralizados; imagem principal reduzida e centralizada.
+   - [FIX MOBILE] Awards: padding-top cortado ainda mais (40px → 8px),
+     espaço do topo continuava grande após ajuste anterior.
+   - [FIX MOBILE] CTA Purpose: texto/subtítulo/CTA centralizados;
+     gap entre texto e fusca reduzido + margin-top negativo no fusca
+     para puxá-lo visualmente mais para cima, mais próximo do texto.
 ============================================ */
 
 @font-face {
@@ -3033,9 +3034,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   /* ---------- AWARDS (mobile) ----------
      [FIX] Seção sem .container no HTML — o stage precisa do próprio
      padding lateral, senão texto/imagem colam nas bordas da tela.
-     Também reduzido o padding-top da seção e centralizados texto/CTA. */
+     Padding-top cortado ainda mais (era 40px, muito espaço no topo).
+     Texto/CTA centralizados, imagem principal reduzida. */
   .awards {
-    padding-top: var(--space-lg);
+    padding-top: var(--space-xs);
     padding-bottom: var(--space-lg);
   }
 
@@ -3078,13 +3080,17 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
+  /* ---------- CTA PURPOSE (mobile) ----------
+     Texto/subtítulo/CTA centralizados. Gap entre texto e fusca
+     reduzido + margin-top negativo no fusca para puxá-lo visualmente
+     mais para cima, mais próximo do texto. */
   .cta-purpose__stage {
     aspect-ratio: auto;
     min-height: auto;
     display: flex;
     flex-direction: column;
     padding: 0 var(--container-padding-mobile);
-    gap: var(--space-lg);
+    gap: var(--space-xs);
   }
 
   .cta-purpose__bg-bleed {
@@ -3102,6 +3108,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     position: static;
     width: 100%;
     order: 2;
+    margin-top: -20px;
     transform: none !important;
     opacity: 1 !important;
   }
@@ -3110,6 +3117,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     position: static;
     width: 100%;
     order: 1;
+    align-items: center;
+    text-align: center;
   }
 
   .cta-purpose__title {
@@ -3118,6 +3127,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .cta-purpose__subtext {
     font-size: 16px;
+  }
+
+  .cta-purpose__cta {
+    align-self: center;
   }
 
   .kickstart {
