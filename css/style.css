@@ -8,11 +8,9 @@
    Agibank na Mídia.
    
    CHANGELOG:
-   - [AJUSTE] Campus/Escritório: reduzido o viewport visível do carrossel
-     para mostrar apenas 3 cards por vez (1 ativo + 2 inativos), via
-     nova variável --campus-viewport-width calculada automaticamente.
-     As 2 fotos extras continuam acessíveis pelas setas/dots (sem
-     nenhuma alteração de HTML ou JS).
+   - [FIX] Campus/Escritório: aplicado mask-image (fade gradiente) nas
+     bordas do track para dissolver o corte reto das fotos laterais no
+     fundo branco da seção, em vez de exibir borda quadrada abrupta.
 ============================================ */
 
 @font-face {
@@ -127,9 +125,9 @@
   --campus-overlap: -45px;
   --campus-radius: 24px;
 
-  /* [NOVO] Margem de segurança para a sombra do card ativo não ser cortada */
+  /* Margem de segurança para a sombra do card ativo não ser cortada */
   --campus-viewport-buffer: 100px;
-  /* [NOVO] Largura do "viewport" visível: 1 card ativo + 2 inativos + buffer.
+  /* Largura do "viewport" visível: 1 card ativo + 2 inativos + buffer.
      Calculada automaticamente a partir das variáveis acima. */
   --campus-viewport-width: calc(var(--campus-active-width) + (var(--campus-inactive-width) * 2) + (var(--campus-overlap) * 2) + var(--campus-viewport-buffer));
 }
@@ -2302,8 +2300,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
    [BLINDADO] Seletores com #campusTrack + !important
    para evitar qualquer conflito de especificidade
    com CSS externo/legado ou cache.
-   [AJUSTE] max-width do carrossel agora usa
+   [AJUSTE] max-width do carrossel usa
    --campus-viewport-width para mostrar só 3 cards.
+   [FIX] mask-image aplicado no track para dissolver
+   o corte reto das fotos laterais no fundo branco.
 ============================================ */
 .campus-gallery {
   background-color: var(--color-white);
@@ -2342,6 +2342,22 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
+  /* Fade nas bordas: dissolve o corte reto das fotos laterais
+     no branco de fundo da seção, em vez de cortar abruptamente. */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 12%,
+    black 88%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 12%,
+    black 88%,
+    transparent 100%
+  );
 }
 
 #campusTrack.campus-gallery__track::-webkit-scrollbar {
