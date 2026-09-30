@@ -409,7 +409,7 @@ h4 { font-size: var(--fs-h4); }
 }
 
 .hero-banner__people-img {
-  width: 100%;
+  width: 83%;
   height: auto;
   display: block;
 }
