@@ -14,15 +14,14 @@
    bloco @media (max-width: 1024px). Nenhuma regra de desktop ou mobile
    é alterada.
    
-   CHANGELOG (rodada 2 - tablet):
-   - Hero: imagem das pessoas ancorada por "bottom: 0" ao invés de
-     "top" fixo — o pé da imagem agora sempre toca a base do stage,
-     independente da altura do stage (--hero-ratio-h).
-   - CTA Intro: --cta-ratio-h aumentado (560 → 680) para dar mais
-     respiro de fundo azul abaixo do botão.
-   - Awards: adicionado padding lateral ao stage (estava colado nas
-     bordas após a conversão para layout empilhado) e max-width no
-     bloco de texto para melhor legibilidade.
+   CHANGELOG (rodada 3 - tablet):
+   - CTA Intro: ilustração ancorada por "bottom: 0" (mesma técnica do
+     Hero) para colar sua base na faixa azul, independente da altura
+     do stage. Também deslocada para a direita (left/width ajustados)
+     e caixa de texto estreitada (38% → 33%) para eliminar a
+     sobreposição visual entre texto e ilustração.
+   - Footer: padding vertical da faixa cinza inferior aumentado
+     (estava herdando o valor do desktop, insuficiente).
 ============================================ */
 
 @font-face {
@@ -2756,12 +2755,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   /* ---------- CTA INTRO (tablet) ----------
-     [FIX] Mesmo problema do Hero: caixa de texto estreita empurrava
-     o CTA para fora da área azul. Alargada + fontes reduzidas +
-     stage mais alto (--cta-ratio-h acima), dando mais fundo azul
-     abaixo do botão. */
+     [FIX] Caixa de texto estreitada (38% → 33%) e ilustração deslocada
+     mais para a direita (left 37% → 41%, width 63% → 58%): o texto
+     alargado na rodada anterior estava invadindo visualmente a área
+     com pixels reais da ilustração da loja.
+     [FIX 2] Ilustração ancorada por "bottom: 0" (mesma técnica do
+     Hero) para colar sua base na faixa azul, já que sua altura real
+     depende da largura (não da altura do stage) e ficou "flutuando"
+     acima da base depois de aumentarmos --cta-ratio-h. */
   .cta-intro__content {
-    width: 38%;
+    width: 33%;
   }
 
   .cta-intro__percent {
@@ -2775,6 +2778,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .cta-intro__button {
     padding: 12px 24px;
     font-size: 14px;
+  }
+
+  .cta-intro__illustration {
+    top: auto;
+    bottom: 0;
+    left: 41%;
+    width: 58%;
   }
 
   /* ---------- AWARDS (tablet) ----------
@@ -3079,7 +3089,10 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   /* ---------- FOOTER (tablet) ----------
      [FIX] Textos quebrando linha e sobrepondo: espaço insuficiente
      para os dois blocos lado a lado. Gap reduzido e flex ajustado
-     para impedir quebra. */
+     para impedir quebra.
+     [FIX 2] Faixa cinza inferior com respiro vertical insuficiente
+     (herdava o valor do desktop) — texto colado nas bordas.
+     Aumentado para o mesmo valor já validado no mobile. */
   .footer__title {
     font-size: 30px;
   }
@@ -3102,6 +3115,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .footer__links {
     flex: 0 0 auto;
+  }
+
+  .footer__bottom-inner {
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
   }
 }
 
