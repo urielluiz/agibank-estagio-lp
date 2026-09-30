@@ -1901,13 +1901,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   aspect-ratio: 1 / 1;
 }
 
-.testimonials__caco {
-  position: absolute;
-  inset: 0;
-  background-color: var(--color-green);
-  clip-path: polygon(28% 0%, 100% 12%, 88% 100%, 8% 92%, 0% 38%);
-}
-
 .testimonials__photo {
   position: absolute;
   top: 6%;
