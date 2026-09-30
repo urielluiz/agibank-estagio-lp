@@ -2,16 +2,20 @@
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    Design Tokens + Reset + Base
    
-   🔒 SEÇÕES APROVADAS E TRAVADAS:
+   🔒 SEÇÕES APROVADAS E TRAVADAS (DESKTOP):
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
    Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor,
-   Agibank na Mídia, Campus/Escritório.
+   Agibank na Mídia, Campus/Escritório, Footer.
+   
+   ⚠️ FASE ATUAL: AJUSTES DE RESPONSIVIDADE MOBILE
+   Todas as alterações a partir daqui ocorrem exclusivamente dentro dos
+   blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [AJUSTE] Campus/Escritório: fade das bordas do carrossel aprofundado
-     de 12%/88% para 28%/72%, cobrindo maior área das fotos laterais.
-   - [NOVO] Footer completo: título, subtítulo, redes sociais, links
-     úteis e faixa inferior com CNPJ/termos/privacidade.
+   - [FIX MOBILE] Hero Banner: convertido de posicionamento absoluto
+     (stage/aspect-ratio) para layout empilhado (flex-column) no mobile.
+     Ordem: foto > selo do programa > texto + CTA. Cacos decorativos
+     ocultos. Resolve texto quebrado e CTA escondido fora da tela.
 ============================================ */
 
 @font-face {
@@ -2298,13 +2302,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 /* ============================================
    SEÇÃO 11 - CAMPUS/ESCRITÓRIO
-   [BLINDADO] Seletores com #campusTrack + !important
-   para evitar qualquer conflito de especificidade
-   com CSS externo/legado ou cache.
-   [AJUSTE] max-width do carrossel usa
-   --campus-viewport-width para mostrar só 3 cards.
-   [FIX] mask-image aplicado no track para dissolver
-   o corte reto das fotos laterais no fundo branco.
 ============================================ */
 .campus-gallery {
   background-color: var(--color-white);
@@ -2339,12 +2336,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   min-width: 0;
-  /* Centraliza o card ativo usando a variável de largura dele */
   padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
-  /* Fade nas bordas: dissolve o corte reto das fotos laterais
-     no branco de fundo da seção, em vez de cortar abruptamente. */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -2374,14 +2368,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   scroll-snap-align: center;
   border-radius: var(--campus-radius) !important;
   overflow: hidden !important;
-  /* Sombra mais leve nos inativos: evita o "borrão" quando vários cards se sobrepõem */
   box-shadow: 0 4px 10px rgba(0, 15, 68, 0.10) !important;
   transition: width 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               height 0.4s cubic-bezier(0.65, 0, 0.35, 1),
               box-shadow 0.4s ease !important;
 }
 
-/* Margem negativa para sobreposição (efeito baralho) */
 #campusTrack .campus-gallery__card:not(:first-child) {
   margin-left: var(--campus-overlap) !important;
 }
@@ -2390,7 +2382,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   width: var(--campus-active-width) !important;
   height: var(--campus-active-height) !important;
   background-color: var(--color-white) !important;
-  /* Sombra forte só no ativo: reforça a hierarquia visual e evita blend com os laterais */
   box-shadow: 0 24px 52px rgba(0, 15, 68, 0.28) !important;
   z-index: 5;
 }
@@ -2403,7 +2394,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   border-radius: inherit;
 }
 
-/* Overlay azul marinho (mais sutil que antes) */
 #campusTrack .campus-gallery__card::after {
   content: '';
   position: absolute;
@@ -2419,7 +2409,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   opacity: 0;
 }
 
-/* Pill "Campinas" - só aparece no card ativo */
 .campus-gallery__badge {
   position: absolute;
   left: 50%;
@@ -2446,7 +2435,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   transform: translateX(-50%) translateY(0);
 }
 
-/* Barra de navegação (setas + dots) abaixo do carrossel */
 .campus-gallery__nav {
   display: flex;
   align-items: center;
@@ -2569,7 +2557,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 .footer__social-icon img {
   width: 22px;
   height: 22px;
-  /* Força o ícone para branco, independente da cor original do SVG */
   filter: brightness(0) invert(1);
 }
 
@@ -2863,6 +2850,46 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .nav__cta {
     display: none;
+  }
+
+  /* ---------- HERO BANNER (mobile) ---------- */
+  .hero-banner__stage {
+    aspect-ratio: auto;
+    min-height: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: var(--space-xl) var(--container-padding-mobile);
+    gap: var(--space-md);
+  }
+
+  .hero-banner__caco {
+    display: none;
+  }
+
+  .hero-banner__people {
+    position: static;
+    width: 68%;
+    max-width: 260px;
+    order: 1;
+  }
+
+  .hero-banner__logo-wrap {
+    position: static;
+    width: 58%;
+    max-width: 220px;
+    order: 2;
+  }
+
+  .hero-banner__text-wrap {
+    position: static;
+    width: 100%;
+    order: 3;
+  }
+
+  .hero-banner__title {
+    margin-bottom: var(--space-sm);
   }
 
   .why-apply__title {
