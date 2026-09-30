@@ -3155,6 +3155,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 26px;
   }
 
+  /* [FIX] Espaço entre blocos (Pacote financeiro / Benefícios) estava
+     herdando 96px do desktop (--space-2xl), criando vãos enormes no
+     mobile entre o card e o título seguinte, e entre a última pílula
+     e o texto legal. Reduzido para 32px. */
+  .kickstart__block {
+    margin-bottom: var(--space-md);
+  }
+
   .kickstart__subtitle {
     font-size: 20px;
   }
@@ -3169,6 +3177,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .kickstart__pill {
     padding: 16px;
+  }
+
+  /* [FIX] Reduzido para não somar em cima do espaço do bloco anterior
+     (que já foi cortado acima), evitando vão duplo antes do texto legal. */
+  .kickstart__legal {
+    margin-top: var(--space-xs);
   }
 
   .kickstart__morph-clone {
