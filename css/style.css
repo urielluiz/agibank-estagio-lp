@@ -12,10 +12,10 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Hero Banner: convertido de posicionamento absoluto
-     (stage/aspect-ratio) para layout empilhado (flex-column) no mobile.
-     Ordem: foto > selo do programa > texto + CTA. Cacos decorativos
-     ocultos. Resolve texto quebrado e CTA escondido fora da tela.
+   - [FIX MOBILE] Hero Banner: reordenado o empilhamento mobile. Nova
+     ordem: logo do programa > texto + CTA > foto das pessoas (evita
+     que o recorte inferior da foto fique visualmente esquisito acima
+     do texto).
 ============================================ */
 
 @font-face {
@@ -2868,28 +2868,28 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  .hero-banner__people {
-    position: static;
-    width: 68%;
-    max-width: 260px;
-    order: 1;
-  }
-
   .hero-banner__logo-wrap {
     position: static;
     width: 58%;
     max-width: 220px;
-    order: 2;
+    order: 1;
   }
 
   .hero-banner__text-wrap {
     position: static;
     width: 100%;
-    order: 3;
+    order: 2;
   }
 
   .hero-banner__title {
     margin-bottom: var(--space-sm);
+  }
+
+  .hero-banner__people {
+    position: static;
+    width: 68%;
+    max-width: 260px;
+    order: 3;
   }
 
   .why-apply__title {
