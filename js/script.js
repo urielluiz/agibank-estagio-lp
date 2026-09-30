@@ -3,14 +3,9 @@
    JavaScript principal
 
    CHANGELOG:
-   - [SIMPLIFICADO] initCampusCarousel(): como o tamanho de cada card
-     agora é definido 100% pelo CSS (largura/altura fixas via
-     variáveis), não depende mais do carregamento da imagem para
-     saber o tamanho — a lógica de "esperar as imagens carregarem"
-     (waitForImages) foi removida por não ser mais necessária, e a
-     centralização inicial volta a ser imediata, no mesmo padrão já
-     comprovado de initMediaCarousel(). Mantida a lógica de z-index
-     dinâmico por distância até o card ativo (efeito "baralho").
+   - [NOVO] initTestimonials(): alterna entre os 2 depoimentos da
+     nova seção (foto, texto, nome e cargo), acionado pelos botões
+     de seta. Registrado no safeRun.
 ============================================ */
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -37,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
   safeRun(initIaIconHover, 'initIaIconHover');
   safeRun(initRequirementsCascade, 'initRequirementsCascade');
   safeRun(initAreasAccordion, 'initAreasAccordion');
+  safeRun(initTestimonials, 'initTestimonials');
   safeRun(initProcessSteps, 'initProcessSteps');
   safeRun(initValuePropVideo, 'initValuePropVideo');
   safeRun(initMediaCarousel, 'initMediaCarousel');
@@ -406,6 +402,63 @@ function initAreasAccordion() {
       }
     });
   });
+}
+
+/* ============================================
+   SEÇÃO 07.5 - DEPOIMENTOS: ALTERNÂNCIA ENTRE ITENS
+============================================ */
+function initTestimonials() {
+  const photo = document.getElementById('testimonialPhoto');
+  const quote = document.getElementById('testimonialQuote');
+  const author = document.getElementById('testimonialAuthor');
+  const prevBtn = document.getElementById('testimonialPrev');
+  const nextBtn = document.getElementById('testimonialNext');
+
+  if (!photo || !quote || !author || !prevBtn || !nextBtn) return;
+
+  const TESTIMONIALS = [
+    {
+      photo: 'assets/img/Depoimento-01.png',
+      photoAlt: 'Fábio Barros, estagiário em Infraestrutura e Operações',
+      quote:
+        '"Cheguei ao Programa de Estágio do Agi por indicação de um amigo, mas, antes disso, já tinha me identificado com a cultura da empresa e queria fazer parte do crescimento dela.<br><br>' +
+        'Desde que entrei, evoluí demais e pude colocar em prática conhecimentos técnicos que antes eram só teoria na faculdade. Um dos momentos que mais me orgulho foi ter construído a topologia de rede do nosso ambiente do zero, e também ter ajudado a resolver um problema crítico durante uma war room.<br><br>' +
+        'E o mais legal é que nunca me senti sozinho nesse processo. O time é extremamente solícito e me dão feedbacks construtivos que me fazem crescer cada vez mais."',
+      name: 'Fábio Barros',
+      role: 'estagiário em Infraestrutura e Operações'
+    },
+    {
+      photo: 'assets/img/Depoimento-02.png',
+      photoAlt: 'Sophia de Abreu, estagiária em Áreas Administrativas',
+      quote:
+        '"Conheci o Agi participando de palestras, feiras de carreiras e ainda uma visita ao Agi Campus com a minha faculdade. Ali, eu tive certeza de que queria construir parte da minha história aqui.<br><br>' +
+        'Minha jornada tem sido extremamente transformadora. Aqui, estagiar vai muito além de aprender uma profissão. Eu realmente tenho espaço para agir, propor ideias e gerar impacto no negócio.<br><br>' +
+        'Encontrei pessoas qualificadas e sempre dispostas a ensinar, além de um ambiente que incentiva a autonomia. Nunca imaginei viver algo assim tão cedo na minha carreira!"',
+      name: 'Sophia de Abreu',
+      role: 'estagiária em Áreas Administrativas'
+    }
+  ];
+
+  let current = 0;
+
+  function render(index) {
+    const item = TESTIMONIALS[index];
+    photo.src = item.photo;
+    photo.alt = item.photoAlt;
+    quote.innerHTML = item.quote;
+    author.innerHTML = item.name + ' – <span class="is-green">' + item.role + '</span>';
+  }
+
+  function goTo(index) {
+    const total = TESTIMONIALS.length;
+    current = (index + total) % total;
+    render(current);
+  }
+
+  prevBtn.addEventListener('click', function () { goTo(current - 1); });
+  nextBtn.addEventListener('click', function () { goTo(current + 1); });
+
+  render(current);
 }
 
 /* ============================================
