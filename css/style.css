@@ -3085,13 +3085,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
      reduzido + margin-top negativo no fusca para puxá-lo visualmente
      mais para cima, mais próximo do texto. */
   .cta-purpose__stage {
-    aspect-ratio: auto;
-    min-height: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 0 var(--container-padding-mobile);
-    gap: var(--space-xs);
-  }
+  aspect-ratio: auto;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-xl) var(--container-padding-mobile) 0 var(--container-padding-mobile);
+  gap: var(--space-xs);
+}
 
   .cta-purpose__bg-bleed {
     left: 0;
