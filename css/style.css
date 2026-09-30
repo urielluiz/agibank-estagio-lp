@@ -1,16 +1,5 @@
 /* ============================================
    AGIBANK - PROGRAMA DE ESTÁGIO LP
-   Design Tokens + Reset + Base
-   
-   🔒 DESKTOP, TABLET E MOBILE APROVADOS E TRAVADOS
-   
-   CHANGELOG:
-   - Header: logo aumentado de 32px para 44px de altura.
-   - [NOVO] Seção 07.5 - Depoimentos: card azul com foto + caco verde
-     (clip-path), título fixo, texto do depoimento e navegação por
-     setas (alternância via JS entre 2 depoimentos). Inserida entre
-     Áreas de Atuação e Processo Seletivo. Responsividade tablet/mobile
-     incluída (empilhamento vertical).
 ============================================ */
 
 @font-face {
