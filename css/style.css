@@ -12,9 +12,13 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Why Apply: reduzido o espaço em branco após o último
-     card. Padding vertical do pin-inner separado em top/bottom
-     independentes (mantém respiro de cima, reduz o de baixo).
+   - [FIX MOBILE] CTA Intro: stage convertido de flex-column para CSS
+     Grid, permitindo empilhar o texto (linha 1) e sobrepor ilustração +
+     personagem + zona de folhas na mesma célula (linha 2), recriando
+     a composição visual do desktop sem depender de hierarquia HTML.
+     Texto e botão centralizados. Personagem e zona de folhas reativados
+     (estavam com display:none). Posições do personagem/folhas são
+     estimativas iniciais, sujeitas a ajuste fino pós-teste visual.
 ============================================ */
 
 @font-face {
@@ -2942,13 +2946,19 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     transform: none !important;
   }
 
+  /* ---------- CTA INTRO (mobile) ----------
+     Stage vira um CSS Grid de 2 linhas: linha 1 = texto,
+     linha 2 = ilustração + personagem + zona de folhas
+     SOBREPOSTOS na mesma célula (recriando a composição do
+     desktop sem depender de hierarquia HTML). */
   .cta-intro__stage {
     aspect-ratio: auto;
     min-height: auto;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
     padding: var(--space-xl) var(--container-padding-mobile);
-    gap: var(--space-lg);
+    row-gap: var(--space-lg);
   }
 
   .cta-intro__bg-bleed {
@@ -2958,24 +2968,61 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-right: 0;
   }
 
-  .cta-intro__illustration {
-    position: static;
-    width: 100%;
-    order: 2;
-  }
-
-  .cta-intro__character {
-    display: none;
-  }
-
   .cta-intro__content {
     position: static;
+    grid-column: 1;
+    grid-row: 1;
     width: 100%;
-    order: 1;
+    align-items: center;
+    text-align: center;
   }
 
+  .cta-intro__button {
+    align-self: center;
+  }
+
+  /* Ilustração da loja: ocupa a célula 2 inteira, base da composição */
+  .cta-intro__illustration {
+    position: static;
+    grid-column: 1;
+    grid-row: 2;
+    width: 100%;
+    z-index: 1;
+  }
+
+  /* Personagem: sobreposto à ilustração (mesma célula do grid),
+     alinhado ao rodapé, como se estivesse andando na calçada.
+     [AJUSTE FINO PENDENTE] Percentuais estimados — enviar print
+     após teste para calibrar com precisão. */
+  .cta-intro__character {
+    display: block;
+    position: static;
+    grid-column: 1;
+    grid-row: 2;
+    width: 38%;
+    z-index: 2;
+    justify-self: center;
+    align-self: end;
+    margin-bottom: 2%;
+  }
+
+  /* Zona das folhas: sobreposta à ilustração, sobre a área da árvore
+     (lado direito). Mantém position:relative para os elementos
+     .cta-leaf (position:absolute, gerados via JS) ficarem contidos
+     aqui dentro, e não "vazarem" pelo stage inteiro.
+     [AJUSTE FINO PENDENTE] Percentuais estimados. */
   .cta-intro__leaf-zone {
-    display: none;
+    display: block;
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+    width: 34%;
+    height: 40%;
+    z-index: 3;
+    justify-self: end;
+    align-self: start;
+    margin-top: 22%;
+    margin-right: 4%;
   }
 
   .cta-intro__percent {
