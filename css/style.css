@@ -2802,7 +2802,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     --fs-cta: 16px;
     --header-height: 72px;
 
-    --media-card-width: 78vw;
+    --media-card-width: 68vw;
 
     --campus-active-width: 76vw;
     --campus-active-height: 220px;
@@ -3344,6 +3344,18 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-top: var(--space-lg);
   }
 
+ /* [FIX] Header com menos espaço embaixo; card do carrossel reduzido
+     (78vw estava quase do tamanho da tela) e sem o scale(1.06) do
+     desktop, que fazia o card "estourar" e cortar nas laterais. */
+  .media {
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
+  }
+
+  .media__header {
+    margin-bottom: var(--space-lg);
+  }
+
   .media__title {
     font-size: 24px;
   }
@@ -3360,6 +3372,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 36px;
     height: 36px;
     font-size: 13px;
+  }
+
+  .media__card {
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .media__card.is-active {
+    transform: none !important;
+    box-shadow: 0 10px 28px rgba(0, 15, 68, 0.15);
   }
 
   .media__card-text {
