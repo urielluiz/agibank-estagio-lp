@@ -14,14 +14,14 @@
    bloco @media (max-width: 1024px). Nenhuma regra de desktop ou mobile
    é alterada.
    
-   CHANGELOG (rodada 3 - tablet):
-   - CTA Intro: ilustração ancorada por "bottom: 0" (mesma técnica do
-     Hero) para colar sua base na faixa azul, independente da altura
-     do stage. Também deslocada para a direita (left/width ajustados)
-     e caixa de texto estreitada (38% → 33%) para eliminar a
-     sobreposição visual entre texto e ilustração.
-   - Footer: padding vertical da faixa cinza inferior aumentado
-     (estava herdando o valor do desktop, insuficiente).
+   CHANGELOG (rodada 4 - tablet):
+   - CTA Intro: personagem e zona de folhas reposicionados. Eles ainda
+     usavam as coordenadas de desktop (top: 46% / top: 5.8%), calculadas
+     para a proporção antiga do stage. Como a ilustração foi reancorada
+     por "bottom: 0" nas rodadas anteriores, o "chão" da cena desceu,
+     mas esses dois elementos ficaram presos no topo, parecendo
+     "flutuar". Reposicionados via cálculo proporcional à nova posição
+     da ilustração (estimativa calibrada, sujeita a ajuste fino).
 ============================================ */
 
 @font-face {
@@ -2762,7 +2762,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
      [FIX 2] Ilustração ancorada por "bottom: 0" (mesma técnica do
      Hero) para colar sua base na faixa azul, já que sua altura real
      depende da largura (não da altura do stage) e ficou "flutuando"
-     acima da base depois de aumentarmos --cta-ratio-h. */
+     acima da base depois de aumentarmos --cta-ratio-h.
+     [FIX 3] Personagem e zona de folhas reposicionados: ainda usavam
+     as coordenadas de desktop (calibradas para o stage mais baixo e
+     ilustração ancorada pelo topo). Como o "chão" da cena desceu
+     bastante, eles ficaram "flutuando" no céu. Reposicionados via
+     cálculo proporcional à nova posição/tamanho da ilustração. */
   .cta-intro__content {
     width: 33%;
   }
@@ -2785,6 +2790,19 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     bottom: 0;
     left: 41%;
     width: 58%;
+  }
+
+  .cta-intro__character {
+    top: 63%;
+    left: 64%;
+    width: 15%;
+  }
+
+  .cta-intro__leaf-zone {
+    top: 37%;
+    left: 78%;
+    width: 18%;
+    height: 22%;
   }
 
   /* ---------- AWARDS (tablet) ----------
