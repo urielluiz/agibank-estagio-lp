@@ -12,13 +12,10 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] CTA Intro: stage convertido de flex-column para CSS
-     Grid, permitindo empilhar o texto (linha 1) e sobrepor ilustração +
-     personagem + zona de folhas na mesma célula (linha 2), recriando
-     a composição visual do desktop sem depender de hierarquia HTML.
-     Texto e botão centralizados. Personagem e zona de folhas reativados
-     (estavam com display:none). Posições do personagem/folhas são
-     estimativas iniciais, sujeitas a ajuste fino pós-teste visual.
+   - [FIX MOBILE] Awards: reduzido o espaço em branco do topo da seção;
+     adicionado padding lateral ao stage (que não tinha .container no
+     HTML, por isso texto/imagem colavam nas bordas); texto e CTA
+     centralizados; imagem principal reduzida e centralizada.
 ============================================ */
 
 @font-face {
@@ -3033,8 +3030,13 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
+  /* ---------- AWARDS (mobile) ----------
+     [FIX] Seção sem .container no HTML — o stage precisa do próprio
+     padding lateral, senão texto/imagem colam nas bordas da tela.
+     Também reduzido o padding-top da seção e centralizados texto/CTA. */
   .awards {
-    padding-bottom: var(--space-2xl);
+    padding-top: var(--space-lg);
+    padding-bottom: var(--space-lg);
   }
 
   .awards__stage {
@@ -3043,21 +3045,30 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
+    padding: 0 var(--container-padding-mobile);
   }
 
   .awards__content {
     position: static;
     width: 100%;
     order: 1;
+    align-items: center;
+    text-align: center;
   }
 
   .awards__title {
     font-size: 26px;
   }
 
+  a.awards__cta.reveal-fade-left-item {
+    align-self: center;
+  }
+
   .awards__image--main {
     position: static;
-    width: 100%;
+    width: 85%;
+    max-width: 340px;
+    margin: 0 auto;
     order: 2;
   }
 
