@@ -5,12 +5,13 @@
    🔒 SEÇÕES APROVADAS E TRAVADAS:
    Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
    Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor,
-   Agibank na Mídia.
+   Agibank na Mídia, Campus/Escritório.
    
    CHANGELOG:
-   - [FIX] Campus/Escritório: aplicado mask-image (fade gradiente) nas
-     bordas do track para dissolver o corte reto das fotos laterais no
-     fundo branco da seção, em vez de exibir borda quadrada abrupta.
+   - [AJUSTE] Campus/Escritório: fade das bordas do carrossel aprofundado
+     de 12%/88% para 28%/72%, cobrindo maior área das fotos laterais.
+   - [NOVO] Footer completo: título, subtítulo, redes sociais, links
+     úteis e faixa inferior com CNPJ/termos/privacidade.
 ============================================ */
 
 @font-face {
@@ -2342,10 +2343,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
- /* Fade nas bordas: dissolve o corte reto das fotos laterais
-     no branco de fundo da seção, em vez de cortar abruptamente.
-     [AJUSTE] Fade mais profundo (28%/72%) para cobrir maior área
-     das fotos laterais, conforme referência aprovada. */
+  /* Fade nas bordas: dissolve o corte reto das fotos laterais
+     no branco de fundo da seção, em vez de cortar abruptamente. */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
@@ -2358,13 +2357,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     transparent 0%,
     black 28%,
     black 72%,
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    to right,
-    transparent 0%,
-    black 12%,
-    black 88%,
     transparent 100%
   );
 }
@@ -2510,6 +2502,135 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
 .campus-gallery__arrow--next:hover {
   transform: translateX(3px);
+}
+
+/* ============================================
+   FOOTER
+============================================ */
+
+.footer {
+  background-color: var(--color-white);
+}
+
+.footer__top-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2xl);
+  flex-wrap: wrap;
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-2xl);
+}
+
+.footer__main {
+  max-width: 560px;
+  flex: 1 1 360px;
+}
+
+.footer__title {
+  color: var(--color-navy);
+  font-size: var(--fs-h2);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: var(--space-sm);
+}
+
+.footer__subtitle {
+  color: var(--color-gray-text);
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 400;
+  margin-bottom: var(--space-md);
+}
+
+.footer__socials {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.footer__social-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background-color: var(--color-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+.footer__social-icon:hover {
+  background-color: var(--color-navy);
+  transform: translateY(-2px);
+}
+
+.footer__social-icon img {
+  width: 22px;
+  height: 22px;
+  /* Força o ícone para branco, independente da cor original do SVG */
+  filter: brightness(0) invert(1);
+}
+
+.footer__links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.footer__link {
+  color: var(--color-gray-text);
+  font-size: 16px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.footer__link:hover {
+  color: var(--color-blue);
+}
+
+.footer__bottom {
+  background-color: var(--color-gray-light);
+}
+
+.footer__bottom-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding-top: var(--space-lg);
+  padding-bottom: var(--space-lg);
+}
+
+.footer__legal {
+  color: var(--color-gray-text);
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+.footer__bottom-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+  flex-shrink: 0;
+}
+
+.footer__bottom-link {
+  color: var(--color-gray-text);
+  font-size: var(--fs-small);
+  transition: color 0.2s ease;
+  white-space: nowrap;
+}
+
+.footer__bottom-link:hover {
+  color: var(--color-blue);
 }
 
 /* ============================================
@@ -2671,6 +2792,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 40px;
     height: 40px;
     font-size: 15px;
+  }
+
+  .footer__title {
+    font-size: 30px;
+  }
+
+  .footer__subtitle {
+    font-size: 16px;
   }
 }
 
@@ -3080,5 +3209,47 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 36px;
     height: 36px;
     font-size: 13px;
+  }
+
+  .footer__top-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-lg);
+    padding-top: var(--space-xl);
+    padding-bottom: var(--space-xl);
+  }
+
+  .footer__title {
+    font-size: 24px;
+  }
+
+  .footer__subtitle {
+    font-size: 15px;
+  }
+
+  .footer__social-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .footer__social-icon img {
+    width: 18px;
+    height: 18px;
+  }
+
+  .footer__links {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .footer__bottom-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    text-align: left;
+  }
+
+  .footer__bottom-links {
+    gap: var(--space-md);
   }
 }
