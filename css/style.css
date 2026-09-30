@@ -3189,7 +3189,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none !important;
   }
 
-  .requirements__grid {
+ .requirements__grid {
     grid-template-columns: 1fr;
   }
 
@@ -3201,12 +3201,26 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     width: 100%;
   }
 
+  /* [FIX] Ícone + texto centralizados, igual aos demais cards da seção */
   .requirements__horizontal-content {
     width: 100%;
+    align-items: center;
+    text-align: center;
   }
 
+  .requirements__horizontal-content .requirements__card-text {
+    text-align: center;
+  }
+
+  .requirements__ia-icon {
+    justify-content: center;
+  }
+
+  /* [FIX] Imagem da mulher reativada — container mantém a mesma
+     proporção (aspect-ratio 16/9) do desktop, então o posicionamento
+     em % já se ajusta corretamente, sem precisar recalcular valores. */
   .requirements__horizontal-girl {
-    display: none;
+    display: block;
   }
 
   .areas__header {
