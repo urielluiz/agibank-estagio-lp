@@ -14,25 +14,15 @@
    bloco @media (max-width: 1024px). Nenhuma regra de desktop ou mobile
    é alterada.
    
-   CHANGELOG (rodada tablet):
-   - Hero / CTA Intro: caixas de texto alargadas e fontes reduzidas
-     para evitar que o CTA seja empurrado para fora do fundo azul.
-   - Why Apply: pin/scrub desativado (mesma solução do mobile), cards
-     em grid estático de 3 colunas, sempre visíveis.
-   - Awards / CTA Purpose / Kickstart: convertidos para layout
-     empilhado (mesma técnica do mobile, em escala maior), eliminando
-     as sobreposições calculadas para desktop que não fechavam no
-     tablet.
-   - Kickstart: pílulas com altura fixa para ficarem uniformes.
-   - Áreas: mesmo fix de flex-basis do mobile, divisor oculto,
-     tudo centralizado.
-   - Processo Seletivo: arco SVG substituído pela lista estática
-     (mesma solução do mobile), eliminando a tarja navy vazia.
-   - Proposta de Valor: espaçamentos reduzidos.
-   - Mídia: mask-image (fade) nas bordas do carrossel para suavizar
-     o corte abrupto dos cards laterais.
-   - Footer: nowrap + flex ajustado para impedir quebra/sobreposição
-     de texto.
+   CHANGELOG (rodada 2 - tablet):
+   - Hero: imagem das pessoas ancorada por "bottom: 0" ao invés de
+     "top" fixo — o pé da imagem agora sempre toca a base do stage,
+     independente da altura do stage (--hero-ratio-h).
+   - CTA Intro: --cta-ratio-h aumentado (560 → 680) para dar mais
+     respiro de fundo azul abaixo do botão.
+   - Awards: adicionado padding lateral ao stage (estava colado nas
+     bordas após a conversão para layout empilhado) e max-width no
+     bloco de texto para melhor legibilidade.
 ============================================ */
 
 @font-face {
@@ -2683,7 +2673,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     /* [TABLET] Mais altura no stage do Hero e do CTA Intro, para o
        texto/CTA não serem empurrados para fora do fundo azul. */
     --hero-ratio-h: 780;
-    --cta-ratio-h: 560;
+    --cta-ratio-h: 680;
   }
 
   .container {
@@ -2702,7 +2692,12 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
      [FIX] Caixa de texto alargada e fonte/CTA reduzidos: a largura
      fixa de 30% (pensada para desktop) não comportava as palavras
      "crescimento" / "primeiro lugar" no tablet, empurrando o botão
-     para fora do fundo azul. */
+     para fora do fundo azul.
+     [FIX 2] Imagem das pessoas ancorada por "bottom: 0" ao invés de
+     "top" fixo — o pé da imagem estava "flutuando" (não tocava a
+     base do stage) depois de aumentarmos a altura do stage acima.
+     Ancorar pelo bottom garante que os pés sempre toquem a base,
+     independente da altura do stage. */
   .hero-banner__text-wrap {
     width: 38%;
   }
@@ -2715,6 +2710,11 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .hero-banner__cta {
     padding: 12px 24px;
     font-size: 14px;
+  }
+
+  .hero-banner__people {
+    top: auto;
+    bottom: 0;
   }
 
   /* ---------- WHY APPLY (tablet) ----------
@@ -2757,7 +2757,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   /* ---------- CTA INTRO (tablet) ----------
      [FIX] Mesmo problema do Hero: caixa de texto estreita empurrava
-     o CTA para fora da área azul. Alargada + fontes reduzidas. */
+     o CTA para fora da área azul. Alargada + fontes reduzidas +
+     stage mais alto (--cta-ratio-h acima), dando mais fundo azul
+     abaixo do botão. */
   .cta-intro__content {
     width: 38%;
   }
@@ -2779,7 +2781,9 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
      [FIX] A coreografia de sobreposição (Awards + CTA Purpose +
      Kickstart) foi calibrada para desktop e não fechava no tablet,
      causando uma seção invadindo a outra. Convertido para layout
-     empilhado (mesma técnica usada no mobile, em escala maior). */
+     empilhado (mesma técnica usada no mobile, em escala maior).
+     [FIX 2] Adicionado padding lateral ao stage (estava colado nas
+     bordas) e max-width no bloco de texto para melhor legibilidade. */
   .awards {
     padding-top: var(--space-xl);
     padding-bottom: var(--space-xl);
@@ -2791,11 +2795,14 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: flex;
     flex-direction: column;
     gap: var(--space-lg);
+    padding: 0 var(--container-padding-tablet);
   }
 
   .awards__content {
     position: static;
     width: 100%;
+    max-width: 640px;
+    margin: 0 auto;
     align-items: center;
     text-align: center;
   }
