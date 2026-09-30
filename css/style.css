@@ -12,13 +12,13 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG (última rodada):
-   - [FIX MOBILE] CTA Intro: leaf-zone ganhou overflow:hidden — as
-     folhas com drift positivo vazavam para fora da tela e causavam
-     scroll horizontal indevido em toda a página.
-   - [FIX MOBILE] Footer: mesmo bug de flex-basis das Áreas de Atuação
-     (flex:1 1 360px controla altura em flex-direction:column) estava
-     criando vão gigante entre redes sociais e links. Corrigido com
-     flex:none. Tarja cinza inferior ganhou mais respiro vertical.
+   - [FIX MOBILE - SCROLL LATERAL] A regra base ".cta-intro { overflow:
+     visible; }" (fora de media query, usada no desktop para permitir
+     elementos vazarem do stage) também se aplicava no mobile e
+     anulava a contenção da leaf-zone. Adicionado overflow:hidden em
+     duas camadas (.cta-intro e .cta-intro__stage) exclusivas do
+     mobile, como redundância de segurança contra o vazamento das
+     folhas geradas via JS.
 ============================================ */
 
 @font-face {
@@ -2947,10 +2947,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   }
 
   /* ---------- CTA INTRO (mobile) ----------
-     Stage vira um CSS Grid de 2 linhas: linha 1 = texto,
-     linha 2 = ilustração + personagem + zona de folhas
-     SOBREPOSTOS na mesma célula (recriando a composição do
-     desktop sem depender de hierarquia HTML). */
+     [FIX SCROLL LATERAL] A regra base ".cta-intro { overflow: visible; }"
+     (usada no desktop para permitir elementos vazarem do stage)
+     também valia no mobile e anulava a contenção da leaf-zone.
+     Sobrescrito aqui com overflow:hidden em duas camadas
+     (.cta-intro e .cta-intro__stage) como redundância de segurança. */
+  .cta-intro {
+    overflow: hidden;
+  }
+
   .cta-intro__stage {
     aspect-ratio: auto;
     min-height: auto;
@@ -2959,6 +2964,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     grid-template-rows: auto auto;
     padding: var(--space-xl) var(--container-padding-mobile);
     row-gap: var(--space-lg);
+    overflow: hidden;
   }
 
   .cta-intro__bg-bleed {
@@ -3007,10 +3013,8 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   /* Zona das folhas: sobreposta à ilustração, sobre a área da árvore
      (lado direito). Mantém position:relative para os elementos
      .cta-leaf (position:absolute, gerados via JS) ficarem contidos
-     aqui dentro. [FIX] overflow:hidden adicionado — as folhas com
-     --leaf-drift positivo (até +80px) vazavam para fora da tela,
-     já que a zona fica bem perto da borda direita da seção,
-     causando scroll horizontal indevido em toda a página. */
+     aqui dentro. overflow:hidden continua como 1ª camada de defesa,
+     somada agora às 2 camadas externas acima. */
   .cta-intro__leaf-zone {
     display: block;
     position: relative;
@@ -3211,9 +3215,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: block;
   }
 
-  /* ---------- ÁREAS DE ATUAÇÃO (mobile) ----------
-     [FIX] flex:1 1 360px/320px controla WIDTH em row (desktop), mas
-     vira HEIGHT em column (mobile), criando vão gigante. Neutralizado. */
+  /* ---------- ÁREAS DE ATUAÇÃO (mobile) ---------- */
   .areas__header {
     flex-direction: column;
     align-items: stretch;
@@ -3330,9 +3332,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-top: var(--space-lg);
   }
 
-  /* ---------- AGIBANK NA MÍDIA (mobile) ----------
-     [FIX] Card com scale(1.06) do desktop + 78vw de largura estourava
-     a viewport e cortava nas laterais. Scale removido, largura reduzida. */
+  /* ---------- AGIBANK NA MÍDIA (mobile) ---------- */
   .media {
     padding-top: var(--space-lg);
     padding-bottom: var(--space-lg);
@@ -3389,12 +3389,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 13px;
   }
 
-  /* ---------- FOOTER (mobile) ----------
-     [FIX] .footer__main tem flex:1 1 360px (controla width no
-     desktop), mas em flex-direction:column (mobile) isso vira
-     HEIGHT mínima — mesmo bug das Áreas de Atuação. Neutralizado
-     com flex:none. Tarja cinza inferior ganhou mais respiro
-     vertical, para o texto não ficar colado. */
+  /* ---------- FOOTER (mobile) ---------- */
   .footer__top-inner {
     flex-direction: column;
     align-items: flex-start;
