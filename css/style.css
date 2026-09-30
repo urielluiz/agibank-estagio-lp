@@ -12,11 +12,9 @@
    blocos @media (max-width: 767px). Nenhuma regra de desktop é alterada.
    
    CHANGELOG:
-   - [FIX MOBILE] Hero Banner: altura do "quadro" da foto das pessoas
-     aumentada de 320px para 420px (via variável --hero-people-mobile-h),
-     evitando o corte da cabeça causado por object-fit: cover numa caixa
-     baixa demais. Ajustar essa variável controla o quanto da foto
-     aparece sem precisar mexer em mais nada.
+   - [FIX MOBILE] Why Apply: reduzido o espaço em branco após o último
+     card. Padding vertical do pin-inner separado em top/bottom
+     independentes (mantém respiro de cima, reduz o de baixo).
 ============================================ */
 
 @font-face {
@@ -2914,6 +2912,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     object-position: bottom center;
   }
 
+  /* ---------- WHY APPLY (mobile) ---------- */
   .why-apply__title {
     font-size: 26px;
   }
@@ -2925,7 +2924,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   .why-apply__pin-inner {
     position: static;
     height: auto;
-    padding: var(--space-xl) 0;
+    padding: var(--space-xl) 0 var(--space-md) 0;
   }
 
   .why-apply__timeline {
