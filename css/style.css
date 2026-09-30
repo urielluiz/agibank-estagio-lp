@@ -3223,9 +3223,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: block;
   }
 
+  /* [FIX] flex: 1 1 360px / 320px (do desktop) controla a WIDTH quando
+     o container é flex-direction:row, mas passa a controlar a HEIGHT
+     quando vira column (mobile) — por isso o vão gigante. Neutralizado
+     com flex:none. Margin-bottom do header também reduzido. */
   .areas__header {
     flex-direction: column;
-    gap: var(--space-md);
+    align-items: stretch;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
   }
 
   .areas__divider {
@@ -3234,10 +3240,15 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .areas__title {
     font-size: 24px;
+    flex: none;
+    max-width: none;
   }
 
   .areas__subtitle {
     font-size: 15px;
+    flex: none;
+    max-width: none;
+    align-self: flex-start;
   }
 
   .areas__item-header {
