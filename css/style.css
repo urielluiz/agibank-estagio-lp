@@ -2342,13 +2342,22 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
   padding: var(--space-xl) calc((100% - var(--campus-active-width)) / 2);
   -ms-overflow-style: none;
   scrollbar-width: none;
-  /* Fade nas bordas: dissolve o corte reto das fotos laterais
-     no branco de fundo da seção, em vez de cortar abruptamente. */
+ /* Fade nas bordas: dissolve o corte reto das fotos laterais
+     no branco de fundo da seção, em vez de cortar abruptamente.
+     [AJUSTE] Fade mais profundo (28%/72%) para cobrir maior área
+     das fotos laterais, conforme referência aprovada. */
   -webkit-mask-image: linear-gradient(
     to right,
     transparent 0%,
-    black 12%,
-    black 88%,
+    black 28%,
+    black 72%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 28%,
+    black 72%,
     transparent 100%
   );
   mask-image: linear-gradient(
