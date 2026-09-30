@@ -2,26 +2,16 @@
    AGIBANK - PROGRAMA DE ESTÁGIO LP
    Design Tokens + Reset + Base
    
-   🔒 SEÇÕES APROVADAS E TRAVADAS (DESKTOP):
-   Hero, Why Apply, CTA Intro, Awards, CTA Purpose, Kickstart, Requirements,
-   Áreas de Atuação, Processo Seletivo, Efetivação/Proposta de Valor,
-   Agibank na Mídia, Campus/Escritório, Footer.
+   🔒 DESKTOP, TABLET E MOBILE APROVADOS E TRAVADOS
    
-   🔒 MOBILE APROVADO E TRAVADO (@media max-width: 767px)
-   
-   ⚠️ FASE ATUAL: AJUSTES DE RESPONSIVIDADE TABLET/iPAD
-   Todas as alterações a partir daqui ocorrem exclusivamente dentro do
-   bloco @media (max-width: 1024px). Nenhuma regra de desktop ou mobile
-   é alterada.
-   
-   CHANGELOG (rodada 4 - tablet):
-   - CTA Intro: personagem e zona de folhas reposicionados. Eles ainda
-     usavam as coordenadas de desktop (top: 46% / top: 5.8%), calculadas
-     para a proporção antiga do stage. Como a ilustração foi reancorada
-     por "bottom: 0" nas rodadas anteriores, o "chão" da cena desceu,
-     mas esses dois elementos ficaram presos no topo, parecendo
-     "flutuar". Reposicionados via cálculo proporcional à nova posição
-     da ilustração (estimativa calibrada, sujeita a ajuste fino).
+   CHANGELOG (fix pontual):
+   - Kickstart: .kickstart__pill--photo tinha "height: 100px" definido
+     no bloco @media (max-width: 1024px) (tablet). Como media queries
+     não se excluem mutuamente (um celular satisfaz tanto 767px quanto
+     1024px), essa altura "vazava" para o mobile, já que o bloco
+     mobile nunca a sobrescrevia. Resultado: object-fit: cover
+     esmagava as fotos em uma fatia fina. Corrigido com uma altura
+     dedicada para mobile.
 ============================================ */
 
 @font-face {
@@ -2687,16 +2677,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: var(--fs-small);
   }
 
-  /* ---------- HERO (tablet) ----------
-     [FIX] Caixa de texto alargada e fonte/CTA reduzidos: a largura
-     fixa de 30% (pensada para desktop) não comportava as palavras
-     "crescimento" / "primeiro lugar" no tablet, empurrando o botão
-     para fora do fundo azul.
-     [FIX 2] Imagem das pessoas ancorada por "bottom: 0" ao invés de
-     "top" fixo — o pé da imagem estava "flutuando" (não tocava a
-     base do stage) depois de aumentarmos a altura do stage acima.
-     Ancorar pelo bottom garante que os pés sempre toquem a base,
-     independente da altura do stage. */
+  /* ---------- HERO (tablet) ---------- */
   .hero-banner__text-wrap {
     width: 38%;
   }
@@ -2716,10 +2697,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     bottom: 0;
   }
 
-  /* ---------- WHY APPLY (tablet) ----------
-     [FIX] Pin/scroll-scrubbing (300vh) desativado — gerava um "elevador"
-     de rolagem enorme com muito espaço em branco no tablet. Cards agora
-     ficam sempre visíveis, em grid estático de 3 colunas. */
+  /* ---------- WHY APPLY (tablet) ---------- */
   .why-apply__title {
     font-size: 30px;
   }
@@ -2754,20 +2732,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: var(--fs-small);
   }
 
-  /* ---------- CTA INTRO (tablet) ----------
-     [FIX] Caixa de texto estreitada (38% → 33%) e ilustração deslocada
-     mais para a direita (left 37% → 41%, width 63% → 58%): o texto
-     alargado na rodada anterior estava invadindo visualmente a área
-     com pixels reais da ilustração da loja.
-     [FIX 2] Ilustração ancorada por "bottom: 0" (mesma técnica do
-     Hero) para colar sua base na faixa azul, já que sua altura real
-     depende da largura (não da altura do stage) e ficou "flutuando"
-     acima da base depois de aumentarmos --cta-ratio-h.
-     [FIX 3] Personagem e zona de folhas reposicionados: ainda usavam
-     as coordenadas de desktop (calibradas para o stage mais baixo e
-     ilustração ancorada pelo topo). Como o "chão" da cena desceu
-     bastante, eles ficaram "flutuando" no céu. Reposicionados via
-     cálculo proporcional à nova posição/tamanho da ilustração. */
+  /* ---------- CTA INTRO (tablet) ---------- */
   .cta-intro__content {
     width: 33%;
   }
@@ -2805,13 +2770,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     height: 22%;
   }
 
-  /* ---------- AWARDS (tablet) ----------
-     [FIX] A coreografia de sobreposição (Awards + CTA Purpose +
-     Kickstart) foi calibrada para desktop e não fechava no tablet,
-     causando uma seção invadindo a outra. Convertido para layout
-     empilhado (mesma técnica usada no mobile, em escala maior).
-     [FIX 2] Adicionado padding lateral ao stage (estava colado nas
-     bordas) e max-width no bloco de texto para melhor legibilidade. */
+  /* ---------- AWARDS (tablet) ---------- */
   .awards {
     padding-top: var(--space-xl);
     padding-bottom: var(--space-xl);
@@ -2860,9 +2819,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     display: none;
   }
 
-  /* ---------- CTA PURPOSE (tablet) ----------
-     [FIX] Mesmo motivo do Awards: layout empilhado para eliminar a
-     sobreposição indevida com as seções vizinhas. */
+  /* ---------- CTA PURPOSE (tablet) ---------- */
   .cta-purpose__stage {
     aspect-ratio: auto;
     min-height: auto;
@@ -2912,12 +2869,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     align-self: center;
   }
 
-  /* ---------- KICKSTART (tablet) ----------
-     [FIX] Removido o pin/scroll-morph (calibrado para desktop) e o
-     margin-top negativo (que dependia da geometria antiga do CTA
-     Purpose). Pílulas ganharam altura fixa para ficarem uniformes
-     (antes, as pílulas com foto esticavam de forma diferente das de
-     texto). */
+  /* ---------- KICKSTART (tablet) ---------- */
   .kickstart {
     margin-top: 0;
   }
@@ -2968,10 +2920,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 32px;
   }
 
-  /* ---------- ÁREAS DE ATUAÇÃO (tablet) ----------
-     [FIX] Mesmo bug de flex-basis do mobile: título e subtítulo não
-     cabiam lado a lado com folga suficiente. Empilhados, divisor
-     oculto, tudo centralizado. */
+  /* ---------- ÁREAS DE ATUAÇÃO (tablet) ---------- */
   .areas__header {
     flex-direction: column;
     align-items: center;
@@ -2995,10 +2944,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     align-self: center;
   }
 
-  /* ---------- PROCESSO SELETIVO (tablet) ----------
-     [FIX] Pin de 550vh + arco pequeno deixavam uma tarja navy vazia
-     enorme. Substituído pela lista estática (mesma solução do
-     mobile), com fontes maiores adequadas ao tablet. */
+  /* ---------- PROCESSO SELETIVO (tablet) ---------- */
   .process__title {
     font-size: 34px;
   }
@@ -3041,8 +2987,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     flex-shrink: 0;
   }
 
-  /* ---------- EFETIVAÇÃO / PROPOSTA DE VALOR (tablet) ----------
-     [FIX] Espaçamentos herdados do desktop reduzidos. */
+  /* ---------- EFETIVAÇÃO / PROPOSTA DE VALOR (tablet) ---------- */
   .value-prop__title {
     font-size: 30px;
   }
@@ -3073,10 +3018,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
-  /* ---------- AGIBANK NA MÍDIA (tablet) ----------
-     [FIX] Cards laterais cortando de forma abrupta nas bordas do
-     carrossel. Adicionado fade (mask-image), mesma técnica já usada
-     no carrossel do Campus/Escritório. */
+  /* ---------- AGIBANK NA MÍDIA (tablet) ---------- */
   .media__track {
     -webkit-mask-image: linear-gradient(
       to right,
@@ -3104,13 +3046,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     font-size: 15px;
   }
 
-  /* ---------- FOOTER (tablet) ----------
-     [FIX] Textos quebrando linha e sobrepondo: espaço insuficiente
-     para os dois blocos lado a lado. Gap reduzido e flex ajustado
-     para impedir quebra.
-     [FIX 2] Faixa cinza inferior com respiro vertical insuficiente
-     (herdava o valor do desktop) — texto colado nas bordas.
-     Aumentado para o mesmo valor já validado no mobile. */
+  /* ---------- FOOTER (tablet) ---------- */
   .footer__title {
     font-size: 30px;
   }
@@ -3240,9 +3176,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-bottom: var(--space-sm);
   }
 
-  /* Foto das pessoas: quadro de altura fixa (ajustável via variável),
-     corta a sobra transparente do PNG e cola os pés no fim do bloco,
-     sem cortar a cabeça. */
   .hero-banner__people {
     position: static;
     width: 100%;
@@ -3294,16 +3227,7 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     transform: none !important;
   }
 
-  /* ---------- CTA INTRO (mobile) ----------
-     Stage vira um CSS Grid de 2 linhas: linha 1 = texto,
-     linha 2 = ilustração + personagem + zona de folhas
-     SOBREPOSTOS na mesma célula (recriando a composição do
-     desktop sem depender de hierarquia HTML).
-     [FIX SCROLL LATERAL] A regra base ".cta-intro { overflow: visible; }"
-     (usada no desktop para permitir elementos vazarem do stage)
-     também valia no mobile e anulava a contenção da leaf-zone.
-     Sobrescrito aqui com overflow:hidden em duas camadas
-     (.cta-intro e .cta-intro__stage) como redundância de segurança. */
+  /* ---------- CTA INTRO (mobile) ---------- */
   .cta-intro {
     overflow: hidden;
   }
@@ -3339,7 +3263,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     align-self: center;
   }
 
-  /* Ilustração da loja: ocupa a célula 2 inteira, base da composição */
   .cta-intro__illustration {
     position: static;
     grid-column: 1;
@@ -3348,8 +3271,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     z-index: 1;
   }
 
-  /* Personagem: sobreposto à ilustração (mesma célula do grid),
-     alinhado ao rodapé, como se estivesse andando na calçada. */
   .cta-intro__character {
     display: block;
     position: static;
@@ -3362,11 +3283,6 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
     margin-bottom: 2%;
   }
 
-  /* Zona das folhas: sobreposta à ilustração, sobre a área da árvore
-     (lado direito). Mantém position:relative para os elementos
-     .cta-leaf (position:absolute, gerados via JS) ficarem contidos
-     aqui dentro. overflow:hidden continua como 1ª camada de defesa,
-     somada às 2 camadas externas acima. */
   .cta-intro__leaf-zone {
     display: block;
     position: relative;
@@ -3526,6 +3442,16 @@ a.awards__cta.reveal-fade-left-item:focus-visible {
 
   .kickstart__pill {
     padding: 16px;
+  }
+
+  /* [FIX] .kickstart__pill--photo herdava "height: 100px" do bloco
+     tablet (@media max-width: 1024px), que também se aplica no
+     mobile porque as media queries se sobrepõem (767px também
+     satisfaz "max-width: 1024px"). Essa altura fixa, combinada com
+     object-fit: cover, esmagava as fotos em uma faixa bem fina.
+     Sobrescrito aqui com uma altura maior, adequada ao mobile. */
+  .kickstart__pill--photo {
+    height: 180px;
   }
 
   .kickstart__legal {
